@@ -1,0 +1,50 @@
+{
+    "lesson_index": {
+        "lesson_num": 3
+    },
+    "PlatformerBehavior": {
+        "checkpoints": [
+            {
+                "steps": 3999970,
+                "file_path": "results\\PPO_11\\PlatformerBehavior\\PlatformerBehavior-3999970.onnx",
+                "reward": 0.573893693442218,
+                "creation_time": 1620537656.8449297
+            },
+            {
+                "steps": 4499999,
+                "file_path": "results\\PPO_11\\PlatformerBehavior\\PlatformerBehavior-4499999.onnx",
+                "reward": 0.5403678964050311,
+                "creation_time": 1620538039.4076667
+            },
+            {
+                "steps": 4999880,
+                "file_path": "results\\PPO_11\\PlatformerBehavior\\PlatformerBehavior-4999880.onnx",
+                "reward": 0.6381441004494756,
+                "creation_time": 1620538420.1249826
+            },
+            {
+                "steps": 5499965,
+                "file_path": "results\\PPO_11\\PlatformerBehavior\\PlatformerBehavior-5499965.onnx",
+                "reward": 0.7559999760102343,
+                "creation_time": 1620538819.138592
+            },
+            {
+                "steps": 5945442,
+                "file_path": "results\\PPO_11\\PlatformerBehavior\\PlatformerBehavior-5945442.onnx",
+                "reward": 0.6261428340323387,
+                "creation_time": 1620539154.60549
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 5945442,
+            "file_path": "results\\PPO_11\\PlatformerBehavior.onnx",
+            "reward": 0.6261428340323387,
+            "creation_time": 1620539154.60549
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.2.0",
+        "mlagents_version": "0.25.0",
+        "torch_version": "1.7.1"
+    }
+}

@@ -1,0 +1,47 @@
+{
+    "name": "root",
+    "metadata": {
+        "timer_format_version": "0.1.0",
+        "start_time_seconds": "1620407759",
+        "python_version": "3.8.5 (default, Sep  3 2020, 21:29:08) [MSC v.1916 64 bit (AMD64)]",
+        "command_line_arguments": "C:\\Users\\elect\\anaconda3\\envs\\ml_unity\\Scripts\\mlagents-learn PlatformerBehavior.yaml --run-id=PPO_08 --initialize-from=PPO_07 --env=Builds --num-envs=2 --force",
+        "mlagents_version": "0.25.0",
+        "mlagents_envs_version": "0.25.0",
+        "communication_protocol_version": "1.5.0",
+        "pytorch_version": "1.7.1",
+        "numpy_version": "1.18.5",
+        "end_time_seconds": "1620407759"
+    },
+    "total": 0.8890444999999999,
+    "count": 1,
+    "self": 0.05449359999999992,
+    "children": {
+        "run_training.setup": {
+            "total": 0.13307350000000007,
+            "count": 1,
+            "self": 0.13307350000000007
+        },
+        "TrainerController.start_learning": {
+            "total": 0.7014773999999999,
+            "count": 1,
+            "self": 0.00026479999999984294,
+            "children": {
+                "TrainerController._reset_env": {
+                    "total": 0.7009149000000001,
+                    "count": 1,
+                    "self": 0.7009149000000001
+                },
+                "trainer_threads": {
+                    "total": 5.999999999062311e-07,
+                    "count": 1,
+                    "self": 5.999999999062311e-07
+                },
+                "TrainerController._save_models": {
+                    "total": 0.0002971000000000501,
+                    "count": 1,
+                    "self": 0.0002971000000000501
+                }
+            }
+        }
+    }
+}

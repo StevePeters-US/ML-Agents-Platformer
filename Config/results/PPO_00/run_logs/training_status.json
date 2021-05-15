@@ -1,0 +1,23 @@
+{
+    "Platformer": {
+        "checkpoints": [
+            {
+                "steps": 198831,
+                "file_path": "results\\PPO_00\\Platformer\\Platformer-198831.onnx",
+                "reward": 0.0,
+                "creation_time": 1619985474.4656932
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 198831,
+            "file_path": "results\\PPO_00\\Platformer.onnx",
+            "reward": 0.0,
+            "creation_time": 1619985474.4656932
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.2.0",
+        "mlagents_version": "0.25.0",
+        "torch_version": "1.7.1"
+    }
+}

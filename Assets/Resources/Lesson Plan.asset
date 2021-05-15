@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1609f662b7755db4b9ac7b91b671d6a9, type: 3}
+  m_Name: Lesson Plan
+  m_EditorClassIdentifier: 
+  lessons:
+  - {fileID: 11400000, guid: 0f5dd35b945181a41a4a2c9066fb9e0c, type: 2}
+  - {fileID: 11400000, guid: 70ee74e9850d48b4f8b275afb4db114e, type: 2}
+  - {fileID: 11400000, guid: df3c891e137444741b9d8b8a27001c01, type: 2}
+  - {fileID: 11400000, guid: 7644e0412ad79404b8637905b15cfdd9, type: 2}
+  InitialLessonIdx: 3
+  overWriteAcademy: 0

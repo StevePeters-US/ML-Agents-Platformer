@@ -1,0 +1,47 @@
+{
+    "Platformer": {
+        "checkpoints": [
+            {
+                "steps": 3499518,
+                "file_path": "results\\PPO_01\\Platformer\\Platformer-3499518.onnx",
+                "reward": 0.875,
+                "creation_time": 1619991481.7366633
+            },
+            {
+                "steps": 3999023,
+                "file_path": "results\\PPO_01\\Platformer\\Platformer-3999023.onnx",
+                "reward": 0.9333333333333333,
+                "creation_time": 1619992352.5511456
+            },
+            {
+                "steps": 4499310,
+                "file_path": "results\\PPO_01\\Platformer\\Platformer-4499310.onnx",
+                "reward": 0.9444444444444444,
+                "creation_time": 1619993235.1271737
+            },
+            {
+                "steps": 4999107,
+                "file_path": "results\\PPO_01\\Platformer\\Platformer-4999107.onnx",
+                "reward": 0.9504132231404959,
+                "creation_time": 1619994108.9321826
+            },
+            {
+                "steps": 5291609,
+                "file_path": "results\\PPO_01\\Platformer\\Platformer-5291609.onnx",
+                "reward": 0.9605263157894737,
+                "creation_time": 1619994626.946379
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 5291609,
+            "file_path": "results\\PPO_01\\Platformer.onnx",
+            "reward": 0.9605263157894737,
+            "creation_time": 1619994626.946379
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.2.0",
+        "mlagents_version": "0.25.0",
+        "torch_version": "1.7.1"
+    }
+}
