@@ -5,12 +5,12 @@ using UnityEngine;
 
 namespace APG.Environment
 {
-    public class EnvGoal : Node
+    public class EnvGoal : MonoBehaviour
     {
         public event Action OnGoalTriggered;
 
-        public EnvGoal(bool isTraversable, Vector3 worldPos, Vector3Int gridIndex) : base(isTraversable, worldPos, gridIndex) {
-        }
+      /*  public EnvGoal(bool isTraversable, Vector3 worldPos, Vector3Int gridIndex) : base(isTraversable, worldPos, gridIndex) {
+        }*/
 
         /*        private EnvironmentManager _envManager;
        public EnvironmentManager envManager { get => _envManager; }*/

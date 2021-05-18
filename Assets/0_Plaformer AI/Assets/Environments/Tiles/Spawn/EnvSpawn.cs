@@ -8,20 +8,20 @@ using UnityEditor;
 
 namespace APG.Environment
 {
-    public class EnvSpawn : Node
+    public class EnvSpawn : MonoBehaviour
     {
         [SerializeField] private Vector3 spawnOffset;
-
+        /*
         public EnvSpawn(bool isTraversable, Vector3 worldPos, Vector3Int gridIndex) : base(isTraversable, worldPos, gridIndex) {
-        }
+        }*/
 
 
-#if UNITY_EDITOR
+/*#if UNITY_EDITOR
         private void OnDrawGizmosSelected()
         {
             Handles.DrawWireCube(transform.position + spawnOffset, new Vector3(0.5f, 0.5f, 0.5f));
         }
-#endif
+#endif*/
 
         public void ResetSpawnedAgent(PlayerAgent playerAgent)
         {

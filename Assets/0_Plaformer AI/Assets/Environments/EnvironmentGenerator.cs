@@ -12,6 +12,9 @@ namespace APG.Environment {
         [SerializeField] private EnvGoal goalTile;
         [SerializeField] private EnvSpawn spawnTile;
 
+        Vector3Int goalIndex;
+        Vector3Int spawnIndex;
+
         [SerializeField, Tooltip("Rounded to nearest int")] private Vector3Int envSize; //private Vector3 gridSize;
 
         public EnvGoal GoalRef { get => goalRef; }
@@ -21,12 +24,12 @@ namespace APG.Environment {
         private EnvSpawn spawnRef = null;
 
         private List<GameObject> instantiatedEnvironmentObjects = new List<GameObject>();
-        private List<Vector3Int> excludedPositions = new List<Vector3Int>();
-        private List<Vector3Int> pathPositions = new List<Vector3Int>();
+        private List<Vector3Int> excludedIndices = new List<Vector3Int>();
+        private List<Vector3Int> pathIndices = new List<Vector3Int>();
         private EnvironmentManager envManager;
 
         private Node[,,] envNodes;
-        public List<Node> path = new List<Node>();
+        //public List<Node> path = new List<Node>();
 
         private void Awake() {
             envManager = GetComponent<EnvironmentManager>();
@@ -34,43 +37,71 @@ namespace APG.Environment {
 
         public void GenerateGridEnvironment() {
             DestroyEnvObjects();
-            envNodes = new Node[envSize.x, envSize.y, envSize.z];
 
             SetRandomEnvTileSize();
-
             Vector3 tileSize = floorTile.GetComponent<MeshRenderer>().bounds.size;
 
-            // Spawn goal tile
-            Vector3Int goalPos = GetRandomPosition();
-            goalRef = Instantiate<EnvGoal>(goalTile, transform.position + tileSize.MultInt(goalPos), transform.rotation);
-            envManager.SubscribeToGoal(goalRef);
-            instantiatedEnvironmentObjects.Add(goalRef.gameObject);
-            excludedPositions.Add(goalPos);
-
-            // Spawn spawn tile
-            Vector3Int spawnPos = GetRandomPosition();
-            spawnRef = Instantiate<EnvSpawn>(spawnTile, transform.position + tileSize.MultInt(spawnPos), transform.rotation);
-            instantiatedEnvironmentObjects.Add(spawnRef.gameObject);
-
-            GeneratePath(spawnRef, goalRef);
-            GeneratePathNodes(tileSize);
-
-            for (int i = 0; i < envSize.x; i++) {
-                for (int j = 0; j < envSize.z; j++) {
-                    Vector3Int newTilePos = new Vector3Int(i, 0, j);
-                    GameObject newTile;
-
-                    if (!IsPositionExcluded(newTilePos)) {
-                        newTile = Instantiate<GameObject>(floorTile, transform.position + tileSize.MultInt(newTilePos), transform.rotation);
-                        instantiatedEnvironmentObjects.Add(newTile);
+            envNodes = new Node[envSize.x, envSize.y, envSize.z];
+            for (int x = 0; x < envSize.x; x++) {
+                for (int y = 0; y < envSize.y; y++) {
+                    for (int z = 0; z < envSize.z; z++) {
+                        Vector3Int gridIndex = new Vector3Int(x, y, z);
+                        Vector3 worldPos = transform.position + tileSize.MultInt(gridIndex);
+                        envNodes[x, y, z] = new Node(true, worldPos, gridIndex, NodeType.Tile);
+                        envNodes[x, y, z].SetNeighborIndices(envSize);
                     }
                 }
             }
+
+
+            // Spawn goal tile
+            goalIndex = GetRandomIndex();
+            envNodes[goalIndex.x, goalIndex.y, goalIndex.z].NodeType = NodeType.Goal;
+            excludedIndices.Add(goalIndex);
+
+            spawnIndex = GetRandomIndex();
+            envNodes[spawnIndex.x, spawnIndex.y, spawnIndex.z].NodeType = NodeType.Start;
+            excludedIndices.Add(spawnIndex);
+
+
+            // goalRef = new Node(true, transform.position + tileSize.MultInt(goalIndex), goalIndex, NodeType.Goal);
+            //goalRef = Instantiate<EnvGoal>(goalTile, transform.position + tileSize.MultInt(goalIndex), transform.rotation);
+            //goalRef.gridIndex = goalIndex;
+            //goalRef.SetNeighborIndices(envSize);
+
+            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // envManager.SubscribeToGoal(goalRef);
+
+
+            // instantiatedEnvironmentObjects.Add(goalRef.gameObject);
+
+            // Spawn spawn tile
+            // spawnRef = new Node(true, transform.position + tileSize.MultInt(spawnIndex), spawnIndex, NodeType.Start);
+            //spawnRef = Instantiate<EnvSpawn>(spawnTile, transform.position + tileSize.MultInt(spawnIndex), transform.rotation);
+            //spawnRef.gridIndex = spawnIndex;
+            //spawnRef.SetNeighborIndices(envSize);
+            //instantiatedEnvironmentObjects.Add(spawnRef.gameObject);
+
+            GeneratePath(envNodes[spawnIndex.x, spawnIndex.y, spawnIndex.z], envNodes[goalIndex.x, goalIndex.y, goalIndex.z]);
+            // GeneratePathNodes(tileSize);
+
+            /* for (int i = 0; i < envSize.x; i++) {
+                 for (int j = 0; j < envSize.z; j++) {
+                     Vector3Int newTilePos = new Vector3Int(i, 0, j);
+                     GameObject newTile;
+
+                     if (!IsIndexExcluded(newTilePos)) {
+                         newTile = Instantiate<GameObject>(floorTile, transform.position + tileSize.MultInt(newTilePos), transform.rotation);
+                         
+                     }
+                 }
+             }*/
+
+            InstantiateNodePrefabs();
         }
-        //  private void GeneratePath(Vector3Int startPos, Vector3Int goalPos) {
 
         private void GeneratePath(Node startNode, Node goalNode) {
-            pathPositions.Clear();
+            pathIndices.Clear();
 
             // Node startNode = GetNodeFromWorldPoint(startPos);
             //Node goalNode = GetNodeFromWorldPoint(goalPos);
@@ -98,7 +129,7 @@ namespace APG.Environment {
                     return;
                 }
 
-                foreach (Node neighbor in GetNeighbors(currentNode)) {
+                foreach (Node neighbor in GetNeighborNodes(currentNode)) {
                     if (!neighbor.isTraversable || closedSet.Contains(neighbor))
                         continue;
 
@@ -125,17 +156,26 @@ namespace APG.Environment {
             }
 
             newPath.Reverse();
-            path = newPath;
-        }
+            //path = newPath;
 
-        private void GeneratePathNodes(Vector3 tileSize) {
-            foreach (Vector3Int pathPosition in pathPositions) {
-                GameObject newTile;
-
-                newTile = Instantiate<GameObject>(pathTile, transform.position + tileSize.MultInt(pathPosition), transform.rotation);
-                instantiatedEnvironmentObjects.Add(newTile);
+            foreach (Node node in newPath) {
+                pathIndices.Add(node.gridIndex);
             }
         }
+
+        /*      private void GeneratePathNodes(Vector3 tileSize) {
+                  foreach (Vector3Int pathIndex in pathIndices) {
+                      Node newTile;
+
+                     // newTile = Instantiate<Node>(pathTile, transform.position + tileSize.MultInt(pathIndex), transform.rotation);
+                      newTile = new Node(true, transform.position + tileSize.MultInt(pathIndex), pathIndex);
+
+                      //newTile.gridIndex = pathIndex;
+                      newTile.SetNeighborIndices(envSize);
+                      //instantiatedEnvironmentObjects.Add(newTile.gameObject);
+                      excludedIndices.Add(pathIndex);
+                  }
+              }*/
 
         private int GetDistance(Node nodeA, Node nodeB) {
             int distX = Mathf.Abs(nodeA.gridIndex.x - nodeB.gridIndex.x);
@@ -166,10 +206,14 @@ namespace APG.Environment {
             //    return null;
         }
 
-        public List<Node> GetNeighbors(Node node) {
+        public List<Node> GetNeighborNodes(Node node) {
             List<Node> neighbors = new List<Node>();
 
-            for (int x = -1; x <= 1; x++) {
+
+            foreach (Vector3Int neighborIndex in node.neighborIndices) {
+                neighbors.Add(envNodes[neighborIndex.x, neighborIndex.y, neighborIndex.z]);
+            }
+            /*for (int x = -1; x <= 1; x++) {
                 for (int z = -1; z <= 1; z++) {
                     if (x == 0 && z == 0)
                         continue;
@@ -180,17 +224,17 @@ namespace APG.Environment {
                     if (IsInBounds(checkX, 0, checkZ))
                         neighbors.Add(envNodes[checkX, 0, checkZ]);
                 }
-            }
+            }*/
 
             return neighbors;
         }
 
         bool IsInBounds(int x, int y, int z) => x >= 0 && x < envSize.x && y >= 0 && y < envSize.y && z >= 0 && z < envSize.z;
 
-        private Vector3Int GetRandomPosition() {
+        private Vector3Int GetRandomIndex() {
             Vector3Int outPos = Vector3Int.zero;
             int i = 0;
-            while (i < 100 || IsPositionExcluded(outPos)) {
+            while (i < 100 || IsIndexExcluded(outPos)) {
                 i++;
                 outPos = new Vector3Int(Random.Range(0, envSize.x), 0, Random.Range(0, envSize.z));
             }
@@ -198,12 +242,52 @@ namespace APG.Environment {
             return outPos;
         }
 
-        private bool IsPositionExcluded(Vector3Int positionToCheck) {
-            return excludedPositions.Contains(positionToCheck);
+        private bool IsIndexExcluded(Vector3Int indexToCheck) {
+            return excludedIndices.Contains(indexToCheck);
         }
 
         private void InstantiateNodePrefabs() {
 
+            for (int x = 0; x < envSize.x; x++) {
+                for (int y = 0; y < envSize.y; y++) {
+                    for (int z = 0; z < envSize.z; z++) {
+                        if (envNodes[x, y, z].NodeType == NodeType.Start) {
+                            spawnRef = Instantiate<EnvSpawn>(spawnTile, envNodes[x, y, z].worldPos, transform.rotation);
+                            instantiatedEnvironmentObjects.Add(spawnRef.gameObject);
+                        }
+
+                        else if (envNodes[x, y, z].NodeType == NodeType.Goal) {
+                            goalRef = Instantiate<EnvGoal>(goalTile, envNodes[x, y, z].worldPos, transform.rotation);
+                            instantiatedEnvironmentObjects.Add(goalRef.gameObject);
+                        }
+
+                        else if (envNodes[x, y, z].NodeType == NodeType.Tile) {
+                            GameObject newTile = Instantiate<GameObject>(floorTile, envNodes[x, y, z].worldPos, transform.rotation);
+                            instantiatedEnvironmentObjects.Add(newTile);
+                        }
+                    }
+                }
+            }
+            // Spawn goal tile
+            /*     goalRef = new Node(true, transform.position + tileSize.MultInt(goalIndex), goalIndex, NodeType.Goal);
+                 goalRef = Instantiate<EnvGoal>(goalTile, transform.position + tileSize.MultInt(goalIndex), transform.rotation);
+                 //goalRef.gridIndex = goalIndex;
+                 goalRef.SetNeighborIndices(envSize);
+
+                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                 // envManager.SubscribeToGoal(goalRef);
+
+
+                 // instantiatedEnvironmentObjects.Add(goalRef.gameObject);
+                 excludedIndices.Add(goalIndex);
+
+                 // Spawn spawn tile
+                 Vector3Int spawnIndex = GetRandomIndex();
+                 spawnRef = new Node(true, transform.position + tileSize.MultInt(spawnIndex), spawnIndex, NodeType.Start);
+                 spawnRef.gridIndex = spawnIndex;
+                 spawnRef.SetNeighborIndices(envSize);
+                 //instantiatedEnvironmentObjects.Add(spawnRef.gameObject);
+                 excludedIndices.Add(spawnIndex);*/
         }
 
         private void DestroyEnvObjects() {
@@ -215,7 +299,7 @@ namespace APG.Environment {
             }
 
             instantiatedEnvironmentObjects.Clear();
-            excludedPositions.Clear();
+            excludedIndices.Clear();
         }
 
         private void SetRandomEnvTileSize() {

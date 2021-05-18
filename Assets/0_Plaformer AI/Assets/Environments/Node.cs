@@ -3,7 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace APG.Environment {
-    public class Node : MonoBehaviour, IHeapItem<Node> {
+
+    public enum NodeType {
+        Empty,
+        Start, 
+        Goal,
+        Path, 
+        Tile,
+        Obstacle
+    }
+
+    public class Node : IHeapItem<Node> {
 
         public Vector3Int gridIndex;
 
@@ -21,12 +31,16 @@ namespace APG.Environment {
 
         public GameObject nodePrefab;
 
-        public List<Node> neighbors;
+        public List<Vector3Int> neighborIndices = new List<Vector3Int>();
 
-        public Node(bool isTraversable, Vector3 worldPos, Vector3Int gridIndex) {
+        private NodeType nodeType;
+        public NodeType NodeType { get => nodeType; set => nodeType = value; }
+
+        public Node(bool isTraversable, Vector3 worldPos, Vector3Int gridIndex, NodeType nodeType = NodeType.Empty) {
             this.isTraversable = isTraversable;
             this.worldPos = worldPos;
             this.gridIndex = gridIndex;
+            this.NodeType = nodeType;
         }
 
         public int CompareTo(Node nodeToCompare) {
@@ -36,6 +50,25 @@ namespace APG.Environment {
                 compare = hCost.CompareTo(nodeToCompare.hCost);
 
             return -compare;
+        }
+
+        public void SetNeighborIndices(Vector3Int envSize) {
+            neighborIndices.Clear();
+
+            for (int x = -1; x <= 1; x++) {
+                for (int z = -1; z <= 1; z++) {
+                    if (x == 0 && z == 0)
+                        continue;
+
+                    int checkX = gridIndex.x + x;
+                    int checkZ = gridIndex.z + z;
+
+                    bool IsInBounds(int x, int y, int z) => x >= 0 && x < envSize.x && y >= 0 && y < envSize.y && z >= 0 && z < envSize.z;
+
+                    if (IsInBounds(checkX, 0, checkZ))
+                        neighborIndices.Add(new Vector3Int( checkX, 0, checkZ));
+                }
+            }
         }
     }
 }
