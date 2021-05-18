@@ -57,7 +57,12 @@ namespace APG.Environment {
 
             for (int x = -1; x <= 1; x++) {
                 for (int z = -1; z <= 1; z++) {
-                    if (x == 0 && z == 0)
+                    // Check 8 directions on plane
+                    /*if (x == 0 && z == 0)
+                        continue;*/
+
+                    // Only get nsew neighbors
+                    if ((x == 0 && z == 0) ||(x != 0 && z != 0))
                         continue;
 
                     int checkX = gridIndex.x + x;

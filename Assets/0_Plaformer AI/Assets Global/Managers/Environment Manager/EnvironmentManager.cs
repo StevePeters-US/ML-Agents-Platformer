@@ -46,7 +46,7 @@ namespace APG.Environment {
         public void ResetEnvironment() {
             envGenerator.GenerateGridEnvironment();
 
-            //envSpawn = envGenerator.SpawnRef;
+            envSpawn = envGenerator.SpawnRef;
 
             if (envSpawn != null && playerAgent)
                 envSpawn.ResetSpawnedAgent(playerAgent);
