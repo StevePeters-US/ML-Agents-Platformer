@@ -8,11 +8,11 @@ using UnityEditor;
 
 namespace APG.Environment
 {
-    public class EnvSpawn : EnvironmentNode
+    public class EnvSpawn : Node
     {
         [SerializeField] private Vector3 spawnOffset;
 
-        public EnvSpawn(bool isTraversable, Vector3 worldPos, int gridX, int gridY) : base(isTraversable, worldPos, gridX, gridY) {
+        public EnvSpawn(bool isTraversable, Vector3 worldPos, Vector3Int gridIndex) : base(isTraversable, worldPos, gridIndex) {
         }
 
 
@@ -29,6 +29,7 @@ namespace APG.Environment
             playerAgent.Rigidbody.angularVelocity = Vector3.zero;
 
             playerAgent.transform.position = transform.position + spawnOffset;
+            playerAgent.transform.rotation = transform.rotation;
         }
     }
 }

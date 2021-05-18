@@ -77,7 +77,7 @@ namespace APG
         {
             Handles.BeginGUI();
 
-            Rect rect = new Rect(8, 8, 150, 25);
+            Rect rect = new Rect(40, 8, 150, 25);
             float margin = 2;
 
             if (GUI.Button(rect, new GUIContent("Spawn Prefabs")))

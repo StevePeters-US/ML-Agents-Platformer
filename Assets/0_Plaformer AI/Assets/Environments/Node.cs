@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace APG.Environment {
-    public class EnvironmentNode : MonoBehaviour,  IHeapItem<EnvironmentNode> {
-        public int gridX;
-        public int gridY;
+    public class Node : MonoBehaviour, IHeapItem<Node> {
+
+        public Vector3Int gridIndex;
 
         public bool isTraversable;
         public Vector3 worldPos;
@@ -19,14 +19,17 @@ namespace APG.Environment {
         private int heapIndex;
         public int HeapIndex { get => heapIndex; set => heapIndex = value; }
 
-        public EnvironmentNode(bool isTraversable, Vector3 worldPos, int gridX, int gridY) {
+        public GameObject nodePrefab;
+
+        public List<Node> neighbors;
+
+        public Node(bool isTraversable, Vector3 worldPos, Vector3Int gridIndex) {
             this.isTraversable = isTraversable;
             this.worldPos = worldPos;
-            this.gridX = gridX;
-            this.gridY = gridY;
+            this.gridIndex = gridIndex;
         }
 
-        public int CompareTo(EnvironmentNode nodeToCompare) {
+        public int CompareTo(Node nodeToCompare) {
             int compare = fCost.CompareTo(nodeToCompare.fCost);
 
             if (compare == 0)
