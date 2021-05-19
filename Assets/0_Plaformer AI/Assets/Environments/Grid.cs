@@ -5,7 +5,31 @@ using UnityEngine;
 namespace APG.Environment {
     // Based on Sebastion Lague https://www.youtube.com/watch?v=nhiFx28e7JY
     // https://pastebin.com/vCVCpsQc
-    public class Grid : MonoBehaviour {
+    public class Grid {
+
+        public Vector3Int GridSize { get => gridSize; set => gridSize = value; }
+        private Vector3Int gridSize;
+
+        private Vector3 gridPos;
+
+        public Node[,,] GridNodes { get => gridNodes;}
+        private Node[,,] gridNodes;
+
+        public Vector3Int SpawnIndex { get => startIndex; set => startIndex = value; }
+        Vector3Int startIndex;
+
+        public Vector3Int GoalIndex { get => goalIndex; set => goalIndex = value; }
+        Vector3Int goalIndex;
+
+
+
+        public Grid(Vector3Int gridSize, Vector3 gridPos, Vector3Int goalIndex, Vector3Int spawnIndex) {
+            this.gridSize = gridSize;
+            this.gridPos = gridPos;
+            this.goalIndex = goalIndex;
+            this.startIndex = spawnIndex;
+        }
+
 
         public LayerMask nonTraversableMask;
         public Vector2 gridWorldSize;
@@ -13,43 +37,58 @@ namespace APG.Environment {
         public float gapSize = 0.1f;
 
         public Node tilePrefab;
-        Node[,] gridNodes;
         public List<Node> finalPath;
 
 
         public bool onlyDrawPathGizmos = false;
 
-        int gridSizeX, gridSizeY;
 
-        public int MaxSize { get { return gridSizeX * gridSizeY; } }
-
-        void Start() {
-            cellSize = Mathf.Max(cellSize, 0.1f);
-            gridSizeX = Mathf.RoundToInt(gridWorldSize.x / cellSize);
-            gridSizeY = Mathf.RoundToInt(gridWorldSize.y / cellSize);
-            CreateGrid();
-        }
-
-        private void CreateGrid() {
-            gridNodes = new Node[gridSizeX, gridSizeY];
-            Vector3 worldBottomLeft = transform.position - ((Vector3.right * gridWorldSize.x) / 2) - ((Vector3.forward * gridWorldSize.y) / 2);
-
-            Vector3 cellCenter = new Vector3(cellSize, cellSize, cellSize) * 0.5f;
-
-            for (int x = 0; x < gridSizeX; x++) {
-                for (int y = 0; y < gridSizeY; y++) {
-                    Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * cellSize + cellCenter.x) + Vector3.forward * (y * cellSize + cellCenter.z);
-                    bool traversable = !(Physics.CheckBox(worldPoint, cellCenter, transform.rotation, nonTraversableMask));
-
-                    // gridNodes[x, y] = new EnvironmentNode(traversable, worldPoint, x, y);
-                   // gridNodes[x, y] = GameObject.Instantiate<Node>(tilePrefab, worldPoint, transform.rotation, transform);
+        public void CreateGrid(Vector3 tileSize) {
+            gridNodes = new Node[gridSize.x, gridSize.y, gridSize.z];
+            for (int x = 0; x < gridSize.x; x++) {
+                for (int y = 0; y < gridSize.y; y++) {
+                    for (int z = 0; z < gridSize.z; z++) {
+                        Vector3Int gridIndex = new Vector3Int(x, y, z);
+                        Vector3 worldPos = gridPos + tileSize.MultInt(gridIndex);
+                        gridNodes[x, y, z] = new Node(true, worldPos, gridIndex, NodeType.Tile);
+                        gridNodes[x, y, z].SetNeighborIndices(gridSize);
+                    }
                 }
             }
+
+            gridNodes[goalIndex.x, goalIndex.y, goalIndex.z].NodeType = NodeType.Goal;
+            //excludedIndices.Add(goalIndex);
+
+            gridNodes[startIndex.x, startIndex.y, startIndex.z].NodeType = NodeType.Start;
+            //excludedIndices.Add(spawnIndex);
+
+            /*  gridNodes = new Node[gridSizeX, gridSizeY];
+              Vector3 worldBottomLeft = transform.position - ((Vector3.right * gridWorldSize.x) / 2) - ((Vector3.forward * gridWorldSize.y) / 2);
+
+              Vector3 cellCenter = new Vector3(cellSize, cellSize, cellSize) * 0.5f;
+
+              for (int x = 0; x < gridSizeX; x++) {
+                  for (int y = 0; y < gridSizeY; y++) {
+                      Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * cellSize + cellCenter.x) + Vector3.forward * (y * cellSize + cellCenter.z);
+                      bool traversable = !(Physics.CheckBox(worldPoint, cellCenter, transform.rotation, nonTraversableMask));
+
+                      // gridNodes[x, y] = new EnvironmentNode(traversable, worldPoint, x, y);
+                     // gridNodes[x, y] = GameObject.Instantiate<Node>(tilePrefab, worldPoint, transform.rotation, transform);
+                  }
+              }*/
+        }
+
+        public Node GetStartNode() {
+            return gridNodes[startIndex.x, startIndex.y, startIndex.z];
+        }
+
+        public Node GetGoalNode() {
+            return gridNodes[goalIndex.x, goalIndex.y, goalIndex.z];
         }
 
         public List<Node> path = new List<Node>();
         private void OnDrawGizmos() {
-            Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, 1, gridWorldSize.y));
+            Gizmos.DrawWireCube(gridPos, new Vector3(gridWorldSize.x, 1, gridWorldSize.y));
 
             if (onlyDrawPathGizmos && path != null) {
                 foreach (Node node in path) {
@@ -73,108 +112,14 @@ namespace APG.Environment {
             }
         }
 
-        public Node GetNodeFromWorldPoint(Vector3 worldPos) {
-            float percentX = (worldPos.x + gridWorldSize.x / 2) / gridWorldSize.x;
-            float percentY = (worldPos.z + gridWorldSize.y / 2) / gridWorldSize.y;
-            percentX = Mathf.Clamp01(percentX);
-            percentY = Mathf.Clamp01(percentY);
-
-            int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
-            int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
-
-            //  if (gridNodes != null && gridNodes.GetLength(0) > x && gridNodes.GetLength(1) > y)
-            return gridNodes[x, y];
-
-            //else
-            //    return null;
-        }
-
-        public List<Node> GetNeighbors(Node node) {
-            List<Node> neighbors = new List<Node>();
-
-            for (int x = -1; x <= 1; x++) {
-                for (int y = -1; y <= 1; y++) {
-                    if (x == 0 && y == 0)
-                        continue;
-
-                    int checkX = node.gridIndex.x + x;
-                    int checkY = node.gridIndex.y + y;
-
-                    if (IsInBounds(checkX, checkY))
-                        neighbors.Add(gridNodes[checkX, checkY]);
-                }
-            }
-
-            return neighbors;
-        }
-
-        bool IsInBounds(int x, int y) => x >= 0 && x < gridSizeX && y >= 0 && y < gridSizeY;
-
-        private void GetPath(Vector3 startPos, Vector3 targetPos) {
-
-            Node startNode = GetNodeFromWorldPoint(startPos);
-            Node targetNode = GetNodeFromWorldPoint(targetPos);
-
-            //   List<Node> openSet = new List<Node>();
-            Heap<Node> openSet = new Heap<Node>(MaxSize);
-            HashSet<Node> closedSet = new HashSet<Node>();
-            openSet.Add(startNode);
-
-            while (openSet.Count > 0) {
-                Node currentNode = openSet.RemoveFirst();
-                /*Node currentNode = openSet[0];
-                for (int i = 1; i < openSet.Count; i++) {
-                    if (openSet[i].fCost < currentNode.fCost || openSet[i].fCost == currentNode.fCost && openSet[i].hCost < currentNode.hCost) {
-                        currentNode = openSet[i];
-                    }
-                }*/
-
-                //openSet.Remove(currentNode);
-                closedSet.Add(currentNode);
-
-                if (currentNode == targetNode) {
-                    RetracePath(startNode, targetNode);
-                    return;
-                }
-
-                foreach (Node neighbor in GetNeighbors(currentNode)) {
-                    if (!neighbor.isTraversable || closedSet.Contains(neighbor))
-                        continue;
-
-                    int newMovementCostToNeighbor = currentNode.gCost + GetDistance(currentNode, neighbor);
-                    if (newMovementCostToNeighbor < neighbor.gCost || !openSet.Contains(neighbor)) {
-                        neighbor.gCost = newMovementCostToNeighbor;
-                        neighbor.hCost = GetDistance(neighbor, targetNode);
-                        neighbor.parentNode = currentNode;
-
-                        if (!openSet.Contains(neighbor))
-                            openSet.Add(neighbor);
-                    }
-                }
-            }
-        }
-
-        private void RetracePath(Node startNode, Node endNode) {
-            List<Node> newPath = new List<Node>();
-            Node currentNode = endNode;
-
-            while (currentNode != startNode) {
-                newPath.Add(currentNode);
-                currentNode = currentNode.parentNode;
-            }
-
-            newPath.Reverse();
-            path = newPath;
-        }
-
         private int GetDistance(Node nodeA, Node nodeB) {
             int distX = Mathf.Abs(nodeA.gridIndex.x - nodeB.gridIndex.x);
-            int distY = Mathf.Abs(nodeA.gridIndex.y - nodeB.gridIndex.y);
+            int distZ = Mathf.Abs(nodeA.gridIndex.z - nodeB.gridIndex.z);
 
-            if (distX > distY)
-                return 14 * distY + 10 * (distX - distY);
+            if (distX > distZ)
+                return 14 * distZ + 10 * (distX - distZ);
 
-            return 14 * distX + 10 * (distY - distX);
+            return 14 * distX + 10 * (distZ - distX);
         }
 
         private int GetDistanceManhattan(Node nodeA, Node nodeB) {
