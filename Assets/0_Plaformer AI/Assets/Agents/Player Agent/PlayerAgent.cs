@@ -30,6 +30,8 @@ namespace APG
 
         private Vector3 localPosition;
 
+        [SerializeField] private float killHeight = -2;
+
         //[SerializeField] private PlayerAgentScriptableObject playerAgentSO;
 
         protected void Awake()
@@ -69,7 +71,6 @@ namespace APG
         public override void OnEpisodeBegin()
         {
             _envManager.ResetEnvironment();
-
         }
 
         // These are the observations that are fed to the model on decision request (defaults to every 5th fixed frame in the decision requester component attached to the agent).
@@ -87,16 +88,15 @@ namespace APG
         private void FixedUpdate()
         {
             localPosition = _envManagerTransform.InverseTransformPoint(transform.position);
-
+            
             // Check if agent is withing valid bounds
-            if (localPosition.y < -10)
+            if (localPosition.y < killHeight)
             {
                 SetReward(-1.0f);
                 EndEpisode();
             }
 
             _movementController.UpdateMovement(agentMoveInputDirection, agentLookDir, agentHasJumpInput);
-            //  _movementController.UpdateFacingDirection(agentMoveInputDirection, Vector3.SqrMagnitude(agentMoveInputDirection));
 
             // Existential penalty to encourage agent to move towards the goal quickly
             AddReward(-(1.0f / MaxStep));

@@ -12,6 +12,7 @@
 
 # ML Agents training files
 *.pt
+/Config/results/*/run_logs*
 
 # Paid assets
 /Assets/1_PaidAssets~/

@@ -22,18 +22,19 @@ namespace APG.Environment {
 
         private void OnDisable() {
             EnvironmentalManagers.Instance.Remove(this);
-            UnsubscribeFromGoal();
+            // UnsubscribeFromGoal();
         }
 
         public void SubscribeToGoal(EnvGoal newEnvGoal) {
             envGoal = newEnvGoal;
             envGoal.OnGoalTriggered += GoalTriggered;
+            envGoal.OnGoalDestroyed += GoalDestroyed;
         }
 
-        private void UnsubscribeFromGoal() {
-            envGoal.OnGoalTriggered -= GoalTriggered;
-            envGoal = null;
-        }
+ /*       public void UnsubscribeFromGoal() {
+            if (envGoal) {
+            }
+        }*/
 
         // A player agent has entered the goal, ask the game state what to do
         public void GoalTriggered() {
@@ -41,6 +42,14 @@ namespace APG.Environment {
 
             // This behavior should be decided by the game state
             playerAgent.AgentReachedGoal();
+        }
+
+        public void GoalDestroyed() {
+            if (envGoal != null) {
+            envGoal.OnGoalTriggered -= GoalTriggered;
+            envGoal.OnGoalDestroyed -= GoalDestroyed;
+            envGoal = null;
+            }
         }
 
         public void ResetEnvironment() {

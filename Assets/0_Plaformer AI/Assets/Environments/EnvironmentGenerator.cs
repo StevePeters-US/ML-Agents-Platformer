@@ -26,7 +26,9 @@ namespace APG.Environment {
         private EnvSpawn spawnRef = null;
 
         private List<GameObject> instantiatedEnvironmentObjects = new List<GameObject>();
-        private List<Vector3Int> excludedIndices = new List<Vector3Int>();
+
+        private List<Vector3Int> availableIndices = new List<Vector3Int>();
+
         private List<Vector3Int> pathIndices = new List<Vector3Int>();
         private EnvironmentManager envManager;
 
@@ -37,12 +39,17 @@ namespace APG.Environment {
         }
 
         public void GenerateGridEnvironment() {
-            DestroyEnvObjects();
-
-            UpdateFromLessonPlan();
+            ClearEnvironment();
+           
             Vector3 tileSize = floorTile.GetComponent<MeshRenderer>().bounds.size;
 
-            grid = new Grid(envSize, transform.position, GetRandomIndex(), GetRandomIndex(), tileSize);
+            Vector3Int startIndex = GetRandomIndex();
+            availableIndices.Remove(startIndex);
+
+            Vector3Int goalIndex = GetRandomIndex();
+            availableIndices.Remove(goalIndex);
+
+            grid = new Grid(envSize, transform.position, goalIndex, startIndex, tileSize);
             grid.CreateGrid(useManhattanNeighbors);
 
             if (usePath) {
@@ -58,24 +65,14 @@ namespace APG.Environment {
             if (goalRef)
                 envManager.SubscribeToGoal(goalRef);
             else {
-                Debug.Log(" Generation failed, try again");
+                Debug.Log(" Generation failed, try again : Start Index : " + startIndex + " Goal Index : " +goalIndex);
                 GenerateGridEnvironment();
             }
         }
 
         private Vector3Int GetRandomIndex() {
-            Vector3Int outPos = Vector3Int.zero;
-            int i = 0;
-            while (i < 100 || IsIndexExcluded(outPos)) {
-                i++;
-                outPos = new Vector3Int(Random.Range(0, envSize.x), 0, Random.Range(0, envSize.z));
-            }
-
-            return outPos;
-        }
-
-        private bool IsIndexExcluded(Vector3Int indexToCheck) {
-            return excludedIndices.Contains(indexToCheck);
+            int randomIdx = Random.Range(0, availableIndices.Count);
+            return availableIndices[randomIdx];
         }
 
         private void InstantiateNodePrefabs() {
@@ -107,7 +104,9 @@ namespace APG.Environment {
             }
         }
 
-        private void DestroyEnvObjects() {
+        private void ClearEnvironment() {
+            UpdateFromLessonPlan();
+
             goalRef = null;
             spawnRef = null;
 
@@ -116,7 +115,15 @@ namespace APG.Environment {
             }
 
             instantiatedEnvironmentObjects.Clear();
-            excludedIndices.Clear();
+
+            availableIndices.Clear();
+            for (int x = 0; x < envSize.x; x++) {
+                for (int y = 0; y < envSize.y; y++) {
+                    for (int z = 0; z < envSize.z; z++) {
+                        availableIndices.Add(new Vector3Int(x, y, z));
+                    }
+                }
+            }
         }
 
         private void UpdateFromLessonPlan() {
