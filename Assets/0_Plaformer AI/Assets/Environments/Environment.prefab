@@ -61,8 +61,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   floorTile: {fileID: 6361274715697056432, guid: cd4ebe83d3b8f7d4ab84c28ff191ee9f, type: 3}
   pathTile: {fileID: 6361274715697056432, guid: 99f81a455d2d6cc4aa5c08c0c42b46ac, type: 3}
-  goalTile: {fileID: 8604542523857896706, guid: 7d6b3fed20871ba4a9ac4565852c9aab, type: 3}
-  spawnTile: {fileID: 915553049201720355, guid: d3217c886bf0fae4a8cf06bd014c3d9e, type: 3}
+  goalTile: {fileID: 3432074442539566465, guid: 7d6b3fed20871ba4a9ac4565852c9aab, type: 3}
+  spawnTile: {fileID: -1613041854377070595, guid: d3217c886bf0fae4a8cf06bd014c3d9e, type: 3}
+  usePath: 0
+  useManhattanNeighbors: 1
   envSize: {x: 0, y: 0, z: 0}
 --- !u!1001 &3662166398143548995
 PrefabInstance:

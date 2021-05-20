@@ -15,5 +15,7 @@ namespace APG
         public int maxYTiles = 1;
         public int minZTiles = 1;
         public int maxZTiles = 1;
+
+        public bool usePath = false;
     }
 }

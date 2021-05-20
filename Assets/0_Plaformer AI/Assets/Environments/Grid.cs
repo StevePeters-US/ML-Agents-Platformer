@@ -12,22 +12,26 @@ namespace APG.Environment {
 
         private Vector3 gridPos;
 
-        public Node[,,] GridNodes { get => gridNodes;}
+        public Node[,,] GridNodes { get => gridNodes; }
         private Node[,,] gridNodes;
 
         public Vector3Int SpawnIndex { get => startIndex; set => startIndex = value; }
         Vector3Int startIndex;
 
-        public Vector3Int GoalIndex { get => goalIndex; set => goalIndex = value; }
         Vector3Int goalIndex;
+        public Vector3Int GoalIndex { get => goalIndex; set => goalIndex = value; }
+
+        Vector3 tileSize = Vector3.one;
+        public Vector3 TileSize { get => tileSize; set => tileSize = value; }
 
 
 
-        public Grid(Vector3Int gridSize, Vector3 gridPos, Vector3Int goalIndex, Vector3Int spawnIndex) {
+        public Grid(Vector3Int gridSize, Vector3 gridPos, Vector3Int goalIndex, Vector3Int spawnIndex, Vector3 tileSize) {
             this.gridSize = gridSize;
             this.gridPos = gridPos;
             this.goalIndex = goalIndex;
             this.startIndex = spawnIndex;
+            this.tileSize = tileSize;
         }
 
 
@@ -43,39 +47,33 @@ namespace APG.Environment {
         public bool onlyDrawPathGizmos = false;
 
 
-        public void CreateGrid(Vector3 tileSize) {
+        public void CreateGrid(bool useManhattanNeighbors) {
             gridNodes = new Node[gridSize.x, gridSize.y, gridSize.z];
             for (int x = 0; x < gridSize.x; x++) {
                 for (int y = 0; y < gridSize.y; y++) {
                     for (int z = 0; z < gridSize.z; z++) {
                         Vector3Int gridIndex = new Vector3Int(x, y, z);
                         Vector3 worldPos = gridPos + tileSize.MultInt(gridIndex);
-                        gridNodes[x, y, z] = new Node(true, worldPos, gridIndex, NodeType.Tile);
-                        gridNodes[x, y, z].SetNeighborIndices(gridSize);
+                        gridNodes[x, y, z] = new Node(true, worldPos, gridIndex, NodeType.Empty);
+                        gridNodes[x, y, z].SetNeighborIndices(gridSize, useManhattanNeighbors);
                     }
                 }
             }
 
             gridNodes[goalIndex.x, goalIndex.y, goalIndex.z].NodeType = NodeType.Goal;
-            //excludedIndices.Add(goalIndex);
-
             gridNodes[startIndex.x, startIndex.y, startIndex.z].NodeType = NodeType.Start;
-            //excludedIndices.Add(spawnIndex);
+        }
 
-            /*  gridNodes = new Node[gridSizeX, gridSizeY];
-              Vector3 worldBottomLeft = transform.position - ((Vector3.right * gridWorldSize.x) / 2) - ((Vector3.forward * gridWorldSize.y) / 2);
-
-              Vector3 cellCenter = new Vector3(cellSize, cellSize, cellSize) * 0.5f;
-
-              for (int x = 0; x < gridSizeX; x++) {
-                  for (int y = 0; y < gridSizeY; y++) {
-                      Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * cellSize + cellCenter.x) + Vector3.forward * (y * cellSize + cellCenter.z);
-                      bool traversable = !(Physics.CheckBox(worldPoint, cellCenter, transform.rotation, nonTraversableMask));
-
-                      // gridNodes[x, y] = new EnvironmentNode(traversable, worldPoint, x, y);
-                     // gridNodes[x, y] = GameObject.Instantiate<Node>(tilePrefab, worldPoint, transform.rotation, transform);
-                  }
-              }*/
+        // Overwrites all empty nodes with tile nodes
+        public void FillGridWithTiles() {
+            for (int x = 0; x < gridSize.x; x++) {
+                for (int y = 0; y < gridSize.y; y++) {
+                    for (int z = 0; z < gridSize.z; z++) {
+                        if (gridNodes[x, y, z].NodeType == NodeType.Empty)
+                            gridNodes[x, y, z].NodeType = NodeType.Tile;
+                    }
+                }
+            }
         }
 
         public Node GetStartNode() {
@@ -93,7 +91,6 @@ namespace APG.Environment {
             if (onlyDrawPathGizmos && path != null) {
                 foreach (Node node in path) {
                     Gizmos.color = Color.green;
-                    //Gizmos.DrawCube(node.worldPos, Vector3.one * (nodeDiameter - .1f));
                     Gizmos.DrawCube(node.worldPos, Vector3.one * (cellSize - gapSize));
                 }
             }
@@ -106,7 +103,6 @@ namespace APG.Environment {
                     if (path != null && path.Contains(node))
                         Gizmos.color = Color.green;
 
-                    //Gizmos.DrawCube(node.worldPos, Vector3.one * (nodeDiameter - .1f));
                     Gizmos.DrawCube(node.worldPos, Vector3.one * (cellSize - gapSize));
                 }
             }

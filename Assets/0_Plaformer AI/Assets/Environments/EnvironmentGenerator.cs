@@ -12,7 +12,8 @@ namespace APG.Environment {
         [SerializeField] private EnvGoal goalTile;
         [SerializeField] private EnvSpawn spawnTile;
 
-
+        [SerializeField] private bool usePath = false;
+        [SerializeField] private bool useManhattanNeighbors = true;
 
         [SerializeField, Tooltip("Rounded to nearest int")] private Vector3Int envSize;
 
@@ -38,41 +39,29 @@ namespace APG.Environment {
         public void GenerateGridEnvironment() {
             DestroyEnvObjects();
 
-            SetRandomEnvTileSize();
+            UpdateFromLessonPlan();
             Vector3 tileSize = floorTile.GetComponent<MeshRenderer>().bounds.size;
 
-            grid = new Grid(envSize, transform.position, GetRandomIndex(), GetRandomIndex());
-            grid.CreateGrid(tileSize);
+            grid = new Grid(envSize, transform.position, GetRandomIndex(), GetRandomIndex(), tileSize);
+            grid.CreateGrid(useManhattanNeighbors);
 
-            /*  gridNodes = new Node[envSize.x, envSize.y, envSize.z];
-              for (int x = 0; x < envSize.x; x++) {
-                  for (int y = 0; y < envSize.y; y++) {
-                      for (int z = 0; z < envSize.z; z++) {
-                          Vector3Int gridIndex = new Vector3Int(x, y, z);
-                          Vector3 worldPos = transform.position + tileSize.MultInt(gridIndex);
-                          gridNodes[x, y, z] = new Node(true, worldPos, gridIndex, NodeType.Tile);
-                          gridNodes[x, y, z].SetNeighborIndices(envSize);
-                      }
-                  }
-              }
+            if (usePath) {
+                pathIndices = Astar.GeneratePath(grid, grid.GetStartNode(), grid.GetGoalNode(), useManhattanNeighbors);
+                Astar.ExpandPath(grid, grid.GetStartNode(), grid.GetGoalNode());
+            }
 
-              goalIndex = GetRandomIndex();
-              gridNodes[goalIndex.x, goalIndex.y, goalIndex.z].NodeType = NodeType.Goal;
-              excludedIndices.Add(goalIndex);
+            else
+                grid.FillGridWithTiles();
 
-              spawnIndex = GetRandomIndex();
-              gridNodes[spawnIndex.x, spawnIndex.y, spawnIndex.z].NodeType = NodeType.Start;
-              excludedIndices.Add(spawnIndex);*/
-
-            Astar.GeneratePath(grid, grid.GetStartNode(), grid.GetGoalNode());
             InstantiateNodePrefabs();
 
-            envManager.SubscribeToGoal(goalRef);
+            if (goalRef)
+                envManager.SubscribeToGoal(goalRef);
+            else {
+                Debug.Log(" Generation failed, try again");
+                GenerateGridEnvironment();
+            }
         }
-
-
-
-
 
         private Vector3Int GetRandomIndex() {
             Vector3Int outPos = Vector3Int.zero;
@@ -130,9 +119,11 @@ namespace APG.Environment {
             excludedIndices.Clear();
         }
 
-        private void SetRandomEnvTileSize() {
+        private void UpdateFromLessonPlan() {
             // Get random range values from lesson plan
+            LessonPlan.Instance.UpdateLessonIndex();
             envSize = LessonPlan.Instance.GetRandomBoardSize();
+            usePath = LessonPlan.Instance.runtimeUsePath;
         }
     }
 }

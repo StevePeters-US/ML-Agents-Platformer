@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_Editor
 using UnityEditor;
 
 namespace APG
@@ -128,3 +129,4 @@ namespace APG
         }
     }
 }
+#endif

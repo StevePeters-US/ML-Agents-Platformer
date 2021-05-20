@@ -17,5 +17,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 70ee74e9850d48b4f8b275afb4db114e, type: 2}
   - {fileID: 11400000, guid: df3c891e137444741b9d8b8a27001c01, type: 2}
   - {fileID: 11400000, guid: 7644e0412ad79404b8637905b15cfdd9, type: 2}
-  InitialLessonIdx: 3
-  overWriteAcademy: 1
+  - {fileID: 11400000, guid: 4dbde5e03e856f9499266dae449940c1, type: 2}
+  InitialLessonIdx: 0
+  InitialUsePath: 0
+  overWriteAcademy: 0
