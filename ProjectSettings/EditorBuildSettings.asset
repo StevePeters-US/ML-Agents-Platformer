@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/_Plaformer AI/_Developers/Steve/Training.unity
+    path: Assets/0_Plaformer AI/_Developers/Steve/Training.unity
     guid: ad3ce822c1d11ad408a02774e14e3f65
   m_configObjects: {}

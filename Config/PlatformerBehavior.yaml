@@ -65,7 +65,15 @@ environment_parameters:
           threshold:  0.8
         value: 2
       - name: Lesson3
+        completion_criteria:
+          measure: reward
+          behavior: PlatformerBehavior
+          signal_smoothing: true
+          min_lesson_length: 100
+          threshold:  0.8
         value: 3
+      - name: Lesson4
+        value: 4
 
 
 

@@ -12,6 +12,10 @@
 
 # ML Agents training files
 *.pt
+/Config/results/*/run_logs*
+
+# Paid assets
+/Assets/1_PaidAssets~/
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
