@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace APG.Environment {
     public static class Astar {
-        public static List<Vector3Int> GeneratePath(Grid grid, Node startNode, Node goalNode, bool useManhattanDistance) {
+        public static List<Vector3Int> GeneratePath(EnvGrid grid, Node startNode, Node goalNode, bool useManhattanDistance) {
             List<Vector3Int> pathIndices = new List<Vector3Int>();
 
             int numEnvNodes = grid.GridSize.x * grid.GridSize.y * grid.GridSize.z;
@@ -39,7 +39,7 @@ namespace APG.Environment {
             return pathIndices;
         }
 
-        private static void RetracePath(Grid grid, Node startNode, Node endNode) {
+        private static void RetracePath(EnvGrid grid, Node startNode, Node endNode) {
             List<Node> newPath = new List<Node>();
             Node currentNode = endNode;
 
@@ -59,7 +59,7 @@ namespace APG.Environment {
             grid.path = newPath;
         }
 
-        public static List<Node> GetNeighborNodes(Grid grid, Node node) {
+        public static List<Node> GetNeighborNodes(EnvGrid grid, Node node) {
             List<Node> neighbors = new List<Node>();
 
             foreach (Vector3Int neighborIndex in node.neighborIndices) {
@@ -87,7 +87,7 @@ namespace APG.Environment {
         }
 
         // Grows a path to include all valid neighbor nodes 
-        public static void ExpandPath(Grid grid, Node startNode, Node endNode, bool updatePath = true) {
+        public static void ExpandPath(EnvGrid grid, Node startNode, Node endNode, bool updatePath = true) {
             List<Node> newPath = new List<Node>();
 
             foreach (Node node in grid.path) {

@@ -8,7 +8,7 @@ namespace APG.Environment
     public class EnvGoal : MonoBehaviour
     {
         public event Action OnGoalTriggered;
-        public event Action OnGoalDestroyed;
+       // public event Action OnGoalDestroyed;
 
         private void OnTriggerEnter(Collider other)
         {
@@ -18,8 +18,8 @@ namespace APG.Environment
                 OnGoalTriggered?.Invoke();
         }
 
-        private void OnDestroy() {
+    /*    private void OnDestroy() {
             OnGoalDestroyed?.Invoke();
-        }
+        }*/
     }
 }

@@ -17,7 +17,7 @@ namespace APG.Environment {
 
         [SerializeField, Tooltip("Rounded to nearest int")] private Vector3Int envSize;
 
-        private Grid grid;
+        private EnvGrid grid;
 
         public EnvGoal GoalRef { get => goalRef; }
         private EnvGoal goalRef = null;
@@ -49,7 +49,7 @@ namespace APG.Environment {
             Vector3Int goalIndex = GetRandomIndex();
             availableIndices.Remove(goalIndex);
 
-            grid = new Grid(envSize, transform.position, goalIndex, startIndex, tileSize);
+            grid = new EnvGrid(envSize, transform.position, goalIndex, startIndex, tileSize);
             grid.CreateGrid(useManhattanNeighbors);
 
             if (usePath) {

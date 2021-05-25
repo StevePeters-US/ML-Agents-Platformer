@@ -1,6 +1,6 @@
 {
     "name": "PlatformerAI_Dev",
-    "rootNamespace": "",
+    "rootNamespace": "APG",
     "references": [
         "GUID:a649e89bfab76fb46a8f58d11e0692fb",
         "GUID:85e0054f8e64b47309646d35f8851f81",

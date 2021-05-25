@@ -22,7 +22,15 @@ namespace APG
             return Round(inVec / scale) * scale;
         }
 
-        public static Vector3 MultInt(this Vector3 inVec, Vector3Int inIntVec)
+        public static Vector3 Multiply(this Vector3 inVec, Vector3 inIntVec) {
+            float x = inVec.x * inIntVec.x;
+            float y = inVec.y * inIntVec.y;
+            float z = inVec.z * inIntVec.z;
+
+            return new Vector3(x, y, z);
+        }
+
+        public static Vector3 MultiplyInt(this Vector3 inVec, Vector3Int inIntVec)
         {
             float x = inVec.x * inIntVec.x;
             float y = inVec.y * inIntVec.y;

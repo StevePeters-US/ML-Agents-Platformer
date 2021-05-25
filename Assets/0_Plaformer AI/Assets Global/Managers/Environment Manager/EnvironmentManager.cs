@@ -26,12 +26,15 @@ namespace APG.Environment {
         }
 
         public void SubscribeToGoal(EnvGoal newEnvGoal) {
+            if (envGoal)
+                envGoal.OnGoalTriggered -= GoalTriggered;
+
             envGoal = newEnvGoal;
             envGoal.OnGoalTriggered += GoalTriggered;
-            envGoal.OnGoalDestroyed += GoalDestroyed;
+            //envGoal.OnGoalDestroyed += GoalDestroyed;
         }
 
- /*       public void UnsubscribeFromGoal() {
+       /* public void UnsubscribeFromGoal() {
             if (envGoal) {
             }
         }*/
@@ -44,13 +47,13 @@ namespace APG.Environment {
             playerAgent.AgentReachedGoal();
         }
 
-        public void GoalDestroyed() {
+      /*  public void GoalDestroyed() {
             if (envGoal != null) {
             envGoal.OnGoalTriggered -= GoalTriggered;
             envGoal.OnGoalDestroyed -= GoalDestroyed;
             envGoal = null;
             }
-        }
+        }*/
 
         public void ResetEnvironment() {
             envGenerator.GenerateGridEnvironment();

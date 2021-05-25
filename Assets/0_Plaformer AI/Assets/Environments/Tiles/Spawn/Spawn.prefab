@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 2125977655816067878}
   - component: {fileID: 4953528729353871419}
   - component: {fileID: 8297235652969925172}
+  - component: {fileID: 7344131777236140995}
   m_Layer: 10
   m_Name: Tile Mesh
-  m_TagString: Untagged
+  m_TagString: Spawn
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -82,6 +83,19 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &7344131777236140995
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 735842394145918793}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.5, y: 0.5, z: 0.5}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &915553049201720355
 GameObject:
   m_ObjectHideFlags: 0
@@ -98,7 +112,7 @@ GameObject:
   - component: {fileID: 225969083229037961}
   m_Layer: 0
   m_Name: Spawn
-  m_TagString: Obstacle
+  m_TagString: Spawn
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -110,7 +124,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 915553049201720355}
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 8, y: 0, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -130,7 +144,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad5d70402a08c214d9a46792eb352f9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnOffset: {x: 0, y: 0.5, z: 0}
+  spawnOffset: {x: 0, y: 1.5, z: 0}
 --- !u!33 &3481486593268574524
 MeshFilter:
   m_ObjectHideFlags: 0
