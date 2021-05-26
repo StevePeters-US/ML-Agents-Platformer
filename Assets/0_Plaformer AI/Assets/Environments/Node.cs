@@ -17,7 +17,9 @@ namespace APG.Environment {
 
         public Vector3Int gridIndex;
 
-        public bool isTraversable;
+       // private bool isTraversable;
+        public bool IsTraversable { get => nodeType != NodeType.Empty; }
+
         public Vector3 worldPos;
 
         public Node parentNode;
@@ -36,8 +38,7 @@ namespace APG.Environment {
         private NodeType nodeType;
         public NodeType NodeType { get => nodeType; set => nodeType = value; }
 
-        public Node(bool isTraversable, Vector3 worldPos, Vector3Int gridIndex, NodeType nodeType = NodeType.Empty) {
-            this.isTraversable = isTraversable;
+        public Node(Vector3 worldPos, Vector3Int gridIndex, NodeType nodeType = NodeType.Empty) {
             this.worldPos = worldPos;
             this.gridIndex = gridIndex;
             this.NodeType = nodeType;

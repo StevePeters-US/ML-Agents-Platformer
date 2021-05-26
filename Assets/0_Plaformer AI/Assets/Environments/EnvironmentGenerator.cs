@@ -40,7 +40,7 @@ namespace APG.Environment {
 
         public void GenerateGridEnvironment() {
             ClearEnvironment();
-           
+
             Vector3 tileSize = floorTile.GetComponent<MeshRenderer>().bounds.size;
 
             Vector3Int startIndex = GetRandomIndex();
@@ -53,7 +53,7 @@ namespace APG.Environment {
             grid.CreateGrid(useManhattanNeighbors);
 
             if (usePath) {
-                pathIndices = Astar.GeneratePath(grid, grid.GetStartNode(), grid.GetGoalNode(), useManhattanNeighbors);
+                pathIndices = Astar.GeneratePath(grid, useManhattanNeighbors, true);
                 Astar.ExpandPath(grid, grid.GetStartNode(), grid.GetGoalNode());
             }
 
@@ -65,7 +65,7 @@ namespace APG.Environment {
             if (goalRef)
                 envManager.SubscribeToGoal(goalRef);
             else {
-                Debug.Log(" Generation failed, try again : Start Index : " + startIndex + " Goal Index : " +goalIndex);
+                Debug.Log(" Generation failed, try again : Start Index : " + startIndex + " Goal Index : " + goalIndex);
                 GenerateGridEnvironment();
             }
         }

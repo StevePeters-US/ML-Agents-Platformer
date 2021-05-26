@@ -4,7 +4,11 @@ using UnityEngine;
 
 namespace APG.Environment {
     public static class Astar {
-        public static List<Vector3Int> GeneratePath(EnvGrid grid, Node startNode, Node goalNode, bool useManhattanDistance) {
+        public static List<Vector3Int> GeneratePath(EnvGrid grid, bool useManhattanDistance, bool updatePathNodeTypes) {
+            Node startNode = grid.GetStartNode();
+            Node goalNode = grid.GetGoalNode();
+
+
             List<Vector3Int> pathIndices = new List<Vector3Int>();
 
             int numEnvNodes = grid.GridSize.x * grid.GridSize.y * grid.GridSize.z;
@@ -17,15 +21,15 @@ namespace APG.Environment {
                 closedSet.Add(currentNode);
 
                 if (currentNode == goalNode) {
-                    RetracePath(grid, startNode, goalNode);
-                    return pathIndices; ;
+                    RetracePath(grid, startNode, goalNode, updatePathNodeTypes);
+                    return pathIndices;
                 }
 
                 foreach (Node neighbor in GetNeighborNodes(grid, currentNode)) {
-                    if (!neighbor.isTraversable || closedSet.Contains(neighbor))
+                    if (!neighbor.IsTraversable || closedSet.Contains(neighbor))
                         continue;
 
-                    int newMovementCostToNeighbor = useManhattanDistance? currentNode.gCost + GetDistanceManhattan(currentNode, neighbor) : currentNode.gCost + GetDistance(currentNode, neighbor);
+                    int newMovementCostToNeighbor = useManhattanDistance ? currentNode.gCost + GetDistanceManhattan(currentNode, neighbor) : currentNode.gCost + GetDistance(currentNode, neighbor);
                     if (newMovementCostToNeighbor < neighbor.gCost || !openSet.Contains(neighbor)) {
                         neighbor.gCost = newMovementCostToNeighbor;
                         neighbor.hCost = GetDistance(neighbor, goalNode);
@@ -36,10 +40,12 @@ namespace APG.Environment {
                     }
                 }
             }
+
+            grid.path.Clear();
             return pathIndices;
         }
 
-        private static void RetracePath(EnvGrid grid, Node startNode, Node endNode) {
+        private static void RetracePath(EnvGrid grid, Node startNode, Node endNode, bool updatePathNodeTypes) {
             List<Node> newPath = new List<Node>();
             Node currentNode = endNode;
 
@@ -50,14 +56,17 @@ namespace APG.Environment {
 
             newPath.Reverse();
 
-            foreach (Node node in newPath) {
-                if (node.gridIndex != endNode.gridIndex) {
-                    grid.GridNodes[node.gridIndex.x, node.gridIndex.y, node.gridIndex.z].NodeType = NodeType.Path;
+            if (updatePathNodeTypes) {
+                foreach (Node node in newPath) {
+                    if (node.gridIndex != endNode.gridIndex) {
+                        grid.GridNodes[node.gridIndex.x, node.gridIndex.y, node.gridIndex.z].NodeType = NodeType.Path;
+                    }
                 }
             }
 
             grid.path = newPath;
         }
+
 
         public static List<Node> GetNeighborNodes(EnvGrid grid, Node node) {
             List<Node> neighbors = new List<Node>();

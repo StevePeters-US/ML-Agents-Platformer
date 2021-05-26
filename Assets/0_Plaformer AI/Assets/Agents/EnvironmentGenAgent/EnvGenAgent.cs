@@ -2,13 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.MLAgents;
+using Unity.MLAgents.Sensors;
+using Unity.MLAgents.Actuators;
 using APG.Environment;
 
 namespace APG {
     public class EnvGenAgent : Agent {
 
         private EnvGrid grid;
-        [SerializeField] private Vector3Int gridSize = new Vector3Int(20,1,20);
+        [SerializeField] private Vector3Int gridSize = new Vector3Int(20, 1, 20);
+        public Vector3Int GridSize { get => gridSize; }
         [SerializeField] private Vector3 tileSize = Vector3.one;
 
         [SerializeField] private GameObject floorTile;
@@ -16,30 +19,62 @@ namespace APG {
         [SerializeField] private EnvGoal goalTile;
         [SerializeField] private EnvSpawn spawnTile;
 
+        [SerializeField] private float desiredPathLength = 12f;
+        [SerializeField, Range(0, 1)] private float randomTileChance = 0.5f;
+
         public EnvGoal GoalRef { get => goalRef; }
         private EnvGoal goalRef = null;
 
         public EnvSpawn SpawnRef { get => spawnRef; }
+
         private EnvSpawn spawnRef = null;
 
         private List<GameObject> instantiatedEnvironmentObjects = new List<GameObject>();
 
+        [SerializeField] private bool drawGizmos = false;
+        [SerializeField] private bool drawPath = false;
+
+        private Vector3Int currentIndex;
+
+        private bool usePath = true;
+        private List<Vector3Int> pathIndices;
+        private int currentPathLength;
+        public int CurrentPathLength { get => currentPathLength; }
+        public float NormalizedDesiredPathLength { get => (float)CurrentPathLength / desiredPathLength; }
+
+        private bool maskActions = true;
+        private bool[] validActions;
+        const int doNothing = 0;
+        const int empty = 1;
+        const int tile = 2;
+        const int goal = 3;
+        const int start = 4;
+        //const int obstacle = 5;
+
+        public float currentTickReward;
+
+        private void Awake() {
+            validActions = new bool[5];
+        }
 
         public override void OnEpisodeBegin() {
             Debug.Log("Generating New Environment");
             ClearEnvironment();
-
-            grid = new EnvGrid(gridSize, new Vector3(-10, 0, -10), tileSize);
+            Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
+            grid = new EnvGrid(gridSize, gridOffset + transform.position, tileSize);
             grid.CreateGrid(true);
+            grid.FillGridWithRandomTiles(randomTileChance);
 
             InstantiateNodePrefabs();
-            // Generate Random environment
-            // MLAgentsExtensions.WriteOneHot()
         }
 
         private void OnDrawGizmos() {
-            if (grid != null)
+
+            if (drawGizmos && grid != null)
                 grid.DrawGrid();
+
+            if (drawPath && grid != null)
+                grid.DrawPath();
         }
 
         private void ClearEnvironment() {
@@ -53,15 +88,116 @@ namespace APG {
             }
 
             instantiatedEnvironmentObjects.Clear();
+        }
 
-          /*  availableIndices.Clear();
-            for (int x = 0; x < envSize.x; x++) {
-                for (int y = 0; y < envSize.y; y++) {
-                    for (int z = 0; z < envSize.z; z++) {
-                        availableIndices.Add(new Vector3Int(x, y, z));
-                    }
+        public override void CollectObservations(VectorSensor sensor) {
+
+
+            // 1 observation
+            sensor.AddObservation(NormalizedDesiredPathLength);
+        }
+
+        public override void Heuristic(in ActionBuffers actionsOut) {
+            var discreteActionsOut = actionsOut.DiscreteActions;
+            discreteActionsOut.Clear();
+
+            discreteActionsOut[0] = Random.Range(0, gridSize.x * gridSize.z);
+
+            List<int> validActionsList = new List<int>();
+            for (int i = 0; i < validActions.Length; i++) {
+                if (validActions[i] == true)
+                    validActionsList.Add(i);
+            }
+            int randListIdx = Random.Range(0, validActionsList.Count);
+
+            discreteActionsOut[1] = validActionsList[randListIdx];
+        }
+
+        private void UpdateValidActionsArray() {
+            validActions[doNothing] = true;
+
+            if (spawnRef == null && goalRef == null) {
+                validActions[empty] = false;
+                validActions[tile] = false;
+                validActions[goal] = true;
+                validActions[start] = true;
+            }
+
+            else if (spawnRef == null) {
+                validActions[empty] = false;
+                validActions[tile] = false;
+                validActions[goal] = false;
+                validActions[start] = true;
+            }
+
+            else if (goalRef == null) {
+                validActions[empty] = false;
+                validActions[tile] = false;
+                validActions[goal] = true;
+                validActions[start] = false;
+            }
+            else {
+                validActions[empty] = true;
+                validActions[tile] = true;
+                validActions[goal] = false;
+                validActions[start] = false;
+            }
+        }
+
+
+        public override void WriteDiscreteActionMask(IDiscreteActionMask actionMask) {
+            // Mask the necessary actions if selected by the user.
+            // Prevent spawning of duplicate goal and spawn tiles
+            if (maskActions) {
+                UpdateValidActionsArray();
+
+                for (int i = 0; i < validActions.Length; i++) {
+                    actionMask.SetActionEnabled(1, i, validActions[i]);
                 }
-            }*/
+            }
+        }
+
+        // Convert output from model into usable variables that can be used to pilot the agent.
+        public override void OnActionReceived(ActionBuffers actionBuffers) {
+            int gridNum = actionBuffers.DiscreteActions[0];
+
+            currentIndex = new Vector3Int(gridNum % gridSize.x, 0, gridNum / gridSize.x);
+
+            NodeType newNodeType;
+            if (actionBuffers.DiscreteActions[1] == empty)
+                newNodeType = NodeType.Empty;
+            else if (actionBuffers.DiscreteActions[1] == tile)
+                newNodeType = NodeType.Tile;
+            else if (actionBuffers.DiscreteActions[1] == goal)
+                newNodeType = NodeType.Goal;
+            else if (actionBuffers.DiscreteActions[1] == start)
+                newNodeType = NodeType.Start;
+            else
+                return;
+
+            grid.GridNodes[currentIndex.x, currentIndex.y, currentIndex.z].NodeType = newNodeType;
+            ClearEnvironment();
+            InstantiateNodePrefabs();
+        }
+
+        private void FixedUpdate() {
+            // Evaluate level and assign rewards
+            float tickReward = 0;
+
+            // Is there a valid path from start to goal?
+            if (usePath && grid != null) {
+                Astar.GeneratePath(grid, true, false);
+                currentPathLength = grid.path.Count;
+
+                // Assign reward based on target path length
+                if (CurrentPathLength == 0) {
+                    AddReward(-0.1f);
+                    currentTickReward += 0.1f;
+                }
+
+
+            }
+            currentTickReward = tickReward;
         }
 
         private void InstantiateNodePrefabs() {
@@ -71,11 +207,13 @@ namespace APG {
                     for (int z = 0; z < gridSize.z; z++) {
                         if (grid.GridNodes[x, y, z].NodeType == NodeType.Start) {
                             spawnRef = Instantiate<EnvSpawn>(spawnTile, grid.GridNodes[x, y, z].worldPos, transform.rotation);
+                            grid.StartIndex = new Vector3Int(x, y, z);
                             instantiatedEnvironmentObjects.Add(spawnRef.gameObject);
                         }
 
                         else if (grid.GridNodes[x, y, z].NodeType == NodeType.Goal) {
                             goalRef = Instantiate<EnvGoal>(goalTile, grid.GridNodes[x, y, z].worldPos, transform.rotation);
+                            grid.GoalIndex = new Vector3Int(x, y, z);
                             instantiatedEnvironmentObjects.Add(goalRef.gameObject);
                         }
 
