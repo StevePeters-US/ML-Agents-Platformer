@@ -4,9 +4,10 @@ using UnityEngine;
 using Unity.MLAgents.Sensors;
 
 public static class MLAgentsExtensions {
-    public static float GetGaussianReward(float x, float rewardCenter, int maxSteps, float standardDeviation = 1) {
+    public static float GetGaussianReward(float x, float rewardCenter, float standardDeviation = 1f) {
         float a = 1f;
-        return a * Mathf.Exp(-(Mathf.Pow((x - rewardCenter), 2) / Mathf.Pow(2 * standardDeviation, 2)));
+        float y = a * Mathf.Exp(-(Mathf.Pow(x - rewardCenter, 2) / 2 * Mathf.Pow(standardDeviation, 2)));
+        return y;
     }
 
     // Based on the match 3 extension methods

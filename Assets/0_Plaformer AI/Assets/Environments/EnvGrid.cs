@@ -35,11 +35,19 @@ namespace APG.Environment {
             this.tileSize = tileSize;
         }
 
-        public EnvGrid(Vector3Int gridSize, Vector3 gridPos, Vector3 tileSize) {
+        public EnvGrid(Vector3Int gridSize, Vector3 gridPos, Vector3 tileSize, bool randomGoalSpawn = true) {
             this.gridSize = gridSize;
             this.gridPos = gridPos;
-            this.goalIndex = new Vector3Int(GridSize.x - 1, 0, GridSize.z - 1);
-            this.startIndex = new Vector3Int(0, 0, 0);
+            if (randomGoalSpawn) {
+                List<Vector3Int> excludedIndices = new List<Vector3Int>();
+                this.goalIndex = GetRandomIndex(excludedIndices);
+                excludedIndices.Add(goalIndex);
+                this.startIndex = GetRandomIndex(excludedIndices);
+            }
+            else {
+                this.goalIndex = new Vector3Int(GridSize.x - 1, 0, GridSize.z - 1);
+                this.startIndex = new Vector3Int(0, 0, 0);
+            }
             this.tileSize = tileSize;
         }
 
@@ -64,7 +72,6 @@ namespace APG.Environment {
                     for (int z = 0; z < gridSize.z; z++) {
                         Vector3Int gridIndex = new Vector3Int(x, y, z);
                         Vector3 tileOffset = tileSize * 0.5f;
-                        //  Vector3 worldPos = gridPos.Multiply(tileSize) + tileSize.MultiplyInt(gridIndex) + tileOffset;
                         Vector3 worldPos = gridPos + tileSize.MultiplyInt(gridIndex) + tileOffset;
 
                         gridNodes[x, y, z] = new Node(worldPos, gridIndex, NodeType.Empty);
@@ -165,6 +172,22 @@ namespace APG.Environment {
             int distY = Mathf.Abs(nodeA.gridIndex.y - nodeB.gridIndex.y);
 
             return distX + distY;
+        }
+
+        private Vector3Int GetRandomIndex(List<Vector3Int> excludedIndices) {
+            List<Vector3Int> validIndices = new List<Vector3Int>();
+
+            for (int x = 0; x < gridSize.x; x++) {
+                for (int y = 0; y < gridSize.y; y++) {
+                    for (int z = 0; z < gridSize.z; z++) {
+                        Vector3Int index = new Vector3Int(x, y, z);
+                        if (!excludedIndices.Contains(index))
+                            validIndices.Add(index);
+                    }
+                }
+            }
+
+            return validIndices[UnityEngine.Random.Range(0, validIndices.Count)];
         }
     }
 }

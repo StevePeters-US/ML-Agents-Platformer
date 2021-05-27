@@ -54,11 +54,13 @@ namespace APG.Environment {
                 currentNode = currentNode.parentNode;
             }
 
+            newPath.Add(startNode);
+
             newPath.Reverse();
 
             if (updatePathNodeTypes) {
                 foreach (Node node in newPath) {
-                    if (node.gridIndex != endNode.gridIndex) {
+                    if (node.gridIndex != endNode.gridIndex || node.gridIndex != startNode.gridIndex) {
                         grid.GridNodes[node.gridIndex.x, node.gridIndex.y, node.gridIndex.z].NodeType = NodeType.Path;
                     }
                 }

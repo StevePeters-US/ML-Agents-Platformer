@@ -5,6 +5,7 @@ using Unity.MLAgents;
 using Unity.MLAgents.Sensors;
 using Unity.MLAgents.Actuators;
 using APG.Environment;
+using UnityEngine.Pool;
 
 namespace APG {
     public class EnvGenAgent : Agent {
@@ -19,16 +20,21 @@ namespace APG {
         [SerializeField] private EnvGoal goalTile;
         [SerializeField] private EnvSpawn spawnTile;
 
+        ObjectPool<GameObject> tilePool;
+        private List<GameObject> instantiatedTiles = new List<GameObject>();
+
+        ObjectPool<GameObject> pathPool;
+        private List<GameObject> instantiatedPathTiles = new List<GameObject>();
+
         [SerializeField, Range(0, 1)] private float randomTileChance = 0.5f;
 
         public EnvGoal GoalRef { get => goalRef; }
         private EnvGoal goalRef = null;
 
         public EnvSpawn SpawnRef { get => spawnRef; }
-
         private EnvSpawn spawnRef = null;
 
-        private List<GameObject> instantiatedEnvironmentObjects = new List<GameObject>();
+        //   private List<GameObject> instantiatedEnvironmentObjects = new List<GameObject>();
 
         [SerializeField] private bool drawGizmos = false;
         [SerializeField] private bool drawPath = false;
@@ -38,10 +44,12 @@ namespace APG {
         private bool usePath = true;
         [SerializeField] private float desiredPathLength = 12f;
         public float DesiredPathLength { get => desiredPathLength; }
-        private List<Vector3Int> pathIndices;
+       // private List<Vector3Int> pathIndices;
         private int currentPathLength;
         public int CurrentPathLength { get => currentPathLength; }
-        public float PathLengthReward { get => MLAgentsExtensions.GetGaussianReward(CurrentPathLength, desiredPathLength, 1); }
+        // Path length reward gets tighter to target value the closer we get to the end of this episode
+        public float PathLengthReward { get => MLAgentsExtensions.GetGaussianReward(CurrentPathLength, desiredPathLength, Mathf.Lerp(0.01f, 1f, EnvTime)); }
+        private PathRenderer pathRenderer;
 
         private bool maskActions = true;
         private bool[] validActions;
@@ -54,8 +62,32 @@ namespace APG {
 
         public float currentTickReward;
 
+        // 0 - 1 based on how much time is left in the episode
+        public float EnvTime { get => (float)StepCount / (float)MaxStep; }
+
         private void Awake() {
             validActions = new bool[5];
+            goalRef = Instantiate<EnvGoal>(goalTile);
+            spawnRef = Instantiate<EnvSpawn>(spawnTile);
+            tilePool = new ObjectPool<GameObject>(() => Instantiate(floorTile), OnTakeFromPool, OnReturnedToPool, OnDestroyPoolObject, true, 25, 250);
+            pathPool = new ObjectPool<GameObject>(() => Instantiate(pathTile), OnTakeFromPool, OnReturnedToPool, OnDestroyPoolObject, true, 10, 25);
+            pathRenderer = GetComponent<PathRenderer>();
+        }
+
+        // Called when an item is returned to the pool using Release
+        void OnReturnedToPool(GameObject go) {
+            go.SetActive(false);
+        }
+
+        // Called when an item is taken from the pool using Get
+        void OnTakeFromPool(GameObject go) {
+            go.SetActive(true);
+        }
+
+        // If the pool capacity is reached then any items returned will be destroyed.
+        // We can control what the destroy behavior does, here we destroy the GameObject.
+        void OnDestroyPoolObject(GameObject go) {
+            Destroy(go);
         }
 
         public override void OnEpisodeBegin() {
@@ -66,29 +98,30 @@ namespace APG {
             grid.CreateGrid(true);
             grid.FillGridWithRandomTiles(randomTileChance);
 
-             InstantiateNodePrefabs();
+            InstantiateNodePrefabs();
         }
 
         private void OnDrawGizmos() {
 
             if (drawGizmos && grid != null)
-                grid.DrawGrid();
-
-            if (drawPath && grid != null)
-                grid.DrawPath();
+                grid.DrawGrid();          
         }
 
         private void ClearEnvironment() {
             //UpdateFromLessonPlan();
 
-            goalRef = null;
-            spawnRef = null;
+            goalRef.gameObject.SetActive(false);
+            spawnRef.gameObject.SetActive(false);
 
-            foreach (GameObject gameObject in instantiatedEnvironmentObjects) {
-                Destroy(gameObject);
+            foreach (GameObject gameObject in instantiatedTiles) {
+                tilePool.Release(gameObject);
             }
+            instantiatedTiles.Clear();
 
-            instantiatedEnvironmentObjects.Clear();
+            foreach (GameObject gameObject in instantiatedPathTiles) {
+                pathPool.Release(gameObject);
+            }
+            instantiatedPathTiles.Clear();
         }
 
         public override void CollectObservations(VectorSensor sensor) {
@@ -113,6 +146,9 @@ namespace APG {
 
             // 1 observation
             sensor.AddObservation(PathLengthReward);
+
+            // 1 observation
+            sensor.AddObservation(EnvTime);
         }
 
         public override void Heuristic(in ActionBuffers actionsOut) {
@@ -132,34 +168,14 @@ namespace APG {
         }
 
         private void UpdateValidActionsArray() {
+            bool spawnActive = spawnRef.gameObject.activeInHierarchy;
+            bool goalActive = goalRef.gameObject.activeInHierarchy;
+
             validActions[doNothing] = true;
-
-            if (spawnRef == null && goalRef == null) {
-                validActions[empty] = false;
-                validActions[tile] = false;
-                validActions[goal] = true;
-                validActions[start] = true;
-            }
-
-            else if (spawnRef == null) {
-                validActions[empty] = false;
-                validActions[tile] = false;
-                validActions[goal] = false;
-                validActions[start] = true;
-            }
-
-            else if (goalRef == null) {
-                validActions[empty] = false;
-                validActions[tile] = false;
-                validActions[goal] = true;
-                validActions[start] = false;
-            }
-            else {
-                validActions[empty] = true;
-                validActions[tile] = true;
-                validActions[goal] = false;
-                validActions[start] = false;
-            }
+            validActions[empty] = spawnActive && goalActive;
+            validActions[tile] = spawnActive && goalActive;
+            validActions[goal] = !goalActive;
+            validActions[start] = !spawnActive;
         }
 
 
@@ -199,8 +215,14 @@ namespace APG {
 
             grid.GridNodes[currentIndex.x, currentIndex.y, currentIndex.z].NodeType = newNodeType;
 
-               ClearEnvironment();
-               InstantiateNodePrefabs();
+            ClearEnvironment();
+            InstantiateNodePrefabs();
+        }
+
+        private void Update() {
+            if (pathRenderer && drawPath) {
+                pathRenderer.UpdatePath(grid.path, PathLengthReward);
+            }
         }
 
         private void FixedUpdate() {
@@ -235,23 +257,27 @@ namespace APG {
                 for (int y = 0; y < gridSize.y; y++) {
                     for (int z = 0; z < gridSize.z; z++) {
                         if (grid.GridNodes[x, y, z].NodeType == NodeType.Start) {
-                            spawnRef = Instantiate<EnvSpawn>(spawnTile, grid.GridNodes[x, y, z].worldPos, transform.rotation);
-                            instantiatedEnvironmentObjects.Add(spawnRef.gameObject);
+                            spawnRef.gameObject.SetActive(true);
+                            spawnRef.transform.position = grid.GridNodes[x, y, z].worldPos;
+                            spawnRef.transform.rotation = transform.rotation;
                         }
 
                         else if (grid.GridNodes[x, y, z].NodeType == NodeType.Goal) {
-                            goalRef = Instantiate<EnvGoal>(goalTile, grid.GridNodes[x, y, z].worldPos, transform.rotation);
-                            instantiatedEnvironmentObjects.Add(goalRef.gameObject);
+                            goalRef.gameObject.SetActive(true);
+                            goalRef.transform.position = grid.GridNodes[x, y, z].worldPos;
+                            goalRef.transform.rotation = transform.rotation;
                         }
 
-                        else if (grid.GridNodes[x, y, z].NodeType == NodeType.Path) {
-                            GameObject newTile = Instantiate<GameObject>(pathTile, grid.GridNodes[x, y, z].worldPos, transform.rotation);
-                            instantiatedEnvironmentObjects.Add(newTile);
-                        }
+                        /*   else if (grid.GridNodes[x, y, z].NodeType == NodeType.Path) {
+                               GameObject newTile = Instantiate<GameObject>(pathTile, grid.GridNodes[x, y, z].worldPos, transform.rotation);
+                               instantiatedEnvironmentObjects.Add(newTile);
+                           }*/
 
                         else if (grid.GridNodes[x, y, z].NodeType == NodeType.Tile) {
-                            GameObject newTile = Instantiate<GameObject>(floorTile, grid.GridNodes[x, y, z].worldPos, transform.rotation);
-                            instantiatedEnvironmentObjects.Add(newTile);
+                            GameObject newTile = tilePool.Get();
+                            newTile.transform.position = grid.GridNodes[x, y, z].worldPos;
+                            newTile.transform.rotation = transform.rotation;
+                            instantiatedTiles.Add(newTile);
                         }
                     }
                 }
