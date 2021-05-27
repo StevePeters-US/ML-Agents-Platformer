@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -92,7 +93,7 @@ namespace APG.Environment {
             for (int x = 0; x < gridSize.x; x++) {
                 for (int y = 0; y < gridSize.y; y++) {
                     for (int z = 0; z < gridSize.z; z++) {
-                        if (gridNodes[x, y, z].NodeType == NodeType.Empty && Random.Range(0f, 1f) < randomChance)
+                        if (gridNodes[x, y, z].NodeType == NodeType.Empty && UnityEngine.Random.Range(0f, 1f) < randomChance)
                             gridNodes[x, y, z].NodeType = NodeType.Tile;
                     }
                 }
@@ -105,6 +106,15 @@ namespace APG.Environment {
 
         public Node GetGoalNode() {
             return gridNodes[goalIndex.x, goalIndex.y, goalIndex.z];
+        }
+
+        public float[] GetOneHotCellData(Vector3Int cellIndex) {
+            float[] cellTypeBuffer = new float[Enum.GetNames(typeof(NodeType)).Length];
+
+            for (var i = 0; i < cellTypeBuffer.Length; i++)
+                cellTypeBuffer[i] = gridNodes[cellIndex.x, cellIndex.y, cellIndex.z].NodeType == (NodeType)i ? 1.0f : 0.0f;
+
+            return cellTypeBuffer;
         }
 
         public List<Node> path = new List<Node>();

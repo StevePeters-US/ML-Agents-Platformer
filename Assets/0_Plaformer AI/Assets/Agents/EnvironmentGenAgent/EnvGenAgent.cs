@@ -19,7 +19,6 @@ namespace APG {
         [SerializeField] private EnvGoal goalTile;
         [SerializeField] private EnvSpawn spawnTile;
 
-        [SerializeField] private float desiredPathLength = 12f;
         [SerializeField, Range(0, 1)] private float randomTileChance = 0.5f;
 
         public EnvGoal GoalRef { get => goalRef; }
@@ -37,10 +36,12 @@ namespace APG {
         private Vector3Int currentIndex;
 
         private bool usePath = true;
+        [SerializeField] private float desiredPathLength = 12f;
+        public float DesiredPathLength { get => desiredPathLength; }
         private List<Vector3Int> pathIndices;
         private int currentPathLength;
         public int CurrentPathLength { get => currentPathLength; }
-        public float NormalizedDesiredPathLength { get => (float)CurrentPathLength / desiredPathLength; }
+        public float PathLengthReward { get => MLAgentsExtensions.GetGaussianReward(CurrentPathLength, desiredPathLength, 1); }
 
         private bool maskActions = true;
         private bool[] validActions;
@@ -65,7 +66,7 @@ namespace APG {
             grid.CreateGrid(true);
             grid.FillGridWithRandomTiles(randomTileChance);
 
-            InstantiateNodePrefabs();
+             InstantiateNodePrefabs();
         }
 
         private void OnDrawGizmos() {
@@ -92,9 +93,26 @@ namespace APG {
 
         public override void CollectObservations(VectorSensor sensor) {
 
+            for (int x = 0; x < gridSize.x; x++) {
+                for (int y = 0; y < gridSize.y; y++) {
+                    for (int z = 0; z < gridSize.z; z++) {
+                        // Add a normalized vector for grid cell position data
+                        sensor.AddObservation(new Vector3Int(x, y, x).NormalizeVector3Int(GridSize));
+
+                        // And a one hot encoded representation of the cell type
+                        float[] cellTypeBuffer = grid.GetOneHotCellData(new Vector3Int(x, y, x));
+                        foreach (float cellType in cellTypeBuffer)
+                            sensor.AddObservation(cellType);
+
+                        // Debug observations
+                    }
+                }
+            }
+
+
 
             // 1 observation
-            sensor.AddObservation(NormalizedDesiredPathLength);
+            sensor.AddObservation(PathLengthReward);
         }
 
         public override void Heuristic(in ActionBuffers actionsOut) {
@@ -168,21 +186,32 @@ namespace APG {
                 newNodeType = NodeType.Empty;
             else if (actionBuffers.DiscreteActions[1] == tile)
                 newNodeType = NodeType.Tile;
-            else if (actionBuffers.DiscreteActions[1] == goal)
+            else if (actionBuffers.DiscreteActions[1] == goal) {
                 newNodeType = NodeType.Goal;
-            else if (actionBuffers.DiscreteActions[1] == start)
+                grid.GoalIndex = currentIndex;
+            }
+            else if (actionBuffers.DiscreteActions[1] == start) {
                 newNodeType = NodeType.Start;
+                grid.StartIndex = currentIndex;
+            }
             else
                 return;
 
             grid.GridNodes[currentIndex.x, currentIndex.y, currentIndex.z].NodeType = newNodeType;
-            ClearEnvironment();
-            InstantiateNodePrefabs();
+
+               ClearEnvironment();
+               InstantiateNodePrefabs();
         }
 
         private void FixedUpdate() {
             // Evaluate level and assign rewards
             float tickReward = 0;
+
+            void AddTickReward(float reward) {
+                float normalizedReward = reward / MaxStep;
+                AddReward(normalizedReward);
+                tickReward += normalizedReward;
+            }
 
             // Is there a valid path from start to goal?
             if (usePath && grid != null) {
@@ -190,11 +219,11 @@ namespace APG {
                 currentPathLength = grid.path.Count;
 
                 // Assign reward based on target path length
-                if (CurrentPathLength == 0) {
-                    AddReward(-0.1f);
-                    currentTickReward += 0.1f;
-                }
+                if (CurrentPathLength == 0)
+                    AddTickReward(-0.1f);
 
+                else
+                    AddTickReward(PathLengthReward);
 
             }
             currentTickReward = tickReward;
@@ -207,13 +236,11 @@ namespace APG {
                     for (int z = 0; z < gridSize.z; z++) {
                         if (grid.GridNodes[x, y, z].NodeType == NodeType.Start) {
                             spawnRef = Instantiate<EnvSpawn>(spawnTile, grid.GridNodes[x, y, z].worldPos, transform.rotation);
-                            grid.StartIndex = new Vector3Int(x, y, z);
                             instantiatedEnvironmentObjects.Add(spawnRef.gameObject);
                         }
 
                         else if (grid.GridNodes[x, y, z].NodeType == NodeType.Goal) {
                             goalRef = Instantiate<EnvGoal>(goalTile, grid.GridNodes[x, y, z].worldPos, transform.rotation);
-                            grid.GoalIndex = new Vector3Int(x, y, z);
                             instantiatedEnvironmentObjects.Add(goalRef.gameObject);
                         }
 
