@@ -4,10 +4,16 @@ using UnityEngine;
 using Unity.MLAgents.Sensors;
 
 public static class MLAgentsExtensions {
-    public static float GetGaussianReward(float x, float rewardCenter, float standardDeviation = 1f) {
-        float a = 1f;
-        float y = a * Mathf.Exp(-(Mathf.Pow(x - rewardCenter, 2) / 2 * Mathf.Pow(standardDeviation, 2)));
+    public static float GetGaussianReward(float x, float rewardCenter, float standardDeviation = 1f, float height = 1f) {
+        float y = height * Mathf.Exp(-(Mathf.Pow(x - rewardCenter, 2) / 2 * Mathf.Pow(standardDeviation, 2)));
         return y;
+    }
+
+    public static float GetGaussianSlope(float x, float rewardCenter, float standardDeviation = 1f, float height = 1f, float pointsDistance = 0.25f) {
+
+        float a = MLAgentsExtensions.GetGaussianReward(x + pointsDistance, rewardCenter, standardDeviation, height);
+        float b = MLAgentsExtensions.GetGaussianReward(x - pointsDistance, rewardCenter, standardDeviation, height);
+        return a - b;
     }
 
     // Based on the match 3 extension methods

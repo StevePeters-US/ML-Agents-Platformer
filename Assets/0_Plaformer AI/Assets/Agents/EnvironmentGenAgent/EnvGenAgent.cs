@@ -30,9 +30,12 @@ namespace APG {
 
         public EnvGoal GoalRef { get => goalRef; }
         private EnvGoal goalRef = null;
+        private bool GoalActive { get => goalRef.gameObject.activeInHierarchy; }
 
         public EnvSpawn SpawnRef { get => spawnRef; }
         private EnvSpawn spawnRef = null;
+        private bool SpawnActive { get => spawnRef.gameObject.activeInHierarchy; }
+
 
         //   private List<GameObject> instantiatedEnvironmentObjects = new List<GameObject>();
 
@@ -42,22 +45,24 @@ namespace APG {
         private Vector3Int currentIndex;
 
         private bool usePath = true;
-        [SerializeField] private float desiredPathLength = 12f;
-        public float DesiredPathLength { get => desiredPathLength; }
-       // private List<Vector3Int> pathIndices;
+        [SerializeField] private float targetPathLength = 12f;
+        public float TargetPathLength { get => targetPathLength; }
+        public bool useRandomTargetPathLength = false;
         private int currentPathLength;
         public int CurrentPathLength { get => currentPathLength; }
         // Path length reward gets tighter to target value the closer we get to the end of this episode
-        public float PathLengthReward { get => MLAgentsExtensions.GetGaussianReward(CurrentPathLength, desiredPathLength, Mathf.Lerp(0.01f, 1f, EnvTime)); }
+        public float PathLengthReward { get => MLAgentsExtensions.GetGaussianReward(CurrentPathLength, targetPathLength, Mathf.Lerp(-1f, 1f, EnvTime)); }
+        public float PathLengthSlope { get => Mathf.Clamp(MLAgentsExtensions.GetGaussianSlope(CurrentPathLength, targetPathLength, 0.25f, 10f), -1, 1); } // Use wider std dev to help guide the agent to the target
         private PathRenderer pathRenderer;
 
-        private bool maskActions = true;
+        const int ACTIONS_BRANCH = 3;
+        [SerializeField] private bool maskActions = true;
         private bool[] validActions;
-        const int doNothing = 0;
-        const int empty = 1;
-        const int tile = 2;
-        const int goal = 3;
-        const int start = 4;
+        //const int doNothing = 0;
+        const int EMPTY = 0;
+        const int TILE = 1;
+        const int GOAL = 2;
+        const int START = 3;
         //const int obstacle = 5;
 
         public float currentTickReward;
@@ -72,6 +77,14 @@ namespace APG {
             tilePool = new ObjectPool<GameObject>(() => Instantiate(floorTile), OnTakeFromPool, OnReturnedToPool, OnDestroyPoolObject, true, 25, 250);
             pathPool = new ObjectPool<GameObject>(() => Instantiate(pathTile), OnTakeFromPool, OnReturnedToPool, OnDestroyPoolObject, true, 10, 25);
             pathRenderer = GetComponent<PathRenderer>();
+
+            // Initialize total number of possible discrete actions
+            ActionSpec tempSpec = GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec;
+            tempSpec.BranchSizes = new int[100];
+            for (int i = 0; i < tempSpec.BranchSizes.Length; i++) {
+                tempSpec.BranchSizes[i] = 4;
+            }
+            GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec = tempSpec;
         }
 
         // Called when an item is returned to the pool using Release
@@ -93,6 +106,11 @@ namespace APG {
         public override void OnEpisodeBegin() {
             Debug.Log("Generating New Environment");
             ClearEnvironment();
+
+
+            if (useRandomTargetPathLength)
+                targetPathLength = Random.Range(3, 20);
+
             Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
             grid = new EnvGrid(gridSize, gridOffset + transform.position, tileSize);
             grid.CreateGrid(true);
@@ -104,7 +122,7 @@ namespace APG {
         private void OnDrawGizmos() {
 
             if (drawGizmos && grid != null)
-                grid.DrawGrid();          
+                grid.DrawGrid();
         }
 
         private void ClearEnvironment() {
@@ -130,7 +148,7 @@ namespace APG {
                 for (int y = 0; y < gridSize.y; y++) {
                     for (int z = 0; z < gridSize.z; z++) {
                         // Add a normalized vector for grid cell position data
-                        sensor.AddObservation(new Vector3Int(x, y, x).NormalizeVector3Int(GridSize));
+                        //sensor.AddObservation(new Vector3Int(x, y, x).NormalizeVector3Int(GridSize));
 
                         // And a one hot encoded representation of the cell type
                         float[] cellTypeBuffer = grid.GetOneHotCellData(new Vector3Int(x, y, x));
@@ -144,8 +162,9 @@ namespace APG {
 
 
 
-            // 1 observation
+            // 2 observations
             sensor.AddObservation(PathLengthReward);
+            sensor.AddObservation(PathLengthSlope);
 
             // 1 observation
             sensor.AddObservation(EnvTime);
@@ -155,27 +174,36 @@ namespace APG {
             var discreteActionsOut = actionsOut.DiscreteActions;
             discreteActionsOut.Clear();
 
-            discreteActionsOut[0] = Random.Range(0, gridSize.x * gridSize.z);
+            //discreteActionsOut[0] = Random.Range(0, gridSize.x * gridSize.z);
+            /*for (int i = 0; i < 8; i++) {
+                discreteActionsOut[i] = Random.Range(0, 2);
+            }*/
 
-            List<int> validActionsList = new List<int>();
-            for (int i = 0; i < validActions.Length; i++) {
-                if (validActions[i] == true)
-                    validActionsList.Add(i);
+            /*         discreteActionsOut[0] = Random.Range(0, 10);
+                     discreteActionsOut[1] = 0;
+                     discreteActionsOut[2] = Random.Range(0, 10);
+
+
+
+                     List<int> validActionsList = new List<int>();
+                     for (int i = 0; i < validActions.Length; i++) {
+                         if (validActions[i] == true)
+                             validActionsList.Add(i);
+                     }
+                     int randListIdx = Random.Range(0, validActionsList.Count);
+                     discreteActionsOut[ACTIONS_BRANCH] = validActionsList[randListIdx];*/
+
+            for (int i = 0; i < gridSize.x * gridSize.y * gridSize.z; i++) {
+                discreteActionsOut[i] = Random.Range(0, 4);
             }
-            int randListIdx = Random.Range(0, validActionsList.Count);
-
-            discreteActionsOut[1] = validActionsList[randListIdx];
         }
 
         private void UpdateValidActionsArray() {
-            bool spawnActive = spawnRef.gameObject.activeInHierarchy;
-            bool goalActive = goalRef.gameObject.activeInHierarchy;
-
-            validActions[doNothing] = true;
-            validActions[empty] = spawnActive && goalActive;
-            validActions[tile] = spawnActive && goalActive;
-            validActions[goal] = !goalActive;
-            validActions[start] = !spawnActive;
+            //  validActions[doNothing] = true;
+            validActions[EMPTY] = SpawnActive && GoalActive;
+            validActions[TILE] = SpawnActive && GoalActive;
+            validActions[GOAL] = !GoalActive;
+            validActions[START] = !SpawnActive;
         }
 
 
@@ -186,34 +214,84 @@ namespace APG {
                 UpdateValidActionsArray();
 
                 for (int i = 0; i < validActions.Length; i++) {
-                    actionMask.SetActionEnabled(1, i, validActions[i]);
+                    actionMask.SetActionEnabled(ACTIONS_BRANCH, i, validActions[i]);
                 }
             }
         }
 
         // Convert output from model into usable variables that can be used to pilot the agent.
         public override void OnActionReceived(ActionBuffers actionBuffers) {
-            int gridNum = actionBuffers.DiscreteActions[0];
+            // Using single action buffer
+            //int gridNum = actionBuffers.DiscreteActions[0];
+            //currentIndex = new Vector3Int(gridNum % gridSize.x, 0, gridNum / gridSize.x);
 
-            currentIndex = new Vector3Int(gridNum % gridSize.x, 0, gridNum / gridSize.x);
+            /*     // Using 8 action buffers as binary byte
+                // Our indices are stored as a binary byte
+                 int flattenedIndex = 0;
+                 for (int i = 0; i < 8; i++) {
+                     flattenedIndex += (int)Mathf.Pow(2, i) * actionBuffers.DiscreteActions[i];
+                 }
 
-            NodeType newNodeType;
-            if (actionBuffers.DiscreteActions[1] == empty)
-                newNodeType = NodeType.Empty;
-            else if (actionBuffers.DiscreteActions[1] == tile)
-                newNodeType = NodeType.Tile;
-            else if (actionBuffers.DiscreteActions[1] == goal) {
-                newNodeType = NodeType.Goal;
-                grid.GoalIndex = currentIndex;
+                 // If we're trying to manipulate an index outside of our grid, small penalty.
+                 // We're doing this because action masking only works on the next frame
+                 if(flattenedIndex > (gridSize.x * gridSize.y * gridSize.z - 1)) {
+                     Debug.Log("flattened index out of range");
+                     return;
+                 }
+
+                 currentIndex = new Vector3Int(flattenedIndex % gridSize.x, 0, flattenedIndex / gridSize.x);*/
+
+            /* // Using 3 action buffers for x,y,z
+             int x = actionBuffers.DiscreteActions[0];
+             int y = actionBuffers.DiscreteActions[1];
+             int z = actionBuffers.DiscreteActions[2];
+             currentIndex = new Vector3Int(x, y, z);
+             //Debug.Log(currentIndex);
+
+             NodeType newNodeType;
+             if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == empty)
+                 newNodeType = NodeType.Empty;
+             else if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == tile)
+                 newNodeType = NodeType.Tile;
+             else if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == goal) {
+                 newNodeType = NodeType.Goal;
+                 grid.GoalIndex = currentIndex;
+             }
+             else if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == start) {
+                 newNodeType = NodeType.Start;
+                 grid.StartIndex = currentIndex;
+             }
+             else
+                 return;
+
+             grid.GridNodes[currentIndex.x, currentIndex.y, currentIndex.z].NodeType = newNodeType;*/
+
+            // Using 1 action space per tile
+            for (int i = 0; i < actionBuffers.DiscreteActions.Length; i++) {
+
+                // Check if node is locked
+                // Check for multiple goals
+                // Check for multiple starts
+                NodeType newNodeType;
+                if (actionBuffers.DiscreteActions[i] == EMPTY)
+                    newNodeType = NodeType.Empty;
+                else if (actionBuffers.DiscreteActions[i] == TILE)
+                    newNodeType = NodeType.Tile;
+                else if (actionBuffers.DiscreteActions[i] == GOAL) {
+                    newNodeType = NodeType.Goal;
+                    grid.GoalIndex = currentIndex;
+                }
+                else if (actionBuffers.DiscreteActions[i] == START) {
+                    newNodeType = NodeType.Start;
+                    grid.StartIndex = currentIndex;
+                }
+                else
+                    return;
+
+                currentIndex = new Vector3Int(i % gridSize.x, 0, i / gridSize.x);
+                grid.GridNodes[currentIndex.x, currentIndex.y, currentIndex.z].NodeType = newNodeType;
             }
-            else if (actionBuffers.DiscreteActions[1] == start) {
-                newNodeType = NodeType.Start;
-                grid.StartIndex = currentIndex;
-            }
-            else
-                return;
 
-            grid.GridNodes[currentIndex.x, currentIndex.y, currentIndex.z].NodeType = newNodeType;
 
             ClearEnvironment();
             InstantiateNodePrefabs();
@@ -226,7 +304,6 @@ namespace APG {
         }
 
         private void FixedUpdate() {
-            // Evaluate level and assign rewards
             float tickReward = 0;
 
             void AddTickReward(float reward) {
@@ -238,16 +315,31 @@ namespace APG {
             // Is there a valid path from start to goal?
             if (usePath && grid != null) {
                 Astar.GeneratePath(grid, true, false);
+
+                if (!SpawnActive || !GoalActive)
+                    grid.path.Clear();
+
                 currentPathLength = grid.path.Count;
-
-                // Assign reward based on target path length
-                if (CurrentPathLength == 0)
-                    AddTickReward(-0.1f);
-
-                else
-                    AddTickReward(PathLengthReward);
-
             }
+
+            /*         if (currentPathLength == TargetPathLength) {
+                         AddReward(1);
+                         EndEpisode();
+                     }
+
+                     else
+                         AddReward(-0.01f);*/
+            // Evaluate level and assign rewards
+
+
+
+            // Assign reward based on target path length
+            if (CurrentPathLength == 0)
+                AddTickReward(-0.1f);
+
+            else
+                AddTickReward(PathLengthReward);
+
             currentTickReward = tickReward;
         }
 

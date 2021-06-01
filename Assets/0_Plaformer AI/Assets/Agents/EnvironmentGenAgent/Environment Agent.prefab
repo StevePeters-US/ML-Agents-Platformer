@@ -50,12 +50,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 902
+    VectorObservationSize: 602
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
-      BranchSizes: 6400000005000000
-    VectorActionSize: 6400000005000000
+      BranchSizes: 0a000000010000000a00000005000000
+    VectorActionSize: 0a000000010000000a00000005000000
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
     hasUpgradedBrainParametersWithActionSpec: 1
@@ -92,7 +92,8 @@ MonoBehaviour:
   randomTileChance: 0.75
   drawGizmos: 0
   drawPath: 1
-  desiredPathLength: 12
+  targetPathLength: 12
+  useRandomTargetPathLength: 1
   currentTickReward: 0
 --- !u!114 &113531138
 MonoBehaviour:
@@ -101,7 +102,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2233170389573893860}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 902b767a45c917245b420593501210c8, type: 3}
   m_Name: 
@@ -118,7 +119,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2233170389573893860}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7900897e7ccf28740a27c629637a677c, type: 3}
   m_Name: 
