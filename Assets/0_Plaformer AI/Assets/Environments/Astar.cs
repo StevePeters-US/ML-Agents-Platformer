@@ -90,7 +90,7 @@ namespace APG.Environment {
             return 14 * distX + 10 * (distZ - distX);
         }
 
-        private static int GetDistanceManhattan(Node nodeA, Node nodeB) {
+        public static int GetDistanceManhattan(Node nodeA, Node nodeB) {
             int distX = Mathf.Abs(nodeA.gridIndex.x - nodeB.gridIndex.x);
             int distZ = Mathf.Abs(nodeA.gridIndex.z - nodeB.gridIndex.z);
 

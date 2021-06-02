@@ -11,8 +11,8 @@ behaviors:
       num_epoch: 3
       learning_rate_schedule: linear
     network_settings:
-      normalize: true
-      hidden_units: 512
+      normalize: false
+      hidden_units: 128
       num_layers: 2
       vis_encode_type: simple
     reward_signals:
@@ -26,7 +26,7 @@ behaviors:
      #   learning_rate: 3.0e-4
     keep_checkpoints: 5
     max_steps: 10000000
-    time_horizon: 1000
+    time_horizon: 100
     summary_freq: 10000
   #  self_play:
   #    save_steps: 50000

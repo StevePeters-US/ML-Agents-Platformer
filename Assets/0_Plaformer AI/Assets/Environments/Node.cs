@@ -20,6 +20,9 @@ namespace APG.Environment {
        // private bool isTraversable;
         public bool IsTraversable { get => nodeType != NodeType.Empty; }
 
+        
+        public bool locked = false; // Can this node be modified by the agent?
+
         public Vector3 worldPos;
 
         public Node parentNode;
@@ -36,7 +39,7 @@ namespace APG.Environment {
         public List<Vector3Int> neighborIndices = new List<Vector3Int>();
 
         private NodeType nodeType;
-        public NodeType NodeType { get => nodeType; set => nodeType = value; }
+        public NodeType NodeType { get => nodeType; set => nodeType = locked ? nodeType : value; }
 
         public Node(Vector3 worldPos, Vector3Int gridIndex, NodeType nodeType = NodeType.Empty) {
             this.worldPos = worldPos;

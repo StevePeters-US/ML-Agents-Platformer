@@ -25,7 +25,8 @@ namespace APG.Environment {
         Vector3 tileSize = Vector3.one;
         public Vector3 TileSize { get => tileSize; set => tileSize = value; }
 
-
+        // Path length not including start and goal tiles
+        public int GetPathLength { get => Mathf.Max(0, path.Count - 2); }
 
         public EnvGrid(Vector3Int gridSize, Vector3 gridPos, Vector3Int goalIndex, Vector3Int spawnIndex, Vector3 tileSize) {
             this.gridSize = gridSize;
@@ -41,7 +42,17 @@ namespace APG.Environment {
             if (randomGoalSpawn) {
                 List<Vector3Int> excludedIndices = new List<Vector3Int>();
                 this.goalIndex = GetRandomIndex(excludedIndices);
+                // exclude goal index and it's neighbors.
                 excludedIndices.Add(goalIndex);
+
+                if (goalIndex.x < gridSize.x - 2)
+                    excludedIndices.Add(goalIndex + new Vector3Int(1, 0, 0));
+                if (goalIndex.x > 0)
+                    excludedIndices.Add(goalIndex + new Vector3Int(-1, 0, 0));
+                if (goalIndex.z < gridSize.z - 2)
+                    excludedIndices.Add(goalIndex + new Vector3Int(0, 0, 1));
+                if (goalIndex.z > 0)
+                    excludedIndices.Add(goalIndex + new Vector3Int(0, 0, -1));
                 this.startIndex = GetRandomIndex(excludedIndices);
             }
             else {
@@ -81,7 +92,9 @@ namespace APG.Environment {
             }
 
             gridNodes[goalIndex.x, goalIndex.y, goalIndex.z].NodeType = NodeType.Goal;
+            gridNodes[goalIndex.x, goalIndex.y, goalIndex.z].locked = true;
             gridNodes[startIndex.x, startIndex.y, startIndex.z].NodeType = NodeType.Start;
+            gridNodes[startIndex.x, startIndex.y, startIndex.z].locked = true;
         }
 
         // Overwrites all empty nodes with tile nodes
@@ -101,7 +114,7 @@ namespace APG.Environment {
                 for (int y = 0; y < gridSize.y; y++) {
                     for (int z = 0; z < gridSize.z; z++) {
                         if (gridNodes[x, y, z].NodeType == NodeType.Empty && UnityEngine.Random.Range(0f, 1f) < randomChance)
-                            gridNodes[x, y, z].NodeType = NodeType.Tile;
+                            gridNodes[x, y, z].NodeType = NodeType.Tile;                      
                     }
                 }
             }
