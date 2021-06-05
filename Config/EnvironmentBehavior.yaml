@@ -2,8 +2,8 @@ behaviors:
   EnvironmentAgentBehavior:
     trainer_type: ppo
     hyperparameters:
-      batch_size: 2048
-      buffer_size: 20480
+      batch_size: 1024
+      buffer_size: 10240
       learning_rate: 0.0003
       beta: 0.005
       epsilon: 0.2
@@ -12,21 +12,25 @@ behaviors:
       learning_rate_schedule: linear
     network_settings:
       normalize: false
-      hidden_units: 128
-      num_layers: 2
+      hidden_units: 256
+      num_layers: 3
       vis_encode_type: simple
+      #memory:
+      #  sequence_length: 128
+      #  memory_size: 128
     reward_signals:
       extrinsic:
         gamma: 0.99
         strength: 1.0
+   
      # curiosity:
      #   strength: 0.02
      #   gamma: 0.99
      #   encoding_size: 256
      #   learning_rate: 3.0e-4
     keep_checkpoints: 5
-    max_steps: 10000000
-    time_horizon: 100
+    max_steps: 30000000
+    time_horizon: 128
     summary_freq: 10000
   #  self_play:
   #    save_steps: 50000

@@ -50,7 +50,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 703
+    VectorObservationSize: 503
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
@@ -89,9 +89,11 @@ MonoBehaviour:
   pathTile: {fileID: 6361274715697056432, guid: 99f81a455d2d6cc4aa5c08c0c42b46ac, type: 3}
   goalTile: {fileID: 3432074442539566465, guid: 7d6b3fed20871ba4a9ac4565852c9aab, type: 3}
   spawnTile: {fileID: -1613041854377070595, guid: d3217c886bf0fae4a8cf06bd014c3d9e, type: 3}
+  failedTile: {fileID: 6361274715697056432, guid: c6f3295e5c43b2141b95e6ceca3a3b8e, type: 3}
+  tileMat: {fileID: -2505642851634945670, guid: 81dfb2893614ed443a7fd5cd4145f883, type: 3}
+  pathMat: {fileID: 2100000, guid: e9f278fdb3a52744ea59edd4df8aa542, type: 2}
   randomTileChance: 0.75
   drawGizmos: 0
-  drawPath: 1
   targetPathLength: 12
   useRandomTargetPathLength: 1
   maskActions: 1
@@ -251,4 +253,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathLine: {fileID: 1445761689}
+  drawPath: 1
   yOffset: 2

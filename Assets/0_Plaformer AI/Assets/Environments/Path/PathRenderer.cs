@@ -7,8 +7,19 @@ namespace APG.Environment {
     [RequireComponent(typeof(LineRenderer))]
     public class PathRenderer : MonoBehaviour {
         public LineRenderer pathLine;
-
+        [SerializeField] private bool drawPath = false;
         public float yOffset = 1.5f;
+
+        private EnvGenAgent envGenAgent;
+
+        private void Awake() {
+            envGenAgent = GetComponent<EnvGenAgent>();
+        }
+
+        private void Update() {
+            if (drawPath && envGenAgent)
+                UpdatePath(envGenAgent.Grid.path);
+        }
 
         public void UpdatePath(List<Node> pathNodes, float pathLengthReward = 1) {
             pathLine.startWidth = 0.1f;

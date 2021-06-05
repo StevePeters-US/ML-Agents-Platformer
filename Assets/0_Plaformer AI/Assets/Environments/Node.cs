@@ -6,21 +6,27 @@ namespace APG.Environment {
 
     public enum NodeType {
         Empty,
-        Start, 
+        Start,
         Goal,
-        Path, 
-        Tile,
-        Obstacle
+        Path,
+        Tile//,
+            // Obstacle
+    }
+
+    public enum NodeGridType {
+        Empty,
+        Waypoint,
+        Tile
     }
 
     public class Node : IHeapItem<Node> {
 
         public Vector3Int gridIndex;
 
-       // private bool isTraversable;
+        // private bool isTraversable;
         public bool IsTraversable { get => nodeType != NodeType.Empty; }
 
-        
+
         public bool locked = false; // Can this node be modified by the agent?
 
         public Vector3 worldPos;
@@ -41,6 +47,8 @@ namespace APG.Environment {
         private NodeType nodeType;
         public NodeType NodeType { get => nodeType; set => nodeType = locked ? nodeType : value; }
 
+        public bool isPath = false;
+
         public Node(Vector3 worldPos, Vector3Int gridIndex, NodeType nodeType = NodeType.Empty) {
             this.worldPos = worldPos;
             this.gridIndex = gridIndex;
@@ -56,17 +64,21 @@ namespace APG.Environment {
             return -compare;
         }
 
+        public bool IsPathNode() {
+            return isPath;
+        }
+
         public void SetNeighborIndices(Vector3Int envSize, bool useManhattanNeighbors) {
             neighborIndices.Clear();
 
             for (int x = -1; x <= 1; x++) {
                 for (int z = -1; z <= 1; z++) {
                     // Check 8 directions on plane
-                    if (!useManhattanNeighbors && ( x == 0 && z == 0))
+                    if (!useManhattanNeighbors && (x == 0 && z == 0))
                         continue;
 
                     // Only get nsew neighbors
-                    if (useManhattanNeighbors && ((x == 0 && z == 0) ||(x != 0 && z != 0)))
+                    if (useManhattanNeighbors && ((x == 0 && z == 0) || (x != 0 && z != 0)))
                         continue;
 
                     int checkX = gridIndex.x + x;
@@ -75,7 +87,7 @@ namespace APG.Environment {
                     bool IsInBounds(int x, int y, int z) => x >= 0 && x < envSize.x && y >= 0 && y < envSize.y && z >= 0 && z < envSize.z;
 
                     if (IsInBounds(checkX, 0, checkZ))
-                        neighborIndices.Add(new Vector3Int( checkX, 0, checkZ));
+                        neighborIndices.Add(new Vector3Int(checkX, 0, checkZ));
                 }
             }
         }

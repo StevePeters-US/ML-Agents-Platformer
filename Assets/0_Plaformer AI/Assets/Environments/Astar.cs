@@ -58,13 +58,17 @@ namespace APG.Environment {
 
             newPath.Reverse();
 
-            if (updatePathNodeTypes) {
-                foreach (Node node in newPath) {
-                    if (node.gridIndex != endNode.gridIndex || node.gridIndex != startNode.gridIndex) {
-                        grid.GridNodes[node.gridIndex.x, node.gridIndex.y, node.gridIndex.z].NodeType = NodeType.Path;
-                    }
+            grid.ResetPath();
+
+            // if (updatePathNodeTypes) {
+            foreach (Node node in newPath) {
+                if (node.gridIndex != endNode.gridIndex || node.gridIndex != startNode.gridIndex) {
+                    // grid.GridNodes[node.gridIndex.x, node.gridIndex.y, node.gridIndex.z].NodeType = NodeType.Path;
+                    grid.GridNodes[node.gridIndex.x, node.gridIndex.y, node.gridIndex.z].isPath = true;
+
                 }
             }
+            // }
 
             grid.path = newPath;
         }

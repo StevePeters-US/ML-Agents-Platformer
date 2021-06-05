@@ -11,6 +11,8 @@ namespace APG {
     public class EnvGenAgent : Agent {
 
         private EnvGrid grid;
+        public EnvGrid Grid { get => grid; set => grid = value; }
+
         [SerializeField] private Vector3Int gridSize = new Vector3Int(20, 1, 20);
         public Vector3Int GridSize { get => gridSize; }
         [SerializeField] private Vector3 tileSize = Vector3.one;
@@ -19,6 +21,10 @@ namespace APG {
         [SerializeField] private GameObject pathTile;
         [SerializeField] private EnvGoal goalTile;
         [SerializeField] private EnvSpawn spawnTile;
+        [SerializeField] private GameObject failedTile;
+
+        [SerializeField] private Material tileMat;
+        [SerializeField] private Material pathMat;
 
         ObjectPool<GameObject> tilePool;
         private List<GameObject> instantiatedTiles = new List<GameObject>();
@@ -36,8 +42,11 @@ namespace APG {
         private EnvSpawn spawnRef = null;
         private bool SpawnActive { get => spawnRef.gameObject.activeInHierarchy; }
 
+        public GameObject FailedRef { get => failedRef; }
+        private GameObject failedRef = null;
+
         [SerializeField] private bool drawGizmos = false;
-        [SerializeField] private bool drawPath = false;
+
 
         private Vector3Int currentIndex;
 
@@ -49,7 +58,11 @@ namespace APG {
         public int CurrentPathLength { get => grid.GetPathLength; }
         // Path length reward gets tighter to target value the closer we get to the end of this episode
         public float PathLengthReward { get => MLAgentsExtensions.GetGaussianReward(CurrentPathLength, targetPathLength, Mathf.Lerp(0, 1f, EnvTime)); }
-        public float PathLengthSlope { get => Mathf.Clamp(MLAgentsExtensions.GetGaussianSlope(CurrentPathLength, targetPathLength, 0.25f, 10f), -1, 1); } // Use wider std dev to help guide the agent to the target
+        // public float PathLengthSlope { get => Mathf.Clamp(MLAgentsExtensions.GetGaussianSlope(CurrentPathLength, targetPathLength, 0.25f, 10f), -1, 1); } // Use wider std dev to help guide the agent to the target
+        public float PathLengthSlope { get => CurrentPathLength > targetPathLength ? -1 : 1; }
+
+        public float PathFailedPunishment { get => Mathf.Lerp(0, -1, EnvTime); }
+
         private PathRenderer pathRenderer;
 
         const int ACTIONS_BRANCH = 1;
@@ -62,7 +75,7 @@ namespace APG {
         //const int START = 3;
         //const int obstacle = 5;
 
-        public float CompletionReward { get => Mathf.Lerp(1f, 0f, EnvTime); }
+        public float CompletionReward { get => Mathf.Lerp(10f, 0f, EnvTime); }
         public float currentTickReward;
 
         // 0 - 1 based on how much time is left in the episode
@@ -70,10 +83,24 @@ namespace APG {
 
         private ActionSpec actionSpec;
 
+        private StatsRecorder stats;
+        private bool previousRunSuccessful = false;
+        public bool PreviousRunSuccessful { get => previousRunSuccessful; }
+        private int numEpsiodesRun;
+        private int numEpisodesSuccessful;
+
+        private Queue<bool> runSuccessQueue = new Queue<bool>();
+
+        public override void Initialize() {
+            stats = Academy.Instance.StatsRecorder;
+        }
+
+
         private void Awake() {
             validActions = new bool[2];
             goalRef = Instantiate<EnvGoal>(goalTile);
             spawnRef = Instantiate<EnvSpawn>(spawnTile);
+            failedRef = Instantiate<GameObject>(failedTile);
             tilePool = new ObjectPool<GameObject>(() => Instantiate(floorTile), OnTakeFromPool, OnReturnedToPool, OnDestroyPoolObject, true, 25, 250);
             pathPool = new ObjectPool<GameObject>(() => Instantiate(pathTile), OnTakeFromPool, OnReturnedToPool, OnDestroyPoolObject, true, 10, 25);
             pathRenderer = GetComponent<PathRenderer>();
@@ -110,6 +137,26 @@ namespace APG {
             Debug.Log("Generating New Environment");
             ClearEnvironment();
 
+            /*if (!completed) {
+                stats.Add("Completed", System.Convert.ToInt32(completed));
+            }
+            completed = false;*/
+            numEpsiodesRun += 1;
+            stats.Add("Success Ratio", (float)numEpisodesSuccessful / (float)numEpsiodesRun);
+
+
+          /*  runSuccessQueue.Enqueue(previousRunSuccessful);
+            if (runSuccessQueue.Count > 10)
+                runSuccessQueue.Dequeue();
+
+            int numSuccess = 0;
+            foreach (bool runSuccess in runSuccessQueue) {
+                numSuccess += 1;
+            }*/
+            stats.Add("Previous Run Successful", System.Convert.ToInt32(previousRunSuccessful));
+
+
+
             Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
             grid = new EnvGrid(gridSize, gridOffset + transform.position, tileSize);
             grid.CreateGrid(true);
@@ -123,7 +170,13 @@ namespace APG {
             else
                 targetPathLength = minPathLength;
 
+            // if (previousRunSuccessful)
             InstantiateNodePrefabs();
+            //else
+            //      InstantiateFailedPrefab();
+
+            //previousRunSuccessful = false;
+            // InstantiateNodePrefabs();
         }
 
         private void OnDrawGizmos() {
@@ -137,6 +190,7 @@ namespace APG {
 
             goalRef.gameObject.SetActive(false);
             spawnRef.gameObject.SetActive(false);
+            FailedRef.SetActive(false);
 
             foreach (GameObject gameObject in instantiatedTiles) {
                 tilePool.Release(gameObject);
@@ -155,9 +209,12 @@ namespace APG {
                 for (int y = 0; y < gridSize.y; y++) {
                     for (int z = 0; z < gridSize.z; z++) {
                         sensor.AddObservation(grid.GridNodes[x, y, z].locked ? 1 : 0);
+                        sensor.AddObservation(grid.GridNodes[x, y, z].IsPathNode() ? 1 : 0);
 
                         // And a one hot encoded representation of the cell type
-                        float[] cellTypeBuffer = grid.GetOneHotCellData(new Vector3Int(x, y, x));
+                        //float[] cellTypeBuffer = grid.GetOneHotCellData(new Vector3Int(x, y, x));
+                        float[] cellTypeBuffer = grid.GetOneHotGridCellData(new Vector3Int(x, y, x));
+
                         foreach (float cellType in cellTypeBuffer)
                             sensor.AddObservation(cellType);
 
@@ -239,17 +296,15 @@ namespace APG {
 
             grid.GridNodes[currentIndex.x, currentIndex.y, currentIndex.z].NodeType = newNodeType;
 
+            EvaluateEnvironment();
+
             ClearEnvironment();
             InstantiateNodePrefabs();
         }
 
-        private void Update() {
-            if (pathRenderer && drawPath) {
-                pathRenderer.UpdatePath(grid.path, PathLengthReward);
-            }
-        }
+        private void EvaluateEnvironment() {
 
-        private void FixedUpdate() {
+
             float tickReward = 0;
 
             void AddTickReward(float reward) {
@@ -262,28 +317,41 @@ namespace APG {
             if (usePath && grid != null) {
                 Astar.GeneratePath(grid, true, false);
 
-                if (!SpawnActive || !GoalActive)
-                    grid.path.Clear();
+                // if (!SpawnActive || !GoalActive)
+                //   grid.path.Clear();
             }
 
             // Evaluate level and assign rewards
-            if (CurrentPathLength == TargetPathLength) {
-                AddTickReward(CompletionReward);
-                EndEpisode();
-            }
+           /* if (CurrentPathLength == TargetPathLength) {
+                *//* AddReward(CompletionReward);
+                 previousRunSuccessful = true;
+                 numEpisodesSuccessful += 1;
+                 EndEpisode();*//*
+            }*/
 
             else if (CurrentPathLength == 0)
-                AddTickReward(-0.1f);
+                AddTickReward(PathFailedPunishment);
 
             // Assign reward based on target path length
             else
                 AddTickReward(PathLengthReward);
-            
+
             currentTickReward = tickReward;
+
+            // If we're on our last step, ensure that the environment is traversable and save grid
+            if (StepCount == MaxStep) {
+                if (CurrentPathLength == 0) {
+                    AddReward(-10);
+                    previousRunSuccessful = false;
+                }
+
+                else
+                    previousRunSuccessful = true;
+            }
+
         }
 
         private void InstantiateNodePrefabs() {
-
             for (int x = 0; x < gridSize.x; x++) {
                 for (int y = 0; y < gridSize.y; y++) {
                     for (int z = 0; z < gridSize.z; z++) {
@@ -308,6 +376,12 @@ namespace APG {
                     }
                 }
             }
+        }
+
+        private void InstantiateFailedPrefab() {
+            failedRef.SetActive(true);
+            failedRef.transform.position = grid.GridNodes[0, 0, 0].worldPos;
+            failedRef.transform.rotation = transform.rotation;
         }
     }
 }

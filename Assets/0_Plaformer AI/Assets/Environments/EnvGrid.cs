@@ -137,6 +137,18 @@ namespace APG.Environment {
             return cellTypeBuffer;
         }
 
+        // Refactor this
+        public float[] GetOneHotGridCellData(Vector3Int cellIndex) {
+            float[] cellTypeBuffer = new float[Enum.GetNames(typeof(NodeGridType)).Length];
+
+            NodeType currentNodeType = gridNodes[cellIndex.x, cellIndex.y, cellIndex.z].NodeType;
+            cellTypeBuffer[0] = currentNodeType == NodeType.Empty ? 1.0f : 0.0f;
+            cellTypeBuffer[1] = currentNodeType == NodeType.Goal || currentNodeType == NodeType.Start ? 1.0f : 0.0f;
+            cellTypeBuffer[2] = currentNodeType == NodeType.Tile || currentNodeType == NodeType.Path ? 1.0f : 0.0f;
+
+            return cellTypeBuffer;
+        }
+
         public List<Node> path = new List<Node>();
         public void DrawGrid() {
             Gizmos.DrawWireCube(gridPos, new Vector3(gridWorldSize.x, 1, gridWorldSize.y));
@@ -166,6 +178,16 @@ namespace APG.Environment {
                 foreach (Node node in path) {
                     Gizmos.color = new Color(230, 230, 250); // Lavender
                     Gizmos.DrawSphere(node.worldPos + new Vector3(0, 2, 0), .25f);
+                }
+            }
+        }
+
+        public void ResetPath() {
+            for (int x = 0; x < gridSize.x; x++) {
+                for (int y = 0; y < gridSize.y; y++) {
+                    for (int z = 0; z < gridSize.z; z++) {
+                        gridNodes[x, y, z].isPath = false;
+                    }
                 }
             }
         }
