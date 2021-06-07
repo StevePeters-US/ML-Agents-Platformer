@@ -12,24 +12,36 @@ namespace APG {
             agent = GetComponent<EnvGenAgent>();
             DebugGUI.SetGraphProperties("currentTickReward", "Current Tick Reward", -.25f, .25f, 1, new Color(0, 1, 1), false);
             DebugGUI.SetGraphProperties("previousRunSuccessful", "previous Run Successful", 0f, 1f, 1, Color.green, false);
+
             DebugGUI.SetGraphProperties("currentPathLength", "Current Path Length", 0, agent.TargetPathLength * 2, 2, new Color(1, 0.5f, 1), false);
             DebugGUI.SetGraphProperties("targetPathLength", "Target Path Length", 0, agent.TargetPathLength * 2, 2, Color.green, false);
+
             DebugGUI.SetGraphProperties("pathLengthReward", "Path Length Reward", -1, 1, 3, new Color(1, 1, 0), true);
             DebugGUI.SetGraphProperties("pathFailedPunishment", "Path Failed Punishment", -10, 1, 3, Color.red, true);
             DebugGUI.SetGraphProperties("pathLengthSlope", "Path Length Slope", -1, 1, 3, Color.gray, true);
             DebugGUI.SetGraphProperties("envTime", "Environment Time", 0, 1, 3, new Color(1, 1, 1), true);
+
+            DebugGUI.SetGraphProperties("avgCohesion", "Average Cohesion", 0, 1, 4, Color.green, true);
+            DebugGUI.SetGraphProperties("gridEmptySpace", "Grid Empty Space", 0, 1, 4, Color.white, true);
+            DebugGUI.SetGraphProperties("gridEmptySpaceReward", "Grid Empty Space Reward", 0, 1, 4, Color.yellow, true);
         }
 
         private void Update() {
 
             DebugGUI.Graph("currentTickReward", agent.currentTickReward);
             DebugGUI.Graph("previousRunSuccessful", System.Convert.ToInt32(agent.PreviousRunSuccessful));
+
             DebugGUI.Graph("currentPathLength", agent.CurrentPathLength);
             DebugGUI.Graph("targetPathLength", agent.TargetPathLength);
+
             DebugGUI.Graph("pathLengthReward", agent.PathLengthReward);
             DebugGUI.Graph("pathFailedPunishment", agent.PathFailedPunishment);
             DebugGUI.Graph("pathLengthSlope", agent.PathLengthSlope);
-            DebugGUI.Graph("envTime", agent.EnvTime); 
+            DebugGUI.Graph("envTime", agent.EnvTime);
+
+            DebugGUI.Graph("avgCohesion", agent.avgCohesionValue);
+            DebugGUI.Graph("gridEmptySpace", agent.gridEmptySpace);
+            DebugGUI.Graph("gridEmptySpaceReward", agent.GridEmptySpaceReward);
         }
 
         void OnDestroy() {
@@ -37,6 +49,7 @@ namespace APG {
             DebugGUI.RemoveGraph("currentTickReward");
             DebugGUI.RemoveGraph("currentPathLength");
             DebugGUI.RemoveGraph("pathLengthReward");
+            DebugGUI.RemoveGraph("avgCohesion");
         }
     }
 }

@@ -43,11 +43,13 @@ namespace APG.Environment {
         public GameObject nodePrefab;
 
         public List<Vector3Int> neighborIndices = new List<Vector3Int>();
+        public List<Vector3Int> allNeighborIndices = new List<Vector3Int>();
 
         private NodeType nodeType;
         public NodeType NodeType { get => nodeType; set => nodeType = locked ? nodeType : value; }
 
         public bool isPath = false;
+        public float cohesiveValue; // 0-1 how similar are neighboring tiles
 
         public Node(Vector3 worldPos, Vector3Int gridIndex, NodeType nodeType = NodeType.Empty) {
             this.worldPos = worldPos;
@@ -69,25 +71,30 @@ namespace APG.Environment {
         }
 
         public void SetNeighborIndices(Vector3Int envSize, bool useManhattanNeighbors) {
+            allNeighborIndices.Clear();
             neighborIndices.Clear();
 
             for (int x = -1; x <= 1; x++) {
                 for (int z = -1; z <= 1; z++) {
+                    bool skipManhattanNeighbor = false;
                     // Check 8 directions on plane
-                    if (!useManhattanNeighbors && (x == 0 && z == 0))
+                    if (x == 0 && z == 0)
                         continue;
 
                     // Only get nsew neighbors
                     if (useManhattanNeighbors && ((x == 0 && z == 0) || (x != 0 && z != 0)))
-                        continue;
+                        skipManhattanNeighbor = true;
 
                     int checkX = gridIndex.x + x;
                     int checkZ = gridIndex.z + z;
 
                     bool IsInBounds(int x, int y, int z) => x >= 0 && x < envSize.x && y >= 0 && y < envSize.y && z >= 0 && z < envSize.z;
 
-                    if (IsInBounds(checkX, 0, checkZ))
-                        neighborIndices.Add(new Vector3Int(checkX, 0, checkZ));
+                    if (IsInBounds(checkX, 0, checkZ)) {
+                        allNeighborIndices.Add(new Vector3Int(checkX, 0, checkZ));
+                        if (!skipManhattanNeighbor)
+                            neighborIndices.Add(new Vector3Int(checkX, 0, checkZ));
+                    }
                 }
             }
         }

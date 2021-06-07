@@ -15,6 +15,7 @@ namespace APG {
 
         [SerializeField] private Vector3Int gridSize = new Vector3Int(20, 1, 20);
         public Vector3Int GridSize { get => gridSize; }
+        public int GridCount { get => gridSize.x * gridSize.y * gridSize.z; }
         [SerializeField] private Vector3 tileSize = Vector3.one;
 
         [SerializeField] private GameObject floorTile;
@@ -91,6 +92,15 @@ namespace APG {
 
         private Queue<bool> runSuccessQueue = new Queue<bool>();
 
+        public bool debugCohesion = false;
+        [SerializeField] private CohesionDebugText cohesionDebugTextPrefab;
+        private CohesionDebugText[,,] cohesionDebugTexts;
+        public float avgCohesionValue;
+
+        public float gridEmptySpace; // 0 -1 tile types composition
+        public float targetGridEmptySpace = 0.5f;
+        public float GridEmptySpaceReward { get => MLAgentsExtensions.GetGaussianReward(gridEmptySpace, targetGridEmptySpace, Mathf.Lerp(2, 5f, EnvTime)); }
+
         public override void Initialize() {
             stats = Academy.Instance.StatsRecorder;
         }
@@ -145,14 +155,14 @@ namespace APG {
             stats.Add("Success Ratio", (float)numEpisodesSuccessful / (float)numEpsiodesRun);
 
 
-          /*  runSuccessQueue.Enqueue(previousRunSuccessful);
-            if (runSuccessQueue.Count > 10)
-                runSuccessQueue.Dequeue();
+            /*  runSuccessQueue.Enqueue(previousRunSuccessful);
+              if (runSuccessQueue.Count > 10)
+                  runSuccessQueue.Dequeue();
 
-            int numSuccess = 0;
-            foreach (bool runSuccess in runSuccessQueue) {
-                numSuccess += 1;
-            }*/
+              int numSuccess = 0;
+              foreach (bool runSuccess in runSuccessQueue) {
+                  numSuccess += 1;
+              }*/
             stats.Add("Previous Run Successful", System.Convert.ToInt32(previousRunSuccessful));
 
 
@@ -172,6 +182,8 @@ namespace APG {
 
             // if (previousRunSuccessful)
             InstantiateNodePrefabs();
+            if (debugCohesion)
+                InstantiateCohesionDebugTexts();
             //else
             //      InstantiateFailedPrefab();
 
@@ -218,6 +230,8 @@ namespace APG {
                         foreach (float cellType in cellTypeBuffer)
                             sensor.AddObservation(cellType);
 
+
+                        sensor.AddObservation(grid.GridNodes[x, y, z].cohesiveValue);
                         // Debug observations
                     }
                 }
@@ -231,6 +245,12 @@ namespace APG {
 
             // 1 observation
             sensor.AddObservation(EnvTime);
+
+            sensor.AddObservation(avgCohesionValue);
+
+            sensor.AddObservation(targetGridEmptySpace);
+            sensor.AddObservation(gridEmptySpace);
+            sensor.AddObservation(GridEmptySpaceReward);
         }
 
         public override void Heuristic(in ActionBuffers actionsOut) {
@@ -322,12 +342,12 @@ namespace APG {
             }
 
             // Evaluate level and assign rewards
-           /* if (CurrentPathLength == TargetPathLength) {
-                *//* AddReward(CompletionReward);
-                 previousRunSuccessful = true;
-                 numEpisodesSuccessful += 1;
-                 EndEpisode();*//*
-            }*/
+            /* if (CurrentPathLength == TargetPathLength) {
+                 *//* AddReward(CompletionReward);
+                  previousRunSuccessful = true;
+                  numEpisodesSuccessful += 1;
+                  EndEpisode();*//*
+             }*/
 
             else if (CurrentPathLength == 0)
                 AddTickReward(PathFailedPunishment);
@@ -335,6 +355,12 @@ namespace APG {
             // Assign reward based on target path length
             else
                 AddTickReward(PathLengthReward);
+
+            UpdateCohesionValues();
+            AddTickReward(avgCohesionValue);    // Maximize cohesion This should have a 0-1 influence range
+
+            UpdateGridEmptySpaceCompositionVal();
+            AddTickReward(GridEmptySpaceReward);
 
             currentTickReward = tickReward;
 
@@ -382,6 +408,65 @@ namespace APG {
             failedRef.SetActive(true);
             failedRef.transform.position = grid.GridNodes[0, 0, 0].worldPos;
             failedRef.transform.rotation = transform.rotation;
+        }
+
+        private void InstantiateCohesionDebugTexts() {
+            cohesionDebugTexts = new CohesionDebugText[gridSize.x, gridSize.y, gridSize.z];
+
+            if (cohesionDebugTextPrefab != null) {
+                for (int x = 0; x < gridSize.x; x++) {
+                    for (int y = 0; y < gridSize.y; y++) {
+                        for (int z = 0; z < gridSize.z; z++) {
+
+
+                            CohesionDebugText text = Instantiate(cohesionDebugTextPrefab, this.transform);
+                            text.transform.position = grid.GridNodes[x, y, z].worldPos + new Vector3(0, 1.5f, 0);
+                            cohesionDebugTexts[x, y, z] = text;
+
+                        }
+                    }
+                }
+
+            }
+        }
+
+        public void UpdateCohesionValues() {
+            float totalCohesionValue = 0;
+
+            for (int x = 0; x < gridSize.x; x++) {
+                for (int y = 0; y < gridSize.y; y++) {
+                    for (int z = 0; z < gridSize.z; z++) {
+                        float cohesiveValue = 0;
+                        for (int i = 0; i < grid.GridNodes[x, y, z].allNeighborIndices.Count; i++) {
+                            Vector3Int nodeIndex = grid.GridNodes[x, y, z].allNeighborIndices[i];
+                            if (grid.GridNodes[x, y, z].NodeType == grid.GridNodes[nodeIndex.x, nodeIndex.y, nodeIndex.z].NodeType)
+                                cohesiveValue += 1f / grid.GridNodes[x, y, z].allNeighborIndices.Count;
+                        }
+
+                        grid.GridNodes[x, y, z].cohesiveValue = cohesiveValue;
+                        if (debugCohesion)
+                            cohesionDebugTexts[x, y, z].UpdateText(cohesiveValue.ToString("#.00"));
+
+                        totalCohesionValue += cohesiveValue;
+                    }
+                }
+            }
+            avgCohesionValue = totalCohesionValue / (GridCount);
+        }
+
+        public void UpdateGridEmptySpaceCompositionVal() {
+            int numEmpty = 0;
+
+            for (int x = 0; x < gridSize.x; x++) {
+                for (int y = 0; y < gridSize.y; y++) {
+                    for (int z = 0; z < gridSize.z; z++) {
+                        if (grid.GridNodes[x, y, z].NodeType == NodeType.Empty)
+                            numEmpty += 1;
+                    }
+                }
+            }
+
+            gridEmptySpace = (float)numEmpty / (float)GridCount;
         }
     }
 }

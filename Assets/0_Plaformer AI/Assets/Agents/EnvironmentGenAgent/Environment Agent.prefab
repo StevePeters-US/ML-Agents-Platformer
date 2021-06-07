@@ -50,7 +50,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 503
+    VectorObservationSize: 607
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
@@ -98,6 +98,11 @@ MonoBehaviour:
   useRandomTargetPathLength: 1
   maskActions: 1
   currentTickReward: 0
+  debugCohesion: 0
+  cohesionDebugTextPrefab: {fileID: -7257555249751150206, guid: 9e07bb2994e6184438ef15e65934f7df, type: 3}
+  avgCohesionValue: 0
+  gridEmptySpace: 0
+  targetGridEmptySpace: 0.5
 --- !u!114 &113531138
 MonoBehaviour:
   m_ObjectHideFlags: 0

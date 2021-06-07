@@ -74,7 +74,6 @@ namespace APG.Environment {
 
         public bool onlyDrawPathGizmos = false;
 
-
         public void CreateGrid(bool useManhattanNeighbors) {
 
             gridNodes = new Node[gridSize.x, gridSize.y, gridSize.z];
@@ -87,6 +86,8 @@ namespace APG.Environment {
 
                         gridNodes[x, y, z] = new Node(worldPos, gridIndex, NodeType.Empty);
                         gridNodes[x, y, z].SetNeighborIndices(gridSize, useManhattanNeighbors);
+
+                       
                     }
                 }
             }
@@ -114,7 +115,7 @@ namespace APG.Environment {
                 for (int y = 0; y < gridSize.y; y++) {
                     for (int z = 0; z < gridSize.z; z++) {
                         if (gridNodes[x, y, z].NodeType == NodeType.Empty && UnityEngine.Random.Range(0f, 1f) < randomChance)
-                            gridNodes[x, y, z].NodeType = NodeType.Tile;                      
+                            gridNodes[x, y, z].NodeType = NodeType.Tile;
                     }
                 }
             }
