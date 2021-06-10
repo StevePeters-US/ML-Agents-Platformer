@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2028738234406495948
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 992684486595261436}
+  - component: {fileID: 6142867044376505962}
+  - component: {fileID: 7653720219117532565}
+  m_Layer: 0
+  m_Name: Environment Generator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &992684486595261436
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2028738234406495948}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6142867044376505962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2028738234406495948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b1d8066774f7574aa63157344874ed3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  envCompleted: 0
+--- !u!114 &7653720219117532565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2028738234406495948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48f4d65373299764b81df6d45518c215, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  floorTile: {fileID: 6361274715697056432, guid: cd4ebe83d3b8f7d4ab84c28ff191ee9f, type: 3}
+  pathTile: {fileID: 6361274715697056432, guid: 99f81a455d2d6cc4aa5c08c0c42b46ac, type: 3}
+  goalTile: {fileID: 3432074442539566465, guid: 7d6b3fed20871ba4a9ac4565852c9aab, type: 3}
+  spawnTile: {fileID: -1613041854377070595, guid: d3217c886bf0fae4a8cf06bd014c3d9e, type: 3}
+  failedTile: {fileID: 6361274715697056432, guid: c6f3295e5c43b2141b95e6ceca3a3b8e, type: 3}
+  tileMat: {fileID: 0}
+  pathMat: {fileID: 0}
+  usePath: 0
+  useManhattanNeighbors: 1
+  envSize: {x: 0, y: 0, z: 0}
+  tileSize: {x: 1, y: 1, z: 1}

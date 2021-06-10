@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace APG {
-    [RequireComponent(typeof(EnvGenAgent))]
+   // [RequireComponent(typeof(EnvGenAgent))]
     public class EnvAgentDebugGUI : MonoBehaviour {
 
         private EnvGenAgent agent;

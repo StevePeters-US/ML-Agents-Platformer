@@ -7,6 +7,7 @@ namespace APG.Environment {
         public bool envCompleted = false;
 
         private EnvironmentGenerator envGenerator;
+        private EnvGenAgent envAgent;
 
         private EnvGoal envGoal;
         private EnvSpawn envSpawn;
@@ -15,9 +16,23 @@ namespace APG.Environment {
         private void OnEnable() {
             EnvironmentalManagers.Instance.Add(this);
 
-            playerAgent = GetComponentInChildren<PlayerAgent>();
+            envGenerator = FindObjectOfType<EnvironmentGenerator>();
+            envAgent = FindObjectOfType<EnvGenAgent>();
 
-            envGenerator = GetComponent<EnvironmentGenerator>();
+            envAgent.OnActionCompleted += OnActionTaken;
+
+            playerAgent = GetComponentInChildren<PlayerAgent>();
+        }
+
+        private void OnDestroy() {
+            envAgent.OnActionCompleted -= OnActionTaken;
+        }
+
+        private void OnActionTaken(EnvGrid grid, Vector3Int gridSize) {
+            if (envGenerator != null) {
+                envGenerator.ClearEnvironment();
+                envGenerator.InstantiateNodePrefabs(grid, gridSize);
+            }
         }
 
         private void OnDisable() {
@@ -34,10 +49,10 @@ namespace APG.Environment {
             //envGoal.OnGoalDestroyed += GoalDestroyed;
         }
 
-       /* public void UnsubscribeFromGoal() {
-            if (envGoal) {
-            }
-        }*/
+        /* public void UnsubscribeFromGoal() {
+             if (envGoal) {
+             }
+         }*/
 
         // A player agent has entered the goal, ask the game state what to do
         public void GoalTriggered() {
@@ -47,13 +62,13 @@ namespace APG.Environment {
             playerAgent.AgentReachedGoal();
         }
 
-      /*  public void GoalDestroyed() {
-            if (envGoal != null) {
-            envGoal.OnGoalTriggered -= GoalTriggered;
-            envGoal.OnGoalDestroyed -= GoalDestroyed;
-            envGoal = null;
-            }
-        }*/
+        /*  public void GoalDestroyed() {
+              if (envGoal != null) {
+              envGoal.OnGoalTriggered -= GoalTriggered;
+              envGoal.OnGoalDestroyed -= GoalDestroyed;
+              envGoal = null;
+              }
+          }*/
 
         public void ResetEnvironment() {
             envGenerator.GenerateGridEnvironment();

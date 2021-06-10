@@ -1,14 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Sensors;
 using Unity.MLAgents.Actuators;
 using APG.Environment;
 using UnityEngine.Pool;
+using Random = UnityEngine.Random;
 
 namespace APG {
     public class EnvGenAgent : Agent {
+
+        public Action<EnvGrid, Vector3Int> OnActionCompleted { get; set; }
 
         private EnvGrid grid;
         public EnvGrid Grid { get => grid; set => grid = value; }
@@ -18,30 +22,8 @@ namespace APG {
         public int GridCount { get => gridSize.x * gridSize.y * gridSize.z; }
         [SerializeField] private Vector3 tileSize = Vector3.one;
 
-        [SerializeField] private GameObject floorTile;
-        [SerializeField] private GameObject pathTile;
-        [SerializeField] private EnvGoal goalTile;
-        [SerializeField] private EnvSpawn spawnTile;
-        [SerializeField] private GameObject failedTile;
-
-        [SerializeField] private Material tileMat;
-        [SerializeField] private Material pathMat;
-
-        ObjectPool<GameObject> tilePool;
-        private List<GameObject> instantiatedTiles = new List<GameObject>();
-
-        ObjectPool<GameObject> pathPool;
-        private List<GameObject> instantiatedPathTiles = new List<GameObject>();
 
         [SerializeField, Range(0, 1)] private float randomTileChance = 0.5f;
-
-        public EnvGoal GoalRef { get => goalRef; }
-        private EnvGoal goalRef = null;
-        private bool GoalActive { get => goalRef.gameObject.activeInHierarchy; }
-
-        public EnvSpawn SpawnRef { get => spawnRef; }
-        private EnvSpawn spawnRef = null;
-        private bool SpawnActive { get => spawnRef.gameObject.activeInHierarchy; }
 
         public GameObject FailedRef { get => failedRef; }
         private GameObject failedRef = null;
@@ -61,8 +43,6 @@ namespace APG {
 
         public float PathFailedPunishment { get => Mathf.Lerp(0, -1, EnvTime); }
 
-        private PathRenderer pathRenderer;
-
         const int ACTIONS_BRANCH = 1;
         [SerializeField] private bool maskActions = true;
         private bool[] validActions;
@@ -78,15 +58,10 @@ namespace APG {
         // 0 - 1 based on how much time is left in the episode
         public float EnvTime { get => (float)StepCount / (float)MaxStep; }
 
-        //private ActionSpec actionSpec;
 
         private StatsRecorder stats;
         private bool previousRunSuccessful = false;
         public bool PreviousRunSuccessful { get => previousRunSuccessful; }
-        // private int numEpsiodesRun;
-        //private int numEpisodesSuccessful;
-
-        private Queue<bool> runSuccessQueue = new Queue<bool>();
 
         public bool debugCohesion = false;
         [SerializeField] private CohesionDebugText cohesionDebugTextPrefab;
@@ -110,21 +85,15 @@ namespace APG {
         private float NormalizedCohesionInfluence { get => cohesionInfluence / TotalInfluence; }
         private float NormalizedGridEmptySpaceInfluence { get => gridEmptySpaceInfluence / TotalInfluence; }
 
+        #region initialize
         public override void Initialize() {
             stats = Academy.Instance.StatsRecorder;
+
         }
-
-
         private void Awake() {
             Academy.Instance.AgentPreStep += MakeRequests;
 
             validActions = new bool[2];
-            goalRef = Instantiate<EnvGoal>(goalTile);
-            spawnRef = Instantiate<EnvSpawn>(spawnTile);
-            failedRef = Instantiate<GameObject>(failedTile);
-            tilePool = new ObjectPool<GameObject>(() => Instantiate(floorTile), OnTakeFromPool, OnReturnedToPool, OnDestroyPoolObject, true, 25, 250);
-            pathPool = new ObjectPool<GameObject>(() => Instantiate(pathTile), OnTakeFromPool, OnReturnedToPool, OnDestroyPoolObject, true, 10, 25);
-            pathRenderer = GetComponent<PathRenderer>();
 
             // Set the number of action choices to grid size
             ActionSpec actionSpec = GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec;
@@ -133,48 +102,52 @@ namespace APG {
             actionSpec.BranchSizes[ACTIONS_BRANCH] = 2;
             GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec = actionSpec;
         }
+
+
         void OnDestroy() {
             if (Academy.IsInitialized) {
                 Academy.Instance.AgentPreStep -= MakeRequests;
             }
         }
-
         void MakeRequests(int academyStepCount) {
-            /*var context = new DecisionRequestContext {
-                AcademyStepCount = academyStepCount
-            };
-
-            if (ShouldRequestDecision(context)) {
-                m_Agent?.RequestDecision();
-            }
-
-            if (ShouldRequestAction(context)) {
-                m_Agent?.RequestAction();
-            }*/
-
             RequestDecision();
         }
 
-        // Called when an item is returned to the pool using Release
-        void OnReturnedToPool(GameObject go) {
-            go.SetActive(false);
+        #endregion
+
+        #region GUI
+        private void OnDrawGizmos() {
+
+            if (drawGizmos && grid != null)
+                grid.DrawGrid();
+        }
+        #endregion
+
+        #region recurring
+        // Convert output from model into usable variables that can be used to pilot the agent.
+        public override void OnActionReceived(ActionBuffers actionBuffers) {
+            // Using single action buffer
+            int gridNum = actionBuffers.DiscreteActions[0];
+            currentIndex = new Vector3Int(gridNum % gridSize.x, 0, gridNum / gridSize.x);
+
+            NodeType newNodeType;
+            if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == EMPTY)
+                newNodeType = NodeType.Empty;
+            else if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == TILE)
+                newNodeType = NodeType.Tile;
+            else
+                return;
+
+            grid.GridNodes[currentIndex.x, currentIndex.y, currentIndex.z].NodeType = newNodeType;
+
+            EvaluateEnvironment();
+
+            OnActionCompleted(grid, GridSize);
         }
 
-        // Called when an item is taken from the pool using Get
-        void OnTakeFromPool(GameObject go) {
-            go.SetActive(true);
-        }
-
-        // If the pool capacity is reached then any items returned will be destroyed.
-        // We can control what the destroy behavior does, here we destroy the GameObject.
-        void OnDestroyPoolObject(GameObject go) {
-            Destroy(go);
-        }
+        #endregion
 
         public override void OnEpisodeBegin() {
-            Debug.Log("Generating New Environment");
-            ClearEnvironment();
-
             stats.Add("Previous Run Successful", System.Convert.ToInt32(previousRunSuccessful));
 
             Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
@@ -184,38 +157,10 @@ namespace APG {
 
             UpdateFromLessonPlan();
 
-            // if (previousRunSuccessful)
-            InstantiateNodePrefabs();
             if (debugCohesion)
                 InstantiateCohesionDebugTexts();
-            //else
-            //      InstantiateFailedPrefab();
+                 }
 
-            //previousRunSuccessful = false;
-            // InstantiateNodePrefabs();
-        }
-
-        private void OnDrawGizmos() {
-
-            if (drawGizmos && grid != null)
-                grid.DrawGrid();
-        }
-
-        private void ClearEnvironment() {
-            goalRef.gameObject.SetActive(false);
-            spawnRef.gameObject.SetActive(false);
-            FailedRef.SetActive(false);
-
-            foreach (GameObject gameObject in instantiatedTiles) {
-                tilePool.Release(gameObject);
-            }
-            instantiatedTiles.Clear();
-
-            foreach (GameObject gameObject in instantiatedPathTiles) {
-                pathPool.Release(gameObject);
-            }
-            instantiatedPathTiles.Clear();
-        }
 
         private void UpdateFromLessonPlan() {
             // Get random range values from lesson plan
@@ -278,26 +223,6 @@ namespace APG {
 
             discreteActionsOut[0] = Random.Range(0, gridSize.x * gridSize.z);
             discreteActionsOut[1] = Random.Range(0, 2);
-            /*for (int i = 0; i < 8; i++) {
-            }*/
-
-            /*         discreteActionsOut[0] = Random.Range(0, 10);
-                     discreteActionsOut[1] = 0;
-                     discreteActionsOut[2] = Random.Range(0, 10);
-
-
-
-                     List<int> validActionsList = new List<int>();
-                     for (int i = 0; i < validActions.Length; i++) {
-                         if (validActions[i] == true)
-                             validActionsList.Add(i);
-                     }
-                     int randListIdx = Random.Range(0, validActionsList.Count);
-                     discreteActionsOut[ACTIONS_BRANCH] = validActionsList[randListIdx];*/
-
-            /* for (int i = 0; i < gridSize.x * gridSize.y * gridSize.z; i++) {
-                 discreteActionsOut[i] = Random.Range(0, 2);
-             }*/
         }
 
         public override void WriteDiscreteActionMask(IDiscreteActionMask actionMask) {
@@ -318,29 +243,6 @@ namespace APG {
                    }*/
             }
         }
-
-        // Convert output from model into usable variables that can be used to pilot the agent.
-        public override void OnActionReceived(ActionBuffers actionBuffers) {
-            // Using single action buffer
-            int gridNum = actionBuffers.DiscreteActions[0];
-            currentIndex = new Vector3Int(gridNum % gridSize.x, 0, gridNum / gridSize.x);
-
-            NodeType newNodeType;
-            if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == EMPTY)
-                newNodeType = NodeType.Empty;
-            else if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == TILE)
-                newNodeType = NodeType.Tile;
-            else
-                return;
-
-            grid.GridNodes[currentIndex.x, currentIndex.y, currentIndex.z].NodeType = newNodeType;
-
-            EvaluateEnvironment();
-
-            ClearEnvironment();
-            InstantiateNodePrefabs();
-        }
-
         private void EvaluateEnvironment() {
             float tickReward = 0;
 
@@ -381,39 +283,23 @@ namespace APG {
                     previousRunSuccessful = true;
             }
         }
+        public void UpdateGridEmptySpaceCompositionVal() {
+            int numEmpty = 0;
 
-        private void InstantiateNodePrefabs() {
             for (int x = 0; x < gridSize.x; x++) {
                 for (int y = 0; y < gridSize.y; y++) {
                     for (int z = 0; z < gridSize.z; z++) {
-                        if (grid.GridNodes[x, y, z].NodeType == NodeType.Start) {
-                            spawnRef.gameObject.SetActive(true);
-                            spawnRef.transform.position = grid.GridNodes[x, y, z].worldPos;
-                            spawnRef.transform.rotation = transform.rotation;
-                        }
-
-                        else if (grid.GridNodes[x, y, z].NodeType == NodeType.Goal) {
-                            goalRef.gameObject.SetActive(true);
-                            goalRef.transform.position = grid.GridNodes[x, y, z].worldPos;
-                            goalRef.transform.rotation = transform.rotation;
-                        }
-
-                        else if (grid.GridNodes[x, y, z].NodeType == NodeType.Tile) {
-                            GameObject newTile = tilePool.Get();
-                            newTile.transform.position = grid.GridNodes[x, y, z].worldPos;
-                            newTile.transform.rotation = transform.rotation;
-                            instantiatedTiles.Add(newTile);
-                        }
+                        if (grid.GridNodes[x, y, z].NodeType == NodeType.Empty)
+                            numEmpty += 1;
                     }
                 }
             }
+
+            gridEmptySpace = (float)numEmpty / (float)GridCount;
         }
 
-        private void InstantiateFailedPrefab() {
-            failedRef.SetActive(true);
-            failedRef.transform.position = grid.GridNodes[0, 0, 0].worldPos;
-            failedRef.transform.rotation = transform.rotation;
-        }
+
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         private void InstantiateCohesionDebugTexts() {
             cohesionDebugTexts = new CohesionDebugText[gridSize.x, gridSize.y, gridSize.z];
@@ -459,19 +345,5 @@ namespace APG {
             avgCohesionValue = totalCohesionValue / (GridCount);
         }
 
-        public void UpdateGridEmptySpaceCompositionVal() {
-            int numEmpty = 0;
-
-            for (int x = 0; x < gridSize.x; x++) {
-                for (int y = 0; y < gridSize.y; y++) {
-                    for (int z = 0; z < gridSize.z; z++) {
-                        if (grid.GridNodes[x, y, z].NodeType == NodeType.Empty)
-                            numEmpty += 1;
-                    }
-                }
-            }
-
-            gridEmptySpace = (float)numEmpty / (float)GridCount;
-        }
     }
 }
