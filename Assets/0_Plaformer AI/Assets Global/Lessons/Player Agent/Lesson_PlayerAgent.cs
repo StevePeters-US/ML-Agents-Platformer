@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace APG
 {
-    [CreateAssetMenu(fileName = "Lesson", menuName = "Scriptable Objects/Lessons/Lesson")]
-    public class Lesson : ScriptableObject
+    [CreateAssetMenu(fileName = "Lesson", menuName = "Scriptable Objects/Lessons/Lesson Player Agent")]
+    public class Lesson_PlayerAgent : ScriptableObject
     {
         public string lessonName;
 

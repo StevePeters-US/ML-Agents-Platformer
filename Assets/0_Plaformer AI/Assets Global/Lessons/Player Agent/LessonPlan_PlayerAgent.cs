@@ -4,9 +4,9 @@ using UnityEngine;
 using Unity.MLAgents;
 
 namespace APG {
-    [CreateAssetMenu(fileName = "Lesson Plan", menuName = "Scriptable Objects/Lessons/Lesson Plan")]
-    public class LessonPlan : SingletonScriptableObject<LessonPlan>, ISerializationCallbackReceiver {
-        public List<Lesson> lessons = new List<Lesson>();
+    [CreateAssetMenu(fileName = "Lesson Plan Player Agent", menuName = "Scriptable Objects/Lessons/Lesson Plan Player Agent")]
+    public class LessonPlan_PlayerAgent : SingletonScriptableObject<LessonPlan_PlayerAgent>, ISerializationCallbackReceiver {
+        public List<Lesson_PlayerAgent> lessons = new List<Lesson_PlayerAgent>();
 
         public int InitialLessonIdx;
         [System.NonSerialized] public int runtimeLessonIdx;

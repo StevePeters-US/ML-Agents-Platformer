@@ -52,15 +52,12 @@ namespace APG {
         private Vector3Int currentIndex;
 
         private bool usePath = true;
-        [SerializeField] private float targetPathLength = 12f;
+        private float targetPathLength = 1f;
         public float TargetPathLength { get => targetPathLength; }
-        public bool useRandomTargetPathLength = false;
-
         public int CurrentPathLength { get => grid.GetPathLength; }
         // Path length reward gets tighter to target value the closer we get to the end of this episode
-        public float PathLengthReward { get => MLAgentsExtensions.GetGaussianReward(CurrentPathLength, targetPathLength, Mathf.Lerp(0, 1f, EnvTime)); }
-        // public float PathLengthSlope { get => Mathf.Clamp(MLAgentsExtensions.GetGaussianSlope(CurrentPathLength, targetPathLength, 0.25f, 10f), -1, 1); } // Use wider std dev to help guide the agent to the target
-        public float PathLengthSlope { get => CurrentPathLength > targetPathLength ? -1 : 1; }
+        public float PathLengthReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(CurrentPathLength, targetPathLength, Mathf.Lerp(0, 1f, EnvTime)), NormalizedPathLengthInfluence); }
+        public float PathLengthSlope { get => CurrentPathLength == targetPathLength ? 0 : (CurrentPathLength > targetPathLength ? -1 : 1); }
 
         public float PathFailedPunishment { get => Mathf.Lerp(0, -1, EnvTime); }
 
@@ -76,30 +73,42 @@ namespace APG {
         //const int START = 3;
         //const int obstacle = 5;
 
-        public float CompletionReward { get => Mathf.Lerp(10f, 0f, EnvTime); }
         public float currentTickReward;
 
         // 0 - 1 based on how much time is left in the episode
         public float EnvTime { get => (float)StepCount / (float)MaxStep; }
 
-        private ActionSpec actionSpec;
+        //private ActionSpec actionSpec;
 
         private StatsRecorder stats;
         private bool previousRunSuccessful = false;
         public bool PreviousRunSuccessful { get => previousRunSuccessful; }
-        private int numEpsiodesRun;
-        private int numEpisodesSuccessful;
+        // private int numEpsiodesRun;
+        //private int numEpisodesSuccessful;
 
         private Queue<bool> runSuccessQueue = new Queue<bool>();
 
         public bool debugCohesion = false;
         [SerializeField] private CohesionDebugText cohesionDebugTextPrefab;
         private CohesionDebugText[,,] cohesionDebugTexts;
+        [Range(0, 1)] public float targetCohesionValue = 0.75f;
         public float avgCohesionValue;
+        public float CohesionReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(avgCohesionValue, targetCohesionValue, Mathf.Lerp(2, 5f, EnvTime)), NormalizedCohesionInfluence); }
+
 
         public float gridEmptySpace; // 0 -1 tile types composition
-        public float targetGridEmptySpace = 0.5f;
-        public float GridEmptySpaceReward { get => MLAgentsExtensions.GetGaussianReward(gridEmptySpace, targetGridEmptySpace, Mathf.Lerp(2, 5f, EnvTime)); }
+        [Range(0, 1)] public float targetGridEmptySpace = 0.5f;
+        public float GridEmptySpaceReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(gridEmptySpace, targetGridEmptySpace, Mathf.Lerp(2, 5f, EnvTime)), NormalizedGridEmptySpaceInfluence); }
+
+
+        [Range(0, 1)] public float pathLengthInfluence = 1;
+        [Range(0, 1)] public float cohesionInfluence = 1;
+        [Range(0, 1)] public float gridEmptySpaceInfluence = 1;
+
+        private float TotalInfluence { get => pathLengthInfluence + cohesionInfluence + gridEmptySpaceInfluence; }
+        private float NormalizedPathLengthInfluence { get => pathLengthInfluence / TotalInfluence; }
+        private float NormalizedCohesionInfluence { get => cohesionInfluence / TotalInfluence; }
+        private float NormalizedGridEmptySpaceInfluence { get => gridEmptySpaceInfluence / TotalInfluence; }
 
         public override void Initialize() {
             stats = Academy.Instance.StatsRecorder;
@@ -107,6 +116,8 @@ namespace APG {
 
 
         private void Awake() {
+            Academy.Instance.AgentPreStep += MakeRequests;
+
             validActions = new bool[2];
             goalRef = Instantiate<EnvGoal>(goalTile);
             spawnRef = Instantiate<EnvSpawn>(spawnTile);
@@ -115,16 +126,33 @@ namespace APG {
             pathPool = new ObjectPool<GameObject>(() => Instantiate(pathTile), OnTakeFromPool, OnReturnedToPool, OnDestroyPoolObject, true, 10, 25);
             pathRenderer = GetComponent<PathRenderer>();
 
-            // Can't modify in place
-            actionSpec = GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec;
-            /*actionSpec.BranchSizes = new int[100];
-            for (int i = 0; i < actionSpec.BranchSizes.Length; i++) {
-                actionSpec.BranchSizes[i] = 2;
-            }*/
+            // Set the number of action choices to grid size
+            ActionSpec actionSpec = GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec;
             actionSpec.BranchSizes = new int[2];
             actionSpec.BranchSizes[0] = gridSize.x * gridSize.y * gridSize.z;
             actionSpec.BranchSizes[ACTIONS_BRANCH] = 2;
             GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec = actionSpec;
+        }
+        void OnDestroy() {
+            if (Academy.IsInitialized) {
+                Academy.Instance.AgentPreStep -= MakeRequests;
+            }
+        }
+
+        void MakeRequests(int academyStepCount) {
+            /*var context = new DecisionRequestContext {
+                AcademyStepCount = academyStepCount
+            };
+
+            if (ShouldRequestDecision(context)) {
+                m_Agent?.RequestDecision();
+            }
+
+            if (ShouldRequestAction(context)) {
+                m_Agent?.RequestAction();
+            }*/
+
+            RequestDecision();
         }
 
         // Called when an item is returned to the pool using Release
@@ -147,38 +175,14 @@ namespace APG {
             Debug.Log("Generating New Environment");
             ClearEnvironment();
 
-            /*if (!completed) {
-                stats.Add("Completed", System.Convert.ToInt32(completed));
-            }
-            completed = false;*/
-            numEpsiodesRun += 1;
-            stats.Add("Success Ratio", (float)numEpisodesSuccessful / (float)numEpsiodesRun);
-
-
-            /*  runSuccessQueue.Enqueue(previousRunSuccessful);
-              if (runSuccessQueue.Count > 10)
-                  runSuccessQueue.Dequeue();
-
-              int numSuccess = 0;
-              foreach (bool runSuccess in runSuccessQueue) {
-                  numSuccess += 1;
-              }*/
             stats.Add("Previous Run Successful", System.Convert.ToInt32(previousRunSuccessful));
-
-
 
             Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
             grid = new EnvGrid(gridSize, gridOffset + transform.position, tileSize);
             grid.CreateGrid(true);
             grid.FillGridWithRandomTiles(randomTileChance);
 
-            int minPathLength = Astar.GetDistanceManhattan(grid.GridNodes[grid.StartIndex.x, grid.StartIndex.y, grid.StartIndex.z], grid.GridNodes[grid.GoalIndex.x, grid.GoalIndex.y, grid.GoalIndex.z]);
-
-            if (useRandomTargetPathLength)
-                targetPathLength = Random.Range(minPathLength, 20);
-
-            else
-                targetPathLength = minPathLength;
+            UpdateFromLessonPlan();
 
             // if (previousRunSuccessful)
             InstantiateNodePrefabs();
@@ -198,8 +202,6 @@ namespace APG {
         }
 
         private void ClearEnvironment() {
-            //UpdateFromLessonPlan();
-
             goalRef.gameObject.SetActive(false);
             spawnRef.gameObject.SetActive(false);
             FailedRef.SetActive(false);
@@ -213,6 +215,20 @@ namespace APG {
                 pathPool.Release(gameObject);
             }
             instantiatedPathTiles.Clear();
+        }
+
+        private void UpdateFromLessonPlan() {
+            // Get random range values from lesson plan
+            LessonPlan_Environment.Instance.UpdateLessonIndex();
+
+            pathLengthInfluence = LessonPlan_Environment.Instance.GetPathInfluence();
+            cohesionInfluence = LessonPlan_Environment.Instance.GetCohesionInfluence();
+            gridEmptySpaceInfluence = LessonPlan_Environment.Instance.GetGridEmptySpaceInfluence();
+
+            int minPathLength = Astar.GetDistanceManhattan(grid.GridNodes[grid.StartIndex.x, grid.StartIndex.y, grid.StartIndex.z], grid.GridNodes[grid.GoalIndex.x, grid.GoalIndex.y, grid.GoalIndex.z]);
+            targetPathLength = minPathLength;
+            targetCohesionValue = LessonPlan_Environment.Instance.GetTargetCohesion();
+            targetGridEmptySpace = LessonPlan_Environment.Instance.GetTargetGridEmptySpace();
         }
 
         public override void CollectObservations(VectorSensor sensor) {
@@ -237,20 +253,23 @@ namespace APG {
                 }
             }
 
-
+            // 1 observation
+            sensor.AddObservation(EnvTime);
 
             // 2 observations
             sensor.AddObservation(PathLengthReward);
             sensor.AddObservation(PathLengthSlope);
+            sensor.AddObservation(NormalizedPathLengthInfluence);
 
-            // 1 observation
-            sensor.AddObservation(EnvTime);
-
+            sensor.AddObservation(CohesionReward);
             sensor.AddObservation(avgCohesionValue);
+            sensor.AddObservation(targetCohesionValue);
+            sensor.AddObservation(NormalizedCohesionInfluence);
 
-            sensor.AddObservation(targetGridEmptySpace);
-            sensor.AddObservation(gridEmptySpace);
             sensor.AddObservation(GridEmptySpaceReward);
+            sensor.AddObservation(gridEmptySpace);
+            sensor.AddObservation(targetGridEmptySpace);
+            sensor.AddObservation(NormalizedGridEmptySpaceInfluence);
         }
 
         public override void Heuristic(in ActionBuffers actionsOut) {
@@ -323,12 +342,10 @@ namespace APG {
         }
 
         private void EvaluateEnvironment() {
-
-
             float tickReward = 0;
 
             void AddTickReward(float reward) {
-                float normalizedReward = reward / MaxStep;
+                float normalizedReward = reward / (float)MaxStep;
                 AddReward(normalizedReward);
                 tickReward += normalizedReward;
             }
@@ -337,27 +354,16 @@ namespace APG {
             if (usePath && grid != null) {
                 Astar.GeneratePath(grid, true, false);
 
-                // if (!SpawnActive || !GoalActive)
-                //   grid.path.Clear();
+                if (CurrentPathLength == 0)
+                    AddTickReward(PathFailedPunishment);
+
+                // Assign reward based on target path length
+                else
+                    AddTickReward(PathLengthReward);
             }
 
-            // Evaluate level and assign rewards
-            /* if (CurrentPathLength == TargetPathLength) {
-                 *//* AddReward(CompletionReward);
-                  previousRunSuccessful = true;
-                  numEpisodesSuccessful += 1;
-                  EndEpisode();*//*
-             }*/
-
-            else if (CurrentPathLength == 0)
-                AddTickReward(PathFailedPunishment);
-
-            // Assign reward based on target path length
-            else
-                AddTickReward(PathLengthReward);
-
             UpdateCohesionValues();
-            AddTickReward(avgCohesionValue);    // Maximize cohesion This should have a 0-1 influence range
+            AddTickReward(CohesionReward);    // Maximize cohesion This should have a 0-1 influence range
 
             UpdateGridEmptySpaceCompositionVal();
             AddTickReward(GridEmptySpaceReward);
@@ -374,7 +380,6 @@ namespace APG {
                 else
                     previousRunSuccessful = true;
             }
-
         }
 
         private void InstantiateNodePrefabs() {

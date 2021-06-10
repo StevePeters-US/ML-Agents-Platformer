@@ -128,9 +128,9 @@ namespace APG.Environment {
 
         private void UpdateFromLessonPlan() {
             // Get random range values from lesson plan
-            LessonPlan.Instance.UpdateLessonIndex();
-            envSize = LessonPlan.Instance.GetRandomBoardSize();
-            usePath = LessonPlan.Instance.runtimeUsePath;
+            LessonPlan_PlayerAgent.Instance.UpdateLessonIndex();
+            envSize = LessonPlan_PlayerAgent.Instance.GetRandomBoardSize();
+            usePath = LessonPlan_PlayerAgent.Instance.runtimeUsePath;
         }
     }
 }

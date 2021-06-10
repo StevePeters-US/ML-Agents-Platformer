@@ -50,7 +50,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 607
+    VectorObservationSize: 612
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
@@ -94,15 +94,17 @@ MonoBehaviour:
   pathMat: {fileID: 2100000, guid: e9f278fdb3a52744ea59edd4df8aa542, type: 2}
   randomTileChance: 0.75
   drawGizmos: 0
-  targetPathLength: 12
-  useRandomTargetPathLength: 1
   maskActions: 1
   currentTickReward: 0
   debugCohesion: 0
   cohesionDebugTextPrefab: {fileID: -7257555249751150206, guid: 9e07bb2994e6184438ef15e65934f7df, type: 3}
+  targetCohesionValue: 0.75
   avgCohesionValue: 0
   gridEmptySpace: 0
   targetGridEmptySpace: 0.5
+  pathLengthInfluence: 1
+  cohesionInfluence: 1
+  gridEmptySpaceInfluence: 1
 --- !u!114 &113531138
 MonoBehaviour:
   m_ObjectHideFlags: 0
