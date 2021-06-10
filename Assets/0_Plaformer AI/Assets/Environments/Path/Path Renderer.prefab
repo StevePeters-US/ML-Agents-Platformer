@@ -143,6 +143,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f10f3e29c90a0d43a3751550eaecb16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathLine: {fileID: 0}
-  drawPath: 0
+  pathLine: {fileID: 8395706537622985062}
+  drawPath: 1
   yOffset: 1.5

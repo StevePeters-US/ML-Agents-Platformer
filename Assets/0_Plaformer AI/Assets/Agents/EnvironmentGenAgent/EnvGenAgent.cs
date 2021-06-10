@@ -13,6 +13,7 @@ namespace APG {
     public class EnvGenAgent : Agent {
 
         public Action<EnvGrid, Vector3Int> OnActionCompleted { get; set; }
+        public Action<EnvGrid, Vector3Int> OnEpisodeBegan;
 
         private EnvGrid grid;
         public EnvGrid Grid { get => grid; set => grid = value; }
@@ -63,9 +64,6 @@ namespace APG {
         private bool previousRunSuccessful = false;
         public bool PreviousRunSuccessful { get => previousRunSuccessful; }
 
-        public bool debugCohesion = false;
-        [SerializeField] private CohesionDebugText cohesionDebugTextPrefab;
-        private CohesionDebugText[,,] cohesionDebugTexts;
         [Range(0, 1)] public float targetCohesionValue = 0.75f;
         public float avgCohesionValue;
         public float CohesionReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(avgCohesionValue, targetCohesionValue, Mathf.Lerp(2, 5f, EnvTime)), NormalizedCohesionInfluence); }
@@ -91,7 +89,7 @@ namespace APG {
 
         }
         private void Awake() {
-            Academy.Instance.AgentPreStep += MakeRequests;
+            Academy.Instance.AgentPreStep += RequestDecision;
 
             validActions = new bool[2];
 
@@ -106,10 +104,10 @@ namespace APG {
 
         void OnDestroy() {
             if (Academy.IsInitialized) {
-                Academy.Instance.AgentPreStep -= MakeRequests;
+                Academy.Instance.AgentPreStep -= RequestDecision;
             }
         }
-        void MakeRequests(int academyStepCount) {
+        void RequestDecision(int academyStepCount) {
             RequestDecision();
         }
 
@@ -142,7 +140,8 @@ namespace APG {
 
             EvaluateEnvironment();
 
-            OnActionCompleted(grid, GridSize);
+            if (OnActionCompleted != null)
+                OnActionCompleted(grid, GridSize);
         }
 
         #endregion
@@ -157,9 +156,9 @@ namespace APG {
 
             UpdateFromLessonPlan();
 
-            if (debugCohesion)
-                InstantiateCohesionDebugTexts();
-                 }
+            if (OnEpisodeBegan != null)
+                OnEpisodeBegan(grid, GridSize);
+        }
 
 
         private void UpdateFromLessonPlan() {
@@ -298,29 +297,6 @@ namespace APG {
             gridEmptySpace = (float)numEmpty / (float)GridCount;
         }
 
-
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        private void InstantiateCohesionDebugTexts() {
-            cohesionDebugTexts = new CohesionDebugText[gridSize.x, gridSize.y, gridSize.z];
-
-            if (cohesionDebugTextPrefab != null) {
-                for (int x = 0; x < gridSize.x; x++) {
-                    for (int y = 0; y < gridSize.y; y++) {
-                        for (int z = 0; z < gridSize.z; z++) {
-
-
-                            CohesionDebugText text = Instantiate(cohesionDebugTextPrefab, this.transform);
-                            text.transform.position = grid.GridNodes[x, y, z].worldPos + new Vector3(0, 1.5f, 0);
-                            cohesionDebugTexts[x, y, z] = text;
-
-                        }
-                    }
-                }
-
-            }
-        }
-
         public void UpdateCohesionValues() {
             float totalCohesionValue = 0;
 
@@ -335,8 +311,6 @@ namespace APG {
                         }
 
                         grid.GridNodes[x, y, z].cohesiveValue = cohesiveValue;
-                        if (debugCohesion)
-                            cohesionDebugTexts[x, y, z].UpdateText(cohesiveValue.ToString("#.00"));
 
                         totalCohesionValue += cohesiveValue;
                     }
@@ -344,6 +318,5 @@ namespace APG {
             }
             avgCohesionValue = totalCohesionValue / (GridCount);
         }
-
     }
 }

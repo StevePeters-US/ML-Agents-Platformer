@@ -13,7 +13,7 @@ namespace APG.Environment {
         private EnvGenAgent envGenAgent;
 
         private void Awake() {
-            envGenAgent = GetComponent<EnvGenAgent>();
+            envGenAgent = FindObjectOfType<EnvGenAgent>();
         }
 
         private void Update() {

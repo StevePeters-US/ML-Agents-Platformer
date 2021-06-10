@@ -9,7 +9,7 @@ namespace APG {
         private EnvGenAgent agent;
 
         private void Awake() {
-            agent = GetComponent<EnvGenAgent>();
+            agent = FindObjectOfType<EnvGenAgent>();
             DebugGUI.SetGraphProperties("currentTickReward", "Current Tick Reward", -.05f, .05f, 1, new Color(0, 1, 1), false);
             DebugGUI.SetGraphProperties("previousRunSuccessful", "previous Run Successful", 0f, 1f, 1, Color.green, false);
             DebugGUI.SetGraphProperties("envTime", "Environment Time", 0, 1, 1, Color.white, true);
