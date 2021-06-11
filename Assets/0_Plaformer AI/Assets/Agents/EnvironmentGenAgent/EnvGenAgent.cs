@@ -12,8 +12,12 @@ using Random = UnityEngine.Random;
 namespace APG {
     public class EnvGenAgent : Agent {
 
+        public bool isTraining = true;
+        public bool canStep = false;
+
         public Action<EnvGrid, Vector3Int> OnActionCompleted { get; set; }
         public Action<EnvGrid, Vector3Int> OnEpisodeBegan;
+        public Action<EnvGrid> OnSuccessfulBuild;
 
         private EnvGrid grid;
         public EnvGrid Grid { get => grid; set => grid = value; }
@@ -26,15 +30,18 @@ namespace APG {
 
         [SerializeField, Range(0, 1)] private float randomTileChance = 0.5f;
 
-        public GameObject FailedRef { get => failedRef; }
-        private GameObject failedRef = null;
-
         [SerializeField] private bool drawGizmos = false;
 
 
         private Vector3Int currentIndex;
 
         private bool usePath = true;
+        private int maxPathLength = 40; // #Todo This needs to be calculated
+       [Range(0,1)] private float pathLengthSlider;
+        public void OnPathLengthSliderChanged(float newSliderValue) {
+            pathLengthSlider = newSliderValue;
+        }
+
         private float targetPathLength = 1f;
         public float TargetPathLength { get => targetPathLength; }
         public int CurrentPathLength { get => grid.GetPathLength; }
@@ -108,7 +115,8 @@ namespace APG {
             }
         }
         void RequestDecision(int academyStepCount) {
-            RequestDecision();
+            if (isTraining || canStep)
+                RequestDecision();
         }
 
         #endregion
@@ -170,7 +178,7 @@ namespace APG {
             gridEmptySpaceInfluence = LessonPlan_Environment.Instance.GetGridEmptySpaceInfluence();
 
             int minPathLength = Astar.GetDistanceManhattan(grid.GridNodes[grid.StartIndex.x, grid.StartIndex.y, grid.StartIndex.z], grid.GridNodes[grid.GoalIndex.x, grid.GoalIndex.y, grid.GoalIndex.z]);
-            targetPathLength = minPathLength;
+            targetPathLength = Mathf.Lerp( minPathLength, maxPathLength, pathLengthSlider);
             targetCohesionValue = LessonPlan_Environment.Instance.GetTargetCohesion();
             targetGridEmptySpace = LessonPlan_Environment.Instance.GetTargetGridEmptySpace();
         }
@@ -278,8 +286,13 @@ namespace APG {
                     previousRunSuccessful = false;
                 }
 
-                else
+                else {
                     previousRunSuccessful = true;
+                    if (!isTraining) {
+                        OnSuccessfulBuild(grid);
+                        canStep = false;
+                    }
+                }
             }
         }
         public void UpdateGridEmptySpaceCompositionVal() {

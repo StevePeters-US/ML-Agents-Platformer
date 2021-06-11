@@ -13,6 +13,10 @@ namespace APG.Environment {
         private EnvSpawn envSpawn;
         private PlayerAgent playerAgent;
 
+        private EnvGrid grid;
+
+        private float defaultTimeScale;
+
         private void OnEnable() {
             EnvironmentalManagers.Instance.Add(this);
 
@@ -20,18 +24,31 @@ namespace APG.Environment {
             envAgent = FindObjectOfType<EnvGenAgent>();
 
             envAgent.OnActionCompleted += OnActionTaken;
+            envAgent.OnSuccessfulBuild += OnSuccessfulBuild;
 
             playerAgent = GetComponentInChildren<PlayerAgent>();
+
+            defaultTimeScale = Time.timeScale;
         }
 
         private void OnDestroy() {
             envAgent.OnActionCompleted -= OnActionTaken;
+            envAgent.OnSuccessfulBuild -= OnSuccessfulBuild;
         }
 
         private void OnActionTaken(EnvGrid grid, Vector3Int gridSize) {
             if (envGenerator != null) {
                 envGenerator.ClearEnvironment();
-                envGenerator.InstantiateNodePrefabs(grid, gridSize);
+                envGenerator.InstantiateNodePrefabs(grid);
+            }
+        }
+
+        private void OnSuccessfulBuild(EnvGrid grid) {
+            Time.timeScale = defaultTimeScale;
+
+            if (envGenerator != null) {
+                envGenerator.ClearEnvironment();
+                envGenerator.InstantiateNodePrefabs(grid);
             }
         }
 
@@ -77,6 +94,13 @@ namespace APG.Environment {
 
             if (envSpawn != null && playerAgent)
                 envSpawn.ResetSpawnedAgent(playerAgent);
+        }
+
+        public void GenerateEnvironment() {
+            if (envAgent != null) {
+                envAgent.canStep = true;
+                Time.timeScale = 50;
+            }
         }
     }
 }

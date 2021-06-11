@@ -72,36 +72,40 @@ namespace APG.Environment {
         }
         #endregion
 
+        public void GenerateEnvironment() {
+
+        }
+
         public void GenerateGridEnvironment() {
-      /*      ClearEnvironment_DEP();
+            /*      ClearEnvironment_DEP();
 
-            Vector3 tileSize = floorTile.GetComponent<MeshRenderer>().bounds.size;
+                  Vector3 tileSize = floorTile.GetComponent<MeshRenderer>().bounds.size;
 
-            Vector3Int startIndex = GetRandomIndex();
-            availableIndices.Remove(startIndex);
+                  Vector3Int startIndex = GetRandomIndex();
+                  availableIndices.Remove(startIndex);
 
-            Vector3Int goalIndex = GetRandomIndex();
-            availableIndices.Remove(goalIndex);
+                  Vector3Int goalIndex = GetRandomIndex();
+                  availableIndices.Remove(goalIndex);
 
-            grid = new EnvGrid(envSize, transform.position, goalIndex, startIndex, tileSize);
-            grid.CreateGrid(useManhattanNeighbors);
+                  grid = new EnvGrid(envSize, transform.position, goalIndex, startIndex, tileSize);
+                  grid.CreateGrid(useManhattanNeighbors);
 
-            if (usePath) {
-                pathIndices = Astar.GeneratePath(grid, useManhattanNeighbors, true);
-                Astar.ExpandPath(grid, grid.GetStartNode(), grid.GetGoalNode());
-            }
+                  if (usePath) {
+                      pathIndices = Astar.GeneratePath(grid, useManhattanNeighbors, true);
+                      Astar.ExpandPath(grid, grid.GetStartNode(), grid.GetGoalNode());
+                  }
 
-            else
-                grid.FillGridWithTiles();
+                  else
+                      grid.FillGridWithTiles();
 
-            InstantiateNodePrefabsDep();
+                  InstantiateNodePrefabsDep();
 
-            if (goalRef)
-                envManager.SubscribeToGoal(goalRef);
-            else {
-                Debug.Log(" Generation failed, try again : Start Index : " + startIndex + " Goal Index : " + goalIndex);
-                GenerateGridEnvironment();
-            }*/
+                  if (goalRef)
+                      envManager.SubscribeToGoal(goalRef);
+                  else {
+                      Debug.Log(" Generation failed, try again : Start Index : " + startIndex + " Goal Index : " + goalIndex);
+                      GenerateGridEnvironment();
+                  }*/
         }
 
         private Vector3Int GetRandomIndex() {
@@ -138,10 +142,10 @@ namespace APG.Environment {
             }
         }
 
-        public void InstantiateNodePrefabs(EnvGrid grid, Vector3Int gridSize) {
-            for (int x = 0; x < gridSize.x; x++) {
-                for (int y = 0; y < gridSize.y; y++) {
-                    for (int z = 0; z < gridSize.z; z++) {
+        public void InstantiateNodePrefabs(EnvGrid grid) {
+            for (int x = 0; x < grid.GridSize.x; x++) {
+                for (int y = 0; y < grid.GridSize.y; y++) {
+                    for (int z = 0; z < grid.GridSize.z; z++) {
                         if (grid.GridNodes[x, y, z].NodeType == NodeType.Start) {
                             spawnRef.gameObject.SetActive(true);
                             spawnRef.transform.position = grid.GridNodes[x, y, z].worldPos;

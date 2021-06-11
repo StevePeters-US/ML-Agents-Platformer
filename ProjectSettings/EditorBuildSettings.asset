@@ -8,7 +8,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/0_Plaformer AI/_Developers/Steve/Training Player Agent.unity
     guid: ad3ce822c1d11ad408a02774e14e3f65
-  - enabled: 1
+  - enabled: 0
     path: Assets/0_Plaformer AI/_Developers/Steve/Training Environment Agent.unity
     guid: f09312165de337f45a6d1e3036dbc19f
+  - enabled: 1
+    path: Assets/0_Plaformer AI/Scenes/Demo Environment Agent.unity
+    guid: f63348dbbfc4a04489594de19c4e7137
   m_configObjects: {}

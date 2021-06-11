@@ -13,11 +13,11 @@ namespace APG.Environment {
         private EnvGenAgent envGenAgent;
 
         private void Awake() {
-            envGenAgent = FindObjectOfType<EnvGenAgent>();
+                envGenAgent = FindObjectOfType<EnvGenAgent>();            
         }
 
         private void Update() {
-            if (drawPath && envGenAgent)
+            if (drawPath && envGenAgent != null && envGenAgent.isActiveAndEnabled == true)
                 UpdatePath(envGenAgent.Grid.path);
         }
 

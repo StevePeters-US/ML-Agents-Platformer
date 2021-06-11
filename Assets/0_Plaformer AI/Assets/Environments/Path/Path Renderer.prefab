@@ -145,4 +145,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pathLine: {fileID: 8395706537622985062}
   drawPath: 1
-  yOffset: 1.5
+  yOffset: 2
