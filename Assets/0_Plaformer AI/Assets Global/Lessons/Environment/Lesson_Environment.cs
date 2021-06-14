@@ -7,24 +7,29 @@ namespace APG {
     public class Lesson_Environment : ScriptableObject {
         public string lessonName;
 
-        public float minPathInfluence = 1;
-        public float maxPathInfluence = 1;
-        public float GetPathInfluence() {
-            return Random.Range(minPathInfluence, maxPathInfluence);
+        [Range(0, 1)] public float minTargetPathLength = 1;
+        [Range(0, 1)] public float maxTargetPathLength = 1;
+        [Range(0, 1)] public float pathLengthInfluence = 0;
+
+        public float GetRandomPathLength() {
+            return Random.Range(minTargetPathLength, maxTargetPathLength);
         }
 
-        public float minCohesionInfluence = 0;
-        public float maxCohesionInfluence = 0;
-        [Range(0, 1)] public float targetCohesion = 0.75f;
-        public float GetCohesionInfluence() {
-            return Random.Range(minCohesionInfluence, maxCohesionInfluence);
+        [Range(0, 1)] public float minCohesion = 0;
+        [Range(0, 1)] public float maxCohesion = 0;
+        [Range(0, 1)] public float cohesionInfluence = 0;
+
+        //[Range(0, 1)] public float targetCohesion = 0.75f;
+        public float GetRandomCohesion() {
+            return Random.Range(minCohesion, maxCohesion);
         }
 
-        public float minGridEmptySpaceInfluence = 0;
-        public float maxGridEmptySpaceInfluence = 0;
-        [Range(0, 1)] public float targetGridEmptySpace = 0.25f;
-        public float GetGridEmptySpaceInfluence() {
-            return Random.Range(minGridEmptySpaceInfluence, maxGridEmptySpaceInfluence);
+        [Range(0, 1)] public float minGridEmptySpace = 0;
+        [Range(0, 1)] public float maxGridEmptySpace = 0;
+        [Range(0, 1)] public float gridEmptySpaceInfluence = 0;
+        //[Range(0, 1)] public float targetGridEmptySpace = 0.25f;
+        public float GetRandomGridEmptySpace() {
+            return Random.Range(minGridEmptySpace, maxGridEmptySpace);
         }
 
     }

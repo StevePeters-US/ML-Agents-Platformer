@@ -37,16 +37,17 @@ namespace APG {
 
         private bool usePath = true;
         private int maxPathLength = 40; // #Todo This needs to be calculated
-       [Range(0,1)] private float pathLengthSlider;
+        [Range(0, 1)] private float pathLengthSlider;
         public void OnPathLengthSliderChanged(float newSliderValue) {
             pathLengthSlider = newSliderValue;
         }
 
+        private float pathLengthWeight = 1;
         private float targetPathLength = 1f;
         public float TargetPathLength { get => targetPathLength; }
         public int CurrentPathLength { get => grid.GetPathLength; }
         // Path length reward gets tighter to target value the closer we get to the end of this episode
-        public float PathLengthReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(CurrentPathLength, targetPathLength, Mathf.Lerp(0, 1f, EnvTime)), NormalizedPathLengthInfluence); }
+        public float PathLengthReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(CurrentPathLength, targetPathLength, Mathf.Lerp(0, 1f, EnvTime)), pathLengthInfluence); }
         public float PathLengthSlope { get => CurrentPathLength == targetPathLength ? 0 : (CurrentPathLength > targetPathLength ? -1 : 1); }
 
         public float PathFailedPunishment { get => Mathf.Lerp(0, -1, EnvTime); }
@@ -71,24 +72,27 @@ namespace APG {
         private bool previousRunSuccessful = false;
         public bool PreviousRunSuccessful { get => previousRunSuccessful; }
 
-        [Range(0, 1)] public float targetCohesionValue = 0.75f;
+        [Range(0, 1)] public float targetCohesion = 0.75f;
         public float avgCohesionValue;
-        public float CohesionReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(avgCohesionValue, targetCohesionValue, Mathf.Lerp(2, 5f, EnvTime)), NormalizedCohesionInfluence); }
+        public float CohesionReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(avgCohesionValue, targetCohesion, Mathf.Lerp(2, 5f, EnvTime)), cohesionInfluence); }
 
 
         public float gridEmptySpace; // 0 -1 tile types composition
         [Range(0, 1)] public float targetGridEmptySpace = 0.5f;
-        public float GridEmptySpaceReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(gridEmptySpace, targetGridEmptySpace, Mathf.Lerp(2, 5f, EnvTime)), NormalizedGridEmptySpaceInfluence); }
+        public float GridEmptySpaceReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(gridEmptySpace, targetGridEmptySpace, Mathf.Lerp(2, 5f, EnvTime)), gridEmptySpaceInfluence); }
 
+        [Range(0, 1)] public float pathLengthInfluence;
+        [Range(0, 1)] public float cohesionInfluence;
+        [Range(0, 1)] public float gridEmptySpaceInfluence;
 
-        [Range(0, 1)] public float pathLengthInfluence = 1;
-        [Range(0, 1)] public float cohesionInfluence = 1;
-        [Range(0, 1)] public float gridEmptySpaceInfluence = 1;
+        //
+        //  [Range(0, 1)] public float cohesionInfluence = 1;
+        //  [Range(0, 1)] public float gridEmptySpaceInfluence = 1;
 
-        private float TotalInfluence { get => pathLengthInfluence + cohesionInfluence + gridEmptySpaceInfluence; }
-        private float NormalizedPathLengthInfluence { get => pathLengthInfluence / TotalInfluence; }
-        private float NormalizedCohesionInfluence { get => cohesionInfluence / TotalInfluence; }
-        private float NormalizedGridEmptySpaceInfluence { get => gridEmptySpaceInfluence / TotalInfluence; }
+        //   private float TotalInfluence { get => pathLengthWeight + cohesionInfluence + gridEmptySpaceInfluence; }
+        //  private float NormalizedPathLengthInfluence { get => pathLengthWeight / TotalInfluence; }
+        //  private float NormalizedCohesionInfluence { get => cohesionInfluence / TotalInfluence; }
+        //  private float NormalizedGridEmptySpaceInfluence { get => gridEmptySpaceInfluence / TotalInfluence; }
 
         #region initialize
         public override void Initialize() {
@@ -106,6 +110,9 @@ namespace APG {
             actionSpec.BranchSizes[0] = gridSize.x * gridSize.y * gridSize.z;
             actionSpec.BranchSizes[ACTIONS_BRANCH] = 2;
             GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec = actionSpec;
+
+            if (isTraining)
+                Time.timeScale = 100;
         }
 
 
@@ -173,14 +180,19 @@ namespace APG {
             // Get random range values from lesson plan
             LessonPlan_Environment.Instance.UpdateLessonIndex();
 
-            pathLengthInfluence = LessonPlan_Environment.Instance.GetPathInfluence();
-            cohesionInfluence = LessonPlan_Environment.Instance.GetCohesionInfluence();
-            gridEmptySpaceInfluence = LessonPlan_Environment.Instance.GetGridEmptySpaceInfluence();
+            pathLengthWeight = LessonPlan_Environment.Instance.GetRandomPathLength();
+            targetCohesion = LessonPlan_Environment.Instance.GetRandomCohesion();
+            targetGridEmptySpace = LessonPlan_Environment.Instance.GetRandomGridEmptySpace();
 
             int minPathLength = Astar.GetDistanceManhattan(grid.GridNodes[grid.StartIndex.x, grid.StartIndex.y, grid.StartIndex.z], grid.GridNodes[grid.GoalIndex.x, grid.GoalIndex.y, grid.GoalIndex.z]);
-            targetPathLength = Mathf.Lerp( minPathLength, maxPathLength, pathLengthSlider);
-            targetCohesionValue = LessonPlan_Environment.Instance.GetTargetCohesion();
-            targetGridEmptySpace = LessonPlan_Environment.Instance.GetTargetGridEmptySpace();
+            targetPathLength = Mathf.Lerp(minPathLength, maxPathLength, isTraining ? pathLengthWeight : pathLengthSlider);
+
+            // targetCohesion = LessonPlan_Environment.Instance.GetTargetCohesion();
+            // targetGridEmptySpace = LessonPlan_Environment.Instance.GetTargetGridEmptySpace();
+
+            pathLengthInfluence = LessonPlan_Environment.Instance.GetPathLengthInfluence();
+            cohesionInfluence = LessonPlan_Environment.Instance.GetCohesionInfluence();
+            gridEmptySpaceInfluence = LessonPlan_Environment.Instance.GetGridEmptySpaceInfluence();
         }
 
         public override void CollectObservations(VectorSensor sensor) {
@@ -211,17 +223,17 @@ namespace APG {
             // 2 observations
             sensor.AddObservation(PathLengthReward);
             sensor.AddObservation(PathLengthSlope);
-            sensor.AddObservation(NormalizedPathLengthInfluence);
+            sensor.AddObservation(pathLengthInfluence);
 
             sensor.AddObservation(CohesionReward);
             sensor.AddObservation(avgCohesionValue);
-            sensor.AddObservation(targetCohesionValue);
-            sensor.AddObservation(NormalizedCohesionInfluence);
+            sensor.AddObservation(targetCohesion);
+            sensor.AddObservation(cohesionInfluence);
 
             sensor.AddObservation(GridEmptySpaceReward);
             sensor.AddObservation(gridEmptySpace);
             sensor.AddObservation(targetGridEmptySpace);
-            sensor.AddObservation(NormalizedGridEmptySpaceInfluence);
+            sensor.AddObservation(gridEmptySpaceInfluence);
         }
 
         public override void Heuristic(in ActionBuffers actionsOut) {

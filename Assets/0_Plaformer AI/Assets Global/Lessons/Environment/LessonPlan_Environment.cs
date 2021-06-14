@@ -11,8 +11,8 @@ namespace APG {
         public int InitialLessonIdx;
         [System.NonSerialized] public int runtimeLessonIdx;
 
-      /*  public bool InitialUsePath;
-        [System.NonSerialized] public bool runtimeUsePath;*/
+        /*  public bool InitialUsePath;
+          [System.NonSerialized] public bool runtimeUsePath;*/
 
         public bool overWriteAcademy = false;
 
@@ -23,26 +23,36 @@ namespace APG {
         public void OnBeforeSerialize() {
         }
 
-        public float GetPathInfluence() {
-           return lessons[runtimeLessonIdx].GetPathInfluence();
+        public float GetRandomPathLength() {
+            return lessons[runtimeLessonIdx].GetRandomPathLength();
+        }
+
+        public float GetPathLengthInfluence() {
+            return lessons[runtimeLessonIdx].pathLengthInfluence;
+        }
+
+        public float GetRandomCohesion() {
+            return lessons[runtimeLessonIdx].GetRandomCohesion();
         }
 
         public float GetCohesionInfluence() {
-            return lessons[runtimeLessonIdx].GetCohesionInfluence();
+            return lessons[runtimeLessonIdx].cohesionInfluence;
         }
+        /*   public float GetTargetCohesion() {
+               return lessons[runtimeLessonIdx].targetCohesion;
+           }*/
 
-        public float GetTargetCohesion() {
-            return lessons[runtimeLessonIdx].targetCohesion;
+        public float GetRandomGridEmptySpace() {
+            return lessons[runtimeLessonIdx].GetRandomGridEmptySpace();
         }
 
         public float GetGridEmptySpaceInfluence() {
-            return lessons[runtimeLessonIdx].GetGridEmptySpaceInfluence();
+            return lessons[runtimeLessonIdx].gridEmptySpaceInfluence;
         }
+        /*   public float GetTargetGridEmptySpace() {
+               return lessons[runtimeLessonIdx].targetGridEmptySpace;
+           }*/
 
-        public float GetTargetGridEmptySpace() {
-            return lessons[runtimeLessonIdx].targetGridEmptySpace;
-        }
-            
 
 
         public void UpdateLessonIndex() {

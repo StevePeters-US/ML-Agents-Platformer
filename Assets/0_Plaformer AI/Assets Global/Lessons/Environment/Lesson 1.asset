@@ -13,9 +13,12 @@ MonoBehaviour:
   m_Name: Lesson 1
   m_EditorClassIdentifier: 
   lessonName: 
-  minPathInfluence: 0
-  maxPathInfluence: 0
-  minCohesionInfluence: 1
-  maxCohesionInfluence: 1
-  minGridEmptySpaceInfluence: 0
-  maxGridEmptySpaceInfluence: 0
+  minTargetPathLength: 1
+  maxTargetPathLength: 1
+  pathLengthInfluence: 1
+  minCohesion: 0.5
+  maxCohesion: 0.5
+  cohesionInfluence: 0
+  minGridEmptySpace: 0.5
+  maxGridEmptySpace: 0.5
+  gridEmptySpaceInfluence: 0
