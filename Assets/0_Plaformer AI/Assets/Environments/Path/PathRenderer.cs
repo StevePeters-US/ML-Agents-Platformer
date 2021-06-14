@@ -13,15 +13,15 @@ namespace APG.Environment {
         private EnvGenAgent envGenAgent;
 
         private void Awake() {
-                envGenAgent = FindObjectOfType<EnvGenAgent>();            
+            envGenAgent = FindObjectOfType<EnvGenAgent>();
         }
 
         private void Update() {
-            if (drawPath && envGenAgent != null && envGenAgent.isActiveAndEnabled == true)
-                UpdatePath(envGenAgent.Grid.path);
+            if (drawPath && envGenAgent != null && envGenAgent.isActiveAndEnabled == true && envGenAgent.Grid != null)
+                DrawPath(envGenAgent.Grid.path);
         }
 
-        public void UpdatePath(List<Node> pathNodes, float pathLengthReward = 1) {
+        public void DrawPath(List<Node> pathNodes, float pathLengthReward = 1) {
             pathLine.startWidth = 0.1f;
             pathLine.positionCount = pathNodes.Count;
 

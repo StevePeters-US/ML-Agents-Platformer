@@ -5,9 +5,10 @@ using UnityEngine;
 namespace APG.Environment {
     public static class Astar {
         public static List<Vector3Int> GeneratePath(EnvGrid grid, bool useManhattanDistance, bool updatePathNodeTypes) {
+            grid.path.Clear();
+
             Node startNode = grid.GetStartNode();
             Node goalNode = grid.GetGoalNode();
-
 
             List<Vector3Int> pathIndices = new List<Vector3Int>();
 
@@ -41,7 +42,6 @@ namespace APG.Environment {
                 }
             }
 
-            grid.path.Clear();
             return pathIndices;
         }
 

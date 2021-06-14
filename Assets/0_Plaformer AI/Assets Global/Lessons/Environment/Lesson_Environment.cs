@@ -32,5 +32,7 @@ namespace APG {
             return Random.Range(minGridEmptySpace, maxGridEmptySpace);
         }
 
+        [Range(0, 1)] public float startingRandomTileChance = 0.5f;
+
     }
 }

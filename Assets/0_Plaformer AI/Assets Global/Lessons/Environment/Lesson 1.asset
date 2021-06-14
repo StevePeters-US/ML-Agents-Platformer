@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Lesson 1
   m_EditorClassIdentifier: 
   lessonName: 
-  minTargetPathLength: 1
-  maxTargetPathLength: 1
+  minTargetPathLength: 0
+  maxTargetPathLength: 0.5
   pathLengthInfluence: 1
   minCohesion: 0.5
   maxCohesion: 0.5
@@ -22,3 +22,4 @@ MonoBehaviour:
   minGridEmptySpace: 0.5
   maxGridEmptySpace: 0.5
   gridEmptySpaceInfluence: 0
+  startingRandomTileChance: 0.669

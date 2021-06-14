@@ -12,8 +12,8 @@ behaviors:
       learning_rate_schedule: linear
     network_settings:
       normalize: false
-      hidden_units: 256
-      num_layers: 3
+      hidden_units: 512
+      num_layers: 5
       vis_encode_type: simple
       #memory:
         #sequence_length: 64
@@ -41,10 +41,10 @@ behaviors:
    #initial_elo: 1200.0
 
 engine_settings:
-        #width: 84
-        #height: 84
+    width: 640
+    height: 480
         #quality_level: 5
-    time_scale: 100
+    time_scale: 20
         #target_frame_rate: -1
         #capture_frame_rate: 60
         #no_graphics: false

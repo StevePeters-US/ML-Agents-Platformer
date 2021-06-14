@@ -1059,6 +1059,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Environment Agent
       objectReference: {fileID: 0}
+    - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+      propertyPath: m_Model
+      value: 
+      objectReference: {fileID: 5022602860645237092, guid: 0f823f69575f1764faec9791b6c1c83f, type: 3}
+    - target: {fileID: 2233170389573893863, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+      propertyPath: isTraining
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
 --- !u!1 &755942695

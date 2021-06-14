@@ -53,6 +53,9 @@ namespace APG {
                return lessons[runtimeLessonIdx].targetGridEmptySpace;
            }*/
 
+        public float GetStartingRandomTileChance() {
+            return lessons[runtimeLessonIdx].startingRandomTileChance;
+        }
 
 
         public void UpdateLessonIndex() {

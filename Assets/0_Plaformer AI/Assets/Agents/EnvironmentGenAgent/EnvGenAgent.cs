@@ -15,12 +15,12 @@ namespace APG {
         public bool isTraining = true;
         public bool canStep = false;
 
-        public Action<EnvGrid, Vector3Int> OnActionCompleted { get; set; }
-        public Action<EnvGrid, Vector3Int> OnEpisodeBegan;
+        public Action<EnvGrid> OnActionCompleted { get; set; }
+        public Action<EnvGrid> OnEpisodeBegan;
         public Action<EnvGrid> OnSuccessfulBuild;
 
         private EnvGrid grid;
-        public EnvGrid Grid { get => grid; set => grid = value; }
+        public EnvGrid Grid { get => grid; }
 
         [SerializeField] private Vector3Int gridSize = new Vector3Int(20, 1, 20);
         public Vector3Int GridSize { get => gridSize; }
@@ -28,29 +28,10 @@ namespace APG {
         [SerializeField] private Vector3 tileSize = Vector3.one;
 
 
-        [SerializeField, Range(0, 1)] private float randomTileChance = 0.5f;
+        [Range(0, 1)] private float randomTileChance = 0.5f;
 
         [SerializeField] private bool drawGizmos = false;
 
-
-        private Vector3Int currentIndex;
-
-        private bool usePath = true;
-        private int maxPathLength = 40; // #Todo This needs to be calculated
-        [Range(0, 1)] private float pathLengthSlider;
-        public void OnPathLengthSliderChanged(float newSliderValue) {
-            pathLengthSlider = newSliderValue;
-        }
-
-        private float pathLengthWeight = 1;
-        private float targetPathLength = 1f;
-        public float TargetPathLength { get => targetPathLength; }
-        public int CurrentPathLength { get => grid.GetPathLength; }
-        // Path length reward gets tighter to target value the closer we get to the end of this episode
-        public float PathLengthReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(CurrentPathLength, targetPathLength, Mathf.Lerp(0, 1f, EnvTime)), pathLengthInfluence); }
-        public float PathLengthSlope { get => CurrentPathLength == targetPathLength ? 0 : (CurrentPathLength > targetPathLength ? -1 : 1); }
-
-        public float PathFailedPunishment { get => Mathf.Lerp(0, -1, EnvTime); }
 
         const int ACTIONS_BRANCH = 1;
         [SerializeField] private bool maskActions = true;
@@ -62,15 +43,25 @@ namespace APG {
         //const int START = 3;
         //const int obstacle = 5;
 
-        public float currentTickReward;
 
         // 0 - 1 based on how much time is left in the episode
         public float EnvTime { get => (float)StepCount / (float)MaxStep; }
+        public float currentTickReward;
 
+        private bool usePath = true;
+        private int maxPathLength = 40; // #Todo This needs to be calculated
+        [Range(0, 1)] private float pathLengthInterpolator;
+        public void OnPathLengthSliderChanged(float newSliderValue) { pathLengthInterpolator = newSliderValue; }
 
-        private StatsRecorder stats;
-        private bool previousRunSuccessful = false;
-        public bool PreviousRunSuccessful { get => previousRunSuccessful; }
+        //private float pathLengthWeight = 1;
+        private float targetPathLength = 1f;
+        public float TargetPathLength { get => targetPathLength; }
+        public int CurrentPathLength { get => grid.GetPathLength; }
+        // Path length reward gets tighter to target value the closer we get to the end of this episode
+        public float PathLengthReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(CurrentPathLength, targetPathLength, Mathf.Lerp(0, 1f, EnvTime)), pathLengthInfluence); }
+        public float PathLengthSlope { get => CurrentPathLength == targetPathLength ? 0 : (CurrentPathLength > targetPathLength ? -1 : 1); }
+        public float PathFailedPunishment { get => Mathf.Lerp(0, -1, EnvTime); }
+
 
         [Range(0, 1)] public float targetCohesion = 0.75f;
         public float avgCohesionValue;
@@ -85,14 +76,14 @@ namespace APG {
         [Range(0, 1)] public float cohesionInfluence;
         [Range(0, 1)] public float gridEmptySpaceInfluence;
 
-        //
-        //  [Range(0, 1)] public float cohesionInfluence = 1;
-        //  [Range(0, 1)] public float gridEmptySpaceInfluence = 1;
-
         //   private float TotalInfluence { get => pathLengthWeight + cohesionInfluence + gridEmptySpaceInfluence; }
         //  private float NormalizedPathLengthInfluence { get => pathLengthWeight / TotalInfluence; }
         //  private float NormalizedCohesionInfluence { get => cohesionInfluence / TotalInfluence; }
         //  private float NormalizedGridEmptySpaceInfluence { get => gridEmptySpaceInfluence / TotalInfluence; }
+
+        private StatsRecorder stats;
+        private bool previousRunSuccessful = false;
+        public bool PreviousRunSuccessful { get => previousRunSuccessful; }
 
         #region initialize
         public override void Initialize() {
@@ -110,9 +101,6 @@ namespace APG {
             actionSpec.BranchSizes[0] = gridSize.x * gridSize.y * gridSize.z;
             actionSpec.BranchSizes[ACTIONS_BRANCH] = 2;
             GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec = actionSpec;
-
-            if (isTraining)
-                Time.timeScale = 100;
         }
 
 
@@ -141,7 +129,7 @@ namespace APG {
         public override void OnActionReceived(ActionBuffers actionBuffers) {
             // Using single action buffer
             int gridNum = actionBuffers.DiscreteActions[0];
-            currentIndex = new Vector3Int(gridNum % gridSize.x, 0, gridNum / gridSize.x);
+            Vector3Int currentIndex = new Vector3Int(gridNum % gridSize.x, 0, gridNum / gridSize.x);
 
             NodeType newNodeType;
             if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == EMPTY)
@@ -156,7 +144,7 @@ namespace APG {
             EvaluateEnvironment();
 
             if (OnActionCompleted != null)
-                OnActionCompleted(grid, GridSize);
+                OnActionCompleted(grid);
         }
 
         #endregion
@@ -164,15 +152,24 @@ namespace APG {
         public override void OnEpisodeBegin() {
             stats.Add("Previous Run Successful", System.Convert.ToInt32(previousRunSuccessful));
 
+            if (isTraining) {
+                GenerateNewGrid();
+            }
+           
+            if (OnEpisodeBegan != null)
+                OnEpisodeBegan(grid);
+        }
+
+        public void GenerateNewGrid() {
+            UpdateFromLessonPlan();
+
             Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
             grid = new EnvGrid(gridSize, gridOffset + transform.position, tileSize);
             grid.CreateGrid(true);
             grid.FillGridWithRandomTiles(randomTileChance);
 
-            UpdateFromLessonPlan();
-
-            if (OnEpisodeBegan != null)
-                OnEpisodeBegan(grid, GridSize);
+            int minPathLength = Astar.GetDistanceManhattan(grid.GridNodes[grid.StartIndex.x, grid.StartIndex.y, grid.StartIndex.z], grid.GridNodes[grid.GoalIndex.x, grid.GoalIndex.y, grid.GoalIndex.z]);
+            targetPathLength = Mathf.Lerp(minPathLength, maxPathLength, pathLengthInterpolator);
         }
 
 
@@ -180,19 +177,15 @@ namespace APG {
             // Get random range values from lesson plan
             LessonPlan_Environment.Instance.UpdateLessonIndex();
 
-            pathLengthWeight = LessonPlan_Environment.Instance.GetRandomPathLength();
+            pathLengthInterpolator = LessonPlan_Environment.Instance.GetRandomPathLength();
             targetCohesion = LessonPlan_Environment.Instance.GetRandomCohesion();
             targetGridEmptySpace = LessonPlan_Environment.Instance.GetRandomGridEmptySpace();
-
-            int minPathLength = Astar.GetDistanceManhattan(grid.GridNodes[grid.StartIndex.x, grid.StartIndex.y, grid.StartIndex.z], grid.GridNodes[grid.GoalIndex.x, grid.GoalIndex.y, grid.GoalIndex.z]);
-            targetPathLength = Mathf.Lerp(minPathLength, maxPathLength, isTraining ? pathLengthWeight : pathLengthSlider);
-
-            // targetCohesion = LessonPlan_Environment.Instance.GetTargetCohesion();
-            // targetGridEmptySpace = LessonPlan_Environment.Instance.GetTargetGridEmptySpace();
 
             pathLengthInfluence = LessonPlan_Environment.Instance.GetPathLengthInfluence();
             cohesionInfluence = LessonPlan_Environment.Instance.GetCohesionInfluence();
             gridEmptySpaceInfluence = LessonPlan_Environment.Instance.GetGridEmptySpaceInfluence();
+
+            randomTileChance = LessonPlan_Environment.Instance.GetStartingRandomTileChance();
         }
 
         public override void CollectObservations(VectorSensor sensor) {
@@ -225,15 +218,15 @@ namespace APG {
             sensor.AddObservation(PathLengthSlope);
             sensor.AddObservation(pathLengthInfluence);
 
-            sensor.AddObservation(CohesionReward);
-            sensor.AddObservation(avgCohesionValue);
-            sensor.AddObservation(targetCohesion);
-            sensor.AddObservation(cohesionInfluence);
+        //    sensor.AddObservation(CohesionReward);
+        //    sensor.AddObservation(avgCohesionValue);
+        //    sensor.AddObservation(targetCohesion);
+        //    sensor.AddObservation(cohesionInfluence);
 
-            sensor.AddObservation(GridEmptySpaceReward);
-            sensor.AddObservation(gridEmptySpace);
-            sensor.AddObservation(targetGridEmptySpace);
-            sensor.AddObservation(gridEmptySpaceInfluence);
+        //    sensor.AddObservation(GridEmptySpaceReward);
+         //   sensor.AddObservation(gridEmptySpace);
+         //   sensor.AddObservation(targetGridEmptySpace);
+         //   sensor.AddObservation(gridEmptySpaceInfluence);
         }
 
         public override void Heuristic(in ActionBuffers actionsOut) {
@@ -283,11 +276,11 @@ namespace APG {
                     AddTickReward(PathLengthReward);
             }
 
-            UpdateCohesionValues();
-            AddTickReward(CohesionReward);    // Maximize cohesion This should have a 0-1 influence range
+           // UpdateCohesionValues();
+          //  AddTickReward(CohesionReward);    // Maximize cohesion This should have a 0-1 influence range
 
-            UpdateGridEmptySpaceCompositionVal();
-            AddTickReward(GridEmptySpaceReward);
+          //  UpdateGridEmptySpaceCompositionVal();
+           // AddTickReward(GridEmptySpaceReward);
 
             currentTickReward = tickReward;
 

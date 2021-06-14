@@ -7,7 +7,7 @@ namespace APG.Environment {
         public bool envCompleted = false;
 
         private EnvironmentGenerator envGenerator;
-        private EnvGenAgent envAgent;
+        [SerializeField] private EnvGenAgent envAgent;
 
         private EnvGoal envGoal;
         private EnvSpawn envSpawn;
@@ -21,7 +21,8 @@ namespace APG.Environment {
             EnvironmentalManagers.Instance.Add(this);
 
             envGenerator = FindObjectOfType<EnvironmentGenerator>();
-            envAgent = FindObjectOfType<EnvGenAgent>();
+            if (envAgent == null)
+                envAgent = FindObjectOfType<EnvGenAgent>();
 
             envAgent.OnActionCompleted += OnActionTaken;
             envAgent.OnSuccessfulBuild += OnSuccessfulBuild;
@@ -36,7 +37,7 @@ namespace APG.Environment {
             envAgent.OnSuccessfulBuild -= OnSuccessfulBuild;
         }
 
-        private void OnActionTaken(EnvGrid grid, Vector3Int gridSize) {
+        private void OnActionTaken(EnvGrid grid) {
             if (envGenerator != null) {
                 envGenerator.ClearEnvironment();
                 envGenerator.InstantiateNodePrefabs(grid);
@@ -98,6 +99,7 @@ namespace APG.Environment {
 
         public void GenerateEnvironment() {
             if (envAgent != null) {
+                envAgent.GenerateNewGrid();
                 envAgent.canStep = true;
                 Time.timeScale = 50;
             }

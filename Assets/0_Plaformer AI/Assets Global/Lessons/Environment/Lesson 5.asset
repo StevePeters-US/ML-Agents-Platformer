@@ -15,10 +15,11 @@ MonoBehaviour:
   lessonName: 
   minTargetPathLength: 0
   maxTargetPathLength: 1
-  pathLengthInfluence: 0
+  pathLengthInfluence: 1
   minCohesion: 0
   maxCohesion: 1
   cohesionInfluence: 0
   minGridEmptySpace: 0
   maxGridEmptySpace: 1
   gridEmptySpaceInfluence: 1
+  startingRandomTileChance: 0.189

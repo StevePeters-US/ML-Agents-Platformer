@@ -25,6 +25,7 @@ namespace APG.Environment {
         Vector3 tileSize = Vector3.one;
         public Vector3 TileSize { get => tileSize; set => tileSize = value; }
 
+        public List<Node> path = new List<Node>();
         // Path length not including start and goal tiles
         public int GetPathLength { get => Mathf.Max(0, path.Count - 2); }
 
@@ -87,7 +88,7 @@ namespace APG.Environment {
                         gridNodes[x, y, z] = new Node(worldPos, gridIndex, NodeType.Empty);
                         gridNodes[x, y, z].SetNeighborIndices(gridSize, useManhattanNeighbors);
 
-                       
+
                     }
                 }
             }
@@ -150,7 +151,6 @@ namespace APG.Environment {
             return cellTypeBuffer;
         }
 
-        public List<Node> path = new List<Node>();
         public void DrawGrid() {
             Gizmos.DrawWireCube(gridPos, new Vector3(gridWorldSize.x, 1, gridWorldSize.y));
 
@@ -174,15 +174,6 @@ namespace APG.Environment {
             }
         }
 
-        public void DrawPath() {
-            if (path != null) {
-                foreach (Node node in path) {
-                    Gizmos.color = new Color(230, 230, 250); // Lavender
-                    Gizmos.DrawSphere(node.worldPos + new Vector3(0, 2, 0), .25f);
-                }
-            }
-        }
-
         public void ResetPath() {
             for (int x = 0; x < gridSize.x; x++) {
                 for (int y = 0; y < gridSize.y; y++) {
@@ -193,22 +184,6 @@ namespace APG.Environment {
             }
         }
 
-        private int GetDistance(Node nodeA, Node nodeB) {
-            int distX = Mathf.Abs(nodeA.gridIndex.x - nodeB.gridIndex.x);
-            int distZ = Mathf.Abs(nodeA.gridIndex.z - nodeB.gridIndex.z);
-
-            if (distX > distZ)
-                return 14 * distZ + 10 * (distX - distZ);
-
-            return 14 * distX + 10 * (distZ - distX);
-        }
-
-        private int GetDistanceManhattan(Node nodeA, Node nodeB) {
-            int distX = Mathf.Abs(nodeA.gridIndex.x - nodeB.gridIndex.x);
-            int distY = Mathf.Abs(nodeA.gridIndex.y - nodeB.gridIndex.y);
-
-            return distX + distY;
-        }
 
         private Vector3Int GetRandomIndex(List<Vector3Int> excludedIndices) {
             List<Vector3Int> validIndices = new List<Vector3Int>();
