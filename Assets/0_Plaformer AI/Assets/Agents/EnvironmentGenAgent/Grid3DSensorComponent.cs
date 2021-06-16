@@ -10,6 +10,8 @@ namespace APG.Environment {
 
         [HideInInspector, SerializeField]
         internal string m_SensorName = "Grid3DSensor";
+
+        [SerializeField] private Grid3D_Abstract grid;
         // <summary>
         /// Name of the generated <see cref="GridSensor"/> object.
         /// Note that changing this at runtime does not affect how the Agent sorts the sensors.
@@ -47,8 +49,10 @@ namespace APG.Environment {
         }
 
         public override ISensor[] CreateSensors() {
-            var board = GetComponent<Grid3D_Abstract>();
-            var cellSensor = Grid3DSensor.CellTypeSensor(board, m_SensorName + " (cells)", m_CompressionType);
+            //Grid3D_Abstract board = GetComponent<Grid3D_Abstract>();
+            //var cellSensor = Grid3DSensor.CellTypeSensor(board, m_SensorName + " (cells)", m_CompressionType);
+            var cellSensor = Grid3DSensor.CellTypeSensor(grid, m_SensorName + " (cells)", m_CompressionType);
+
             // This can be null if numSpecialTypes is 0
             /*      var specialSensor = Match3Sensor.SpecialTypeSensor(board, ObservationType, SensorName + " (special)");
                   return specialSensor != null ? new ISensor[] { cellSensor, specialSensor } : new ISensor[] { cellSensor };*/

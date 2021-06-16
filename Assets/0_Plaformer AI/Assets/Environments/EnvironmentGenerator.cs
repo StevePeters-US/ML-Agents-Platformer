@@ -76,7 +76,7 @@ namespace APG.Environment {
         #endregion
 
         public void GenerateEnvironment() {
-
+            grid.GenerateNewGrid();
         }
 
         public void GenerateGridEnvironment() {
@@ -145,7 +145,7 @@ namespace APG.Environment {
             }
         }
 
-        public void InstantiateNodePrefabs(Grid3D_Platformer grid) {
+        public void InstantiateNodePrefabs() {
             for (int x = 0; x < grid.GetGridSize().x; x++) {
                 for (int y = 0; y < grid.GetGridSize().y; y++) {
                     for (int z = 0; z < grid.GetGridSize().z; z++) {

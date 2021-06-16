@@ -11,14 +11,19 @@ namespace APG.Environment {
         public float yOffset = 1.5f;
 
         private EnvGenAgent envGenAgent;
+        private Grid3D_Platformer grid;
 
         private void Awake() {
             envGenAgent = FindObjectOfType<EnvGenAgent>();
+            grid = FindObjectOfType<Grid3D_Platformer>();
         }
 
         private void Update() {
-            if (drawPath && envGenAgent != null && envGenAgent.isActiveAndEnabled == true && envGenAgent.Grid != null)
-                DrawPath(envGenAgent.Grid.path);
+            //if (drawPath && envGenAgent != null && envGenAgent.isActiveAndEnabled == true && envGenAgent.Grid != null)
+            //    DrawPath(envGenAgent.Grid.path);
+
+            if (drawPath && grid != null)
+                DrawPath(grid.CurrentGrid3DProperties.path);
         }
 
         public void DrawPath(List<Node_3D> pathNodes, float pathLengthReward = 1) {

@@ -13,7 +13,7 @@ namespace APG.Environment {
         string m_SensorName;
 
         Grid3D_Abstract m_Board;
-        Grid3DProperties m_MaxBoardSize;
+        //Grid3DPropertiesStruct m_MaxBoardSize;
         Vector3Int gridSize;
         GridValueProvider m_GridValues;
         int m_OneHotSize;

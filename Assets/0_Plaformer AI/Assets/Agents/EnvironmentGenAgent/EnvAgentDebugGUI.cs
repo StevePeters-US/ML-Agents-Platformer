@@ -35,7 +35,7 @@ namespace APG {
             DebugGUI.Graph("previousRunSuccessful", System.Convert.ToInt32(agent.PreviousRunSuccessful));
             DebugGUI.Graph("envTime", agent.EnvTime);
 
-            DebugGUI.Graph("currentPathLength", agent.CurrentPathLength);
+            DebugGUI.Graph("currentPathLength", agent.currentPathLength);
             DebugGUI.Graph("targetPathLength", agent.TargetPathLength);
 
             DebugGUI.Graph("pathLengthReward", agent.PathLengthReward);

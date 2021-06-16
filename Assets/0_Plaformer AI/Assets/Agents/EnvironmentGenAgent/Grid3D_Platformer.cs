@@ -34,7 +34,7 @@ namespace APG.Environment {
         (int CellType, int SpecialType)[,] m_Cells;
         bool[,] m_Matched;
 
-        
+
 
         System.Random m_Random;
 
@@ -43,7 +43,7 @@ namespace APG.Environment {
             m_Matched = new bool[MaxColumns, MaxRows];
 
             // Start using the max rows and columns, but we'll update the current size at the start of each episode.
-            m_CurrentGrid3DProperties = new Grid3DProperties {
+            m_CurrentGrid3DData = new Grid3DData {
                 Rows = MaxRows,
                 Columns = MaxColumns,
                 NumCellTypes = NumCellTypes,
@@ -56,8 +56,17 @@ namespace APG.Environment {
             InitRandom();
         }
 
-        public override Grid3DProperties GetMaxBoardSize() {
-            return new Grid3DProperties {
+        public void GenerateNewGrid() {
+            Debug.Log("Generating new 3D grid");
+
+            /*  Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
+              grid = new Grid_3D(gridSize, gridOffset + transform.position, tileSize);
+              grid.CreateGrid(true);
+              grid.FillGridWithRandomTiles(randomTileChance);*/
+        }
+
+        public override Grid3DData GetMaxBoardSize() {
+            return new Grid3DData {
                 Rows = MaxRows,
                 Columns = MaxColumns,
                 NumCellTypes = NumCellTypes,
@@ -65,8 +74,8 @@ namespace APG.Environment {
             };
         }
 
-        public override Grid3DProperties GetCurrentBoardSize() {
-            return m_CurrentGrid3DProperties;
+        public override Grid3DData GetCurrentBoardSize() {
+            return m_CurrentGrid3DData;
         }
 
         /// <summary>
@@ -77,29 +86,29 @@ namespace APG.Environment {
         public void UpdateCurrentBoardSize() {
             var newRows = m_Random.Next(MinRows, MaxRows + 1);
             var newCols = m_Random.Next(MinColumns, MaxColumns + 1);
-            m_CurrentGrid3DProperties.Rows = newRows;
-            m_CurrentGrid3DProperties.Columns = newCols;
+            m_CurrentGrid3DData.Rows = newRows;
+            m_CurrentGrid3DData.Columns = newCols;
         }
 
-       
+
 
         public override int GetCellType(int row, int col) {
-            if (row >= m_CurrentGrid3DProperties.Rows || col >= m_CurrentGrid3DProperties.Columns) {
+            if (row >= m_CurrentGrid3DData.Rows || col >= m_CurrentGrid3DData.Columns) {
                 throw new IndexOutOfRangeException();
             }
             return m_Cells[col, row].CellType;
         }
 
         public override int GetSpecialType(int row, int col) {
-            if (row >= m_CurrentGrid3DProperties.Rows || col >= m_CurrentGrid3DProperties.Columns) {
+            if (row >= m_CurrentGrid3DData.Rows || col >= m_CurrentGrid3DData.Columns) {
                 throw new IndexOutOfRangeException();
             }
             return m_Cells[col, row].SpecialType;
         }
 
-     
 
-        
+
+
 
 
 
@@ -120,7 +129,7 @@ namespace APG.Environment {
             }
         }
 
-    
+
 
         void ClearMarked() {
             for (var i = 0; i < MaxRows; i++) {
@@ -151,5 +160,53 @@ namespace APG.Environment {
             return 0;
         }
 
+        public override int GetMinPathLength() {
+            throw new NotImplementedException();
+        }
+
+        public override int GetMaxPathLength() {
+            throw new NotImplementedException();
+        }
+
+        public override int GetCurrentPathLength() {
+            throw new NotImplementedException();
+        }
+
+        public override void UpdateRelativeEmptySpaceValue() {
+            int numEmpty = 0;
+
+            for (int x = 0; x < GetGridSize().x; x++) {
+                for (int y = 0; y < GetGridSize().y; y++) {
+                    for (int z = 0; z < GetGridSize().z; z++) {
+                        if (GetGridNode(x, y, z).NodeType == NodeType.Empty)
+                            numEmpty += 1;
+                    }
+                }
+            }
+
+            m_CurrentGrid3DData.relativeEmptySpace = (float)numEmpty / (float)CurrentGrid3DProperties.GridCount;
+        }
+
+        public override void UpdateCohesionValues() {
+            float totalCohesionValue = 0;
+
+            for (int x = 0; x < GetGridSize().x; x++) {
+                for (int y = 0; y < GetGridSize().y; y++) {
+                    for (int z = 0; z < GetGridSize().z; z++) {
+                        float cohesiveValue = 0;
+                        for (int i = 0; i < GetGridNode(x, y, z).allNeighborIndices.Count; i++) {
+                            Vector3Int nodeIndex = GetGridNode(x, y, z).allNeighborIndices[i];
+                            if (GetGridNode(x, y, z).NodeType == GetGridNode(nodeIndex.x, nodeIndex.y, nodeIndex.z).NodeType)
+                                cohesiveValue += 1f / GetGridNode(x, y, z).allNeighborIndices.Count;
+                        }
+
+                        GetGridNode(x, y, z).cohesiveValue = cohesiveValue;
+
+                        totalCohesionValue += cohesiveValue;
+                    }
+                }
+            }
+            m_CurrentGrid3DData.avgCohesion = totalCohesionValue / (m_CurrentGrid3DData.GridCount);
+        }
     }
 }

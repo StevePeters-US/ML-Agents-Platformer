@@ -15,11 +15,12 @@ namespace APG {
         private bool isTraining = false;
         public bool canStep = false;
 
-        public Action<Grid3D_Platformer> OnActionCompleted { get; set; }
-        public Action<Grid3D_Platformer> OnEpisodeBegan;
-        public Action<Grid3D_Platformer> OnSuccessfulBuild;
+        //public Action<Grid3D_Platformer> OnActionCompleted { get; set; }
+        public Action OnActionCompleted;
+        public Action OnEpisodeBegan;
+        public Action OnSuccessfulBuild;
 
-        private Grid3D_Platformer grid;
+        [SerializeField] private Grid3D_Platformer grid;
         public Grid3D_Platformer Grid { get => grid; }
 
         [SerializeField] private Vector3Int gridSize = new Vector3Int(20, 1, 20);
@@ -56,10 +57,10 @@ namespace APG {
         //private float pathLengthWeight = 1;
         private float targetPathLength = 1f;
         public float TargetPathLength { get => targetPathLength; }
-        public int CurrentPathLength { get => grid.GetPathLength; }
+        public int currentPathLength;// { get => grid.GetPathLength; }
         // Path length reward gets tighter to target value the closer we get to the end of this episode
-        public float PathLengthReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(CurrentPathLength, targetPathLength, Mathf.Lerp(0, 1f, EnvTime)), pathLengthInfluence); }
-        public float PathLengthSlope { get => CurrentPathLength == targetPathLength ? 0 : (CurrentPathLength > targetPathLength ? -1 : 1); }
+        public float PathLengthReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(currentPathLength, targetPathLength, Mathf.Lerp(0, 1f, EnvTime)), pathLengthInfluence); }
+        public float PathLengthSlope { get => currentPathLength == targetPathLength ? 0 : (currentPathLength > targetPathLength ? -1 : 1); }
         public float PathFailedPunishment { get => Mathf.Lerp(0, -1, EnvTime); }
 
 
@@ -125,11 +126,11 @@ namespace APG {
         #endregion
 
         #region GUI
-        private void OnDrawGizmos() {
+       /* private void OnDrawGizmos() {
 
             if (drawGizmos && grid != null)
                 grid.DrawGrid();
-        }
+        }*/
         #endregion
 
         #region recurring
@@ -151,8 +152,7 @@ namespace APG {
 
             EvaluateEnvironment();
 
-            if (OnActionCompleted != null)
-                OnActionCompleted();
+            OnActionCompleted?.Invoke();
         }
 
         #endregion
@@ -164,20 +164,19 @@ namespace APG {
                 GenerateNewGrid();
             }
 
-            if (OnEpisodeBegan != null)
-                OnEpisodeBegan(grid);
+            OnEpisodeBegan?.Invoke();
         }
 
         public void GenerateNewGrid() {
             UpdateFromLessonPlan();
 
-            Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
+           /* Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
             grid = new Grid_3D(gridSize, gridOffset + transform.position, tileSize);
             grid.CreateGrid(true);
             grid.FillGridWithRandomTiles(randomTileChance);
 
-            int minPathLength = Astar.GetDistanceManhattan(grid.GetStartNode() , grid.GetGoalNode());
-            targetPathLength = Mathf.Lerp(minPathLength, maxPathLength, pathLengthInterpolator);
+            int minPathLength = Astar.GetDistanceManhattan(grid.GetStartNode(), grid.GetGoalNode());
+            targetPathLength = Mathf.Lerp(minPathLength, maxPathLength, pathLengthInterpolator);*/
         }
 
 
@@ -198,7 +197,7 @@ namespace APG {
 
         public override void CollectObservations(VectorSensor sensor) {
 
-            for (int x = 0; x < gridSize.x; x++) {
+         /*   for (int x = 0; x < gridSize.x; x++) {
                 for (int y = 0; y < gridSize.y; y++) {
                     for (int z = 0; z < gridSize.z; z++) {
                         sensor.AddObservation(grid.GetGridNode(x, y, z).locked ? 1 : 0);
@@ -216,7 +215,7 @@ namespace APG {
                         // Debug observations
                     }
                 }
-            }
+            }*/
 
             // 1 observation
             sensor.AddObservation(EnvTime);
@@ -274,9 +273,10 @@ namespace APG {
 
             // Is there a valid path from start to goal?
             if (usePath && grid != null) {
-                Astar.GeneratePath(grid, true, false);
+               currentPathLength = grid.GetCurrentPathLength();
+               // Astar.GeneratePath(grid, true, false);
 
-                if (CurrentPathLength == 0)
+                if (currentPathLength == 0)
                     AddTickReward(PathFailedPunishment);
 
                 // Assign reward based on target path length
@@ -294,7 +294,7 @@ namespace APG {
 
             // If we're on our last step, ensure that the environment is traversable and save grid
             if (StepCount == MaxStep) {
-                if (CurrentPathLength == 0) {
+                if (currentPathLength == 0) {
                     AddReward(-10);
                     previousRunSuccessful = false;
                 }
@@ -302,14 +302,14 @@ namespace APG {
                 else {
                     previousRunSuccessful = true;
                     if (!isTraining) {
-                        OnSuccessfulBuild(grid);
+                        OnSuccessfulBuild?.Invoke();
                         canStep = false;
                     }
                 }
             }
         }
         public void UpdateGridEmptySpaceCompositionVal() {
-            int numEmpty = 0;
+           /* int numEmpty = 0;
 
             for (int x = 0; x < gridSize.x; x++) {
                 for (int y = 0; y < gridSize.y; y++) {
@@ -320,11 +320,11 @@ namespace APG {
                 }
             }
 
-            gridEmptySpace = (float)numEmpty / (float)GridCount;
+            gridEmptySpace = (float)numEmpty / (float)GridCount;*/
         }
 
         public void UpdateCohesionValues() {
-            float totalCohesionValue = 0;
+         /*   float totalCohesionValue = 0;
 
             for (int x = 0; x < gridSize.x; x++) {
                 for (int y = 0; y < gridSize.y; y++) {
@@ -342,7 +342,7 @@ namespace APG {
                     }
                 }
             }
-            avgCohesionValue = totalCohesionValue / (GridCount);
+            avgCohesionValue = totalCohesionValue / (GridCount);*/
         }
     }
 }

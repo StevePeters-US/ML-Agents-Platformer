@@ -25,6 +25,7 @@ namespace APG.Environment {
                 envAgent = FindObjectOfType<EnvGenAgent>();
 
             envAgent.OnActionCompleted += OnActionTaken;
+            envAgent.OnEpisodeBegan += OnEpisodeBegin;
             envAgent.OnSuccessfulBuild += OnSuccessfulBuild;
 
             playerAgent = GetComponentInChildren<PlayerAgent>();
@@ -34,22 +35,41 @@ namespace APG.Environment {
 
         private void OnDestroy() {
             envAgent.OnActionCompleted -= OnActionTaken;
+            envAgent.OnEpisodeBegan -= OnEpisodeBegin;
             envAgent.OnSuccessfulBuild -= OnSuccessfulBuild;
         }
 
-        private void OnActionTaken(Grid3D_Platformer grid) {
+        private void OnActionTaken() {
             if (envGenerator != null) {
                 envGenerator.ClearEnvironment();
-                envGenerator.InstantiateNodePrefabs(grid);
+                envGenerator.InstantiateNodePrefabs();
             }
         }
 
-        private void OnSuccessfulBuild(Grid3D_Platformer grid) {
+        private void OnEpisodeBegin() {
+            UpdateFromLessonPlan();
+
+            envGenerator.GenerateEnvironment();
+
+
+
+            // int minPathLength = Astar.GetDistanceManhattan(grid.GetStartNode(), grid.GetGoalNode());
+            // targetPathLength = Mathf.Lerp(minPathLength, maxPathLength, pathLengthInterpolator);
+
+        }
+
+        private void UpdateFromLessonPlan() {
+            // Update grid
+
+            // Update agent
+        }
+
+        private void OnSuccessfulBuild() {
             Time.timeScale = defaultTimeScale;
 
             if (envGenerator != null) {
                 envGenerator.ClearEnvironment();
-                envGenerator.InstantiateNodePrefabs(grid);
+                envGenerator.InstantiateNodePrefabs();
             }
         }
 
