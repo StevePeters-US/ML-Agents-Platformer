@@ -15,16 +15,16 @@ namespace APG {
             envAgent.OnEpisodeBegan += InstantiateCohesionDebugTexts;
         }
 
-        private void InstantiateCohesionDebugTexts(Grid_3D grid) {
-            cohesionDebugTexts = new CohesionDebugText[grid.GridSize.x, grid.GridSize.y, grid.GridSize.z];
-            gridSize = grid.GridSize;
+        private void InstantiateCohesionDebugTexts(Grid3D_Platformer grid) {
+            cohesionDebugTexts = new CohesionDebugText[grid.GetGridSize().x, grid.GetGridSize().y, grid.GetGridSize().z];
+            gridSize = grid.GetGridSize();
 
             if (cohesionDebugTextPrefab != null) {
-                for (int x = 0; x < grid.GridSize.x; x++) {
-                    for (int y = 0; y < grid.GridSize.y; y++) {
-                        for (int z = 0; z < grid.GridSize.z; z++) {
+                for (int x = 0; x < grid.GetGridSize().x; x++) {
+                    for (int y = 0; y < grid.GetGridSize().y; y++) {
+                        for (int z = 0; z < grid.GetGridSize().z; z++) {
                             CohesionDebugText text = Instantiate(cohesionDebugTextPrefab, this.transform);
-                            text.transform.position = grid.GridNodes[x, y, z].worldPos + new Vector3(0, 1.5f, 0);
+                            text.transform.position = grid.GetGridNode(x, y, z).worldPos + new Vector3(0, 1.5f, 0);
                             cohesionDebugTexts[x, y, z] = text;
                         }
                     }

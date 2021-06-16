@@ -8,6 +8,8 @@ using UnityEngine.Pool;
 namespace APG.Environment {
     // Given a grid, the environment generator instantiates all required objects.
     [RequireComponent(typeof(EnvironmentManager))]
+    [RequireComponent(typeof(Grid3D_Platformer))]
+
     public class EnvironmentGenerator : MonoBehaviour {
         [SerializeField] private GameObject floorTile;
         [SerializeField] private GameObject pathTile;
@@ -26,7 +28,7 @@ namespace APG.Environment {
 
         [SerializeField, Tooltip("Rounded to nearest int")] private Vector3Int envSize;
 
-        private Grid_3D grid;
+        private Grid3D_Platformer grid;
 
         public EnvGoal GoalRef { get => goalRef; }
         private EnvGoal goalRef = null;
@@ -47,6 +49,7 @@ namespace APG.Environment {
 
         private void Awake() {
             envManager = GetComponent<EnvironmentManager>();
+            grid = GetComponent<Grid3D_Platformer>();
 
             goalRef = Instantiate<EnvGoal>(goalTile);
             spawnRef = Instantiate<EnvSpawn>(spawnTile);
@@ -118,23 +121,23 @@ namespace APG.Environment {
             for (int x = 0; x < envSize.x; x++) {
                 for (int y = 0; y < envSize.y; y++) {
                     for (int z = 0; z < envSize.z; z++) {
-                        if (grid.GridNodes[x, y, z].NodeType == NodeType.Start) {
-                            spawnRef = Instantiate<EnvSpawn>(spawnTile, grid.GridNodes[x, y, z].worldPos, transform.rotation);
+                        if (grid.GetGridNode(x, y, z).NodeType == NodeType.Start) {
+                            spawnRef = Instantiate<EnvSpawn>(spawnTile, grid.GetGridNode(x, y, z).worldPos, transform.rotation);
                             instantiatedEnvironmentObjects.Add(spawnRef.gameObject);
                         }
 
-                        else if (grid.GridNodes[x, y, z].NodeType == NodeType.Goal) {
-                            goalRef = Instantiate<EnvGoal>(goalTile, grid.GridNodes[x, y, z].worldPos, transform.rotation);
+                        else if (grid.GetGridNode(x, y, z).NodeType == NodeType.Goal) {
+                            goalRef = Instantiate<EnvGoal>(goalTile, grid.GetGridNode(x, y, z).worldPos, transform.rotation);
                             instantiatedEnvironmentObjects.Add(goalRef.gameObject);
                         }
 
-                        else if (grid.GridNodes[x, y, z].NodeType == NodeType.Path) {
-                            GameObject newTile = Instantiate<GameObject>(pathTile, grid.GridNodes[x, y, z].worldPos, transform.rotation);
+                        else if (grid.GetGridNode(x, y, z).NodeType == NodeType.Path) {
+                            GameObject newTile = Instantiate<GameObject>(pathTile, grid.GetGridNode(x, y, z).worldPos, transform.rotation);
                             instantiatedEnvironmentObjects.Add(newTile);
                         }
 
-                        else if (grid.GridNodes[x, y, z].NodeType == NodeType.Tile) {
-                            GameObject newTile = Instantiate<GameObject>(floorTile, grid.GridNodes[x, y, z].worldPos, transform.rotation);
+                        else if (grid.GetGridNode(x, y, z).NodeType == NodeType.Tile) {
+                            GameObject newTile = Instantiate<GameObject>(floorTile, grid.GetGridNode(x, y, z).worldPos, transform.rotation);
                             instantiatedEnvironmentObjects.Add(newTile);
                         }
                     }
@@ -142,26 +145,26 @@ namespace APG.Environment {
             }
         }
 
-        public void InstantiateNodePrefabs(Grid_3D grid) {
-            for (int x = 0; x < grid.GridSize.x; x++) {
-                for (int y = 0; y < grid.GridSize.y; y++) {
-                    for (int z = 0; z < grid.GridSize.z; z++) {
-                        if (grid.GridNodes[x, y, z].NodeType == NodeType.Start) {
+        public void InstantiateNodePrefabs(Grid3D_Platformer grid) {
+            for (int x = 0; x < grid.GetGridSize().x; x++) {
+                for (int y = 0; y < grid.GetGridSize().y; y++) {
+                    for (int z = 0; z < grid.GetGridSize().z; z++) {
+                        if (grid.GetGridNode(x, y, z).NodeType == NodeType.Start) {
                             spawnRef.gameObject.SetActive(true);
-                            spawnRef.transform.position = grid.GridNodes[x, y, z].worldPos;
+                            spawnRef.transform.position = grid.GetGridNode(x, y, z).worldPos;
                             spawnRef.transform.rotation = transform.rotation;
                         }
 
-                        else if (grid.GridNodes[x, y, z].NodeType == NodeType.Goal) {
+                        else if (grid.GetGridNode(x, y, z).NodeType == NodeType.Goal) {
                             goalRef.gameObject.SetActive(true);
-                            goalRef.transform.position = grid.GridNodes[x, y, z].worldPos;
+                            goalRef.transform.position = grid.GetGridNode(x, y, z).worldPos;
                             goalRef.transform.rotation = transform.rotation;
                         }
 
-                        else if (grid.GridNodes[x, y, z].NodeType == NodeType.Tile) {
+                        else if (grid.GetGridNode(x, y, z).NodeType == NodeType.Tile) {
                             GameObject newTile = tilePool.Get();
                             newTile.gameObject.SetActive(true);
-                            newTile.transform.position = grid.GridNodes[x, y, z].worldPos;
+                            newTile.transform.position = grid.GetGridNode(x, y, z).worldPos;
                             newTile.transform.rotation = transform.rotation;
                             instantiatedTiles.Add(newTile);
                         }

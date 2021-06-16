@@ -15,12 +15,12 @@ namespace APG {
         private bool isTraining = false;
         public bool canStep = false;
 
-        public Action<Grid_3D> OnActionCompleted { get; set; }
-        public Action<Grid_3D> OnEpisodeBegan;
-        public Action<Grid_3D> OnSuccessfulBuild;
+        public Action<Grid3D_Platformer> OnActionCompleted { get; set; }
+        public Action<Grid3D_Platformer> OnEpisodeBegan;
+        public Action<Grid3D_Platformer> OnSuccessfulBuild;
 
-        private Grid_3D grid;
-        public Grid_3D Grid { get => grid; }
+        private Grid3D_Platformer grid;
+        public Grid3D_Platformer Grid { get => grid; }
 
         [SerializeField] private Vector3Int gridSize = new Vector3Int(20, 1, 20);
         public Vector3Int GridSize { get => gridSize; }
@@ -147,12 +147,12 @@ namespace APG {
             else
                 return;
 
-            grid.GridNodes[currentIndex.x, currentIndex.y, currentIndex.z].NodeType = newNodeType;
+            grid.GetGridNode(currentIndex.x, currentIndex.y, currentIndex.z).NodeType = newNodeType;
 
             EvaluateEnvironment();
 
             if (OnActionCompleted != null)
-                OnActionCompleted(grid);
+                OnActionCompleted();
         }
 
         #endregion
@@ -176,7 +176,7 @@ namespace APG {
             grid.CreateGrid(true);
             grid.FillGridWithRandomTiles(randomTileChance);
 
-            int minPathLength = Astar.GetDistanceManhattan(grid.GridNodes[grid.StartIndex.x, grid.StartIndex.y, grid.StartIndex.z], grid.GridNodes[grid.GoalIndex.x, grid.GoalIndex.y, grid.GoalIndex.z]);
+            int minPathLength = Astar.GetDistanceManhattan(grid.GetStartNode() , grid.GetGoalNode());
             targetPathLength = Mathf.Lerp(minPathLength, maxPathLength, pathLengthInterpolator);
         }
 
@@ -201,8 +201,8 @@ namespace APG {
             for (int x = 0; x < gridSize.x; x++) {
                 for (int y = 0; y < gridSize.y; y++) {
                     for (int z = 0; z < gridSize.z; z++) {
-                        sensor.AddObservation(grid.GridNodes[x, y, z].locked ? 1 : 0);
-                        sensor.AddObservation(grid.GridNodes[x, y, z].IsPathNode() ? 1 : 0);
+                        sensor.AddObservation(grid.GetGridNode(x, y, z).locked ? 1 : 0);
+                        sensor.AddObservation(grid.GetGridNode(x, y, z).IsPathNode() ? 1 : 0);
 
                         // And a one hot encoded representation of the cell type
                         //float[] cellTypeBuffer = grid.GetOneHotCellData(new Vector3Int(x, y, x));
@@ -212,7 +212,7 @@ namespace APG {
                             sensor.AddObservation(cellType);
 
 
-                        sensor.AddObservation(grid.GridNodes[x, y, z].cohesiveValue);
+                        sensor.AddObservation(grid.GetGridNode(x, y, z).cohesiveValue);
                         // Debug observations
                     }
                 }

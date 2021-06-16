@@ -37,14 +37,14 @@ namespace APG.Environment {
             envAgent.OnSuccessfulBuild -= OnSuccessfulBuild;
         }
 
-        private void OnActionTaken(Grid_3D grid) {
+        private void OnActionTaken(Grid3D_Platformer grid) {
             if (envGenerator != null) {
                 envGenerator.ClearEnvironment();
                 envGenerator.InstantiateNodePrefabs(grid);
             }
         }
 
-        private void OnSuccessfulBuild(Grid_3D grid) {
+        private void OnSuccessfulBuild(Grid3D_Platformer grid) {
             Time.timeScale = defaultTimeScale;
 
             if (envGenerator != null) {

@@ -87,6 +87,26 @@ namespace APG.Environment {
             return m_CurrentGrid3DProperties.GridSize;
         }
 
+        public Node_3D GetGridNode(int x, int y , int z) {
+            return m_CurrentGrid3DProperties.GridNodes[x, y, z];
+        }
+
+        public Vector3Int GetStartPosition() {
+            return m_CurrentGrid3DProperties.StartIndex;
+        }
+
+        public Node_3D GetStartNode() {
+            return m_CurrentGrid3DProperties.GridNodes[GetStartPosition().x, GetStartPosition().y, GetStartPosition().z];
+        }
+
+        public Vector3Int GetGoalPosition() {
+            return m_CurrentGrid3DProperties.GoalIndex;
+        }
+
+        public Node_3D GetGoalNode() {
+            return m_CurrentGrid3DProperties.GridNodes[GetGoalPosition().x, GetGoalPosition().y, GetGoalPosition().z];
+        }
+
         /// Make sure that the current BoardSize isn't larger than the original value of GetMaxBoardSize().
         /// If it is, log a warning.
         [System.Diagnostics.Conditional("DEBUG")]
