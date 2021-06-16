@@ -13,7 +13,7 @@ namespace APG.Environment {
         private EnvSpawn envSpawn;
         private PlayerAgent playerAgent;
 
-        private EnvGrid grid;
+        private Grid_3D grid;
 
         private float defaultTimeScale;
 
@@ -37,14 +37,14 @@ namespace APG.Environment {
             envAgent.OnSuccessfulBuild -= OnSuccessfulBuild;
         }
 
-        private void OnActionTaken(EnvGrid grid) {
+        private void OnActionTaken(Grid_3D grid) {
             if (envGenerator != null) {
                 envGenerator.ClearEnvironment();
                 envGenerator.InstantiateNodePrefabs(grid);
             }
         }
 
-        private void OnSuccessfulBuild(EnvGrid grid) {
+        private void OnSuccessfulBuild(Grid_3D grid) {
             Time.timeScale = defaultTimeScale;
 
             if (envGenerator != null) {

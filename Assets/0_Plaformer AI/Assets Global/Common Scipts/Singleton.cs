@@ -8,7 +8,7 @@ namespace APG
     {
         public static T Instance { get; protected set; }
 
-        void Awake()
+        public virtual void Awake()
         {
             if (Instance != null && Instance != this)
             {

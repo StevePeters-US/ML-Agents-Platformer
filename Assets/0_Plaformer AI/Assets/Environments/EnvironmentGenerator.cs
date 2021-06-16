@@ -26,7 +26,7 @@ namespace APG.Environment {
 
         [SerializeField, Tooltip("Rounded to nearest int")] private Vector3Int envSize;
 
-        private EnvGrid grid;
+        private Grid_3D grid;
 
         public EnvGoal GoalRef { get => goalRef; }
         private EnvGoal goalRef = null;
@@ -142,7 +142,7 @@ namespace APG.Environment {
             }
         }
 
-        public void InstantiateNodePrefabs(EnvGrid grid) {
+        public void InstantiateNodePrefabs(Grid_3D grid) {
             for (int x = 0; x < grid.GridSize.x; x++) {
                 for (int y = 0; y < grid.GridSize.y; y++) {
                     for (int z = 0; z < grid.GridSize.z; z++) {

@@ -4,21 +4,21 @@ using UnityEngine;
 
 namespace APG.Environment {
     public static class Astar {
-        public static List<Vector3Int> GeneratePath(EnvGrid grid, bool useManhattanDistance, bool updatePathNodeTypes) {
+        public static List<Vector3Int> GeneratePath(Grid_3D grid, bool useManhattanDistance, bool updatePathNodeTypes) {
             grid.path.Clear();
 
-            Node startNode = grid.GetStartNode();
-            Node goalNode = grid.GetGoalNode();
+            Node_3D startNode = grid.GetStartNode();
+            Node_3D goalNode = grid.GetGoalNode();
 
             List<Vector3Int> pathIndices = new List<Vector3Int>();
 
             int numEnvNodes = grid.GridSize.x * grid.GridSize.y * grid.GridSize.z;
-            Heap<Node> openSet = new Heap<Node>(numEnvNodes);
-            HashSet<Node> closedSet = new HashSet<Node>();
+            Heap<Node_3D> openSet = new Heap<Node_3D>(numEnvNodes);
+            HashSet<Node_3D> closedSet = new HashSet<Node_3D>();
             openSet.Add(startNode);
 
             while (openSet.Count > 0) {
-                Node currentNode = openSet.RemoveFirst();
+                Node_3D currentNode = openSet.RemoveFirst();
                 closedSet.Add(currentNode);
 
                 if (currentNode == goalNode) {
@@ -26,7 +26,7 @@ namespace APG.Environment {
                     return pathIndices;
                 }
 
-                foreach (Node neighbor in GetNeighborNodes(grid, currentNode)) {
+                foreach (Node_3D neighbor in GetNeighborNodes(grid, currentNode)) {
                     if (!neighbor.IsTraversable || closedSet.Contains(neighbor))
                         continue;
 
@@ -45,9 +45,9 @@ namespace APG.Environment {
             return pathIndices;
         }
 
-        private static void RetracePath(EnvGrid grid, Node startNode, Node endNode, bool updatePathNodeTypes) {
-            List<Node> newPath = new List<Node>();
-            Node currentNode = endNode;
+        private static void RetracePath(Grid_3D grid, Node_3D startNode, Node_3D endNode, bool updatePathNodeTypes) {
+            List<Node_3D> newPath = new List<Node_3D>();
+            Node_3D currentNode = endNode;
 
             while (currentNode != startNode) {
                 newPath.Add(currentNode);
@@ -61,7 +61,7 @@ namespace APG.Environment {
             grid.ResetPath();
 
             // if (updatePathNodeTypes) {
-            foreach (Node node in newPath) {
+            foreach (Node_3D node in newPath) {
                 if (node.gridIndex != endNode.gridIndex || node.gridIndex != startNode.gridIndex) {
                     // grid.GridNodes[node.gridIndex.x, node.gridIndex.y, node.gridIndex.z].NodeType = NodeType.Path;
                     grid.GridNodes[node.gridIndex.x, node.gridIndex.y, node.gridIndex.z].isPath = true;
@@ -74,8 +74,8 @@ namespace APG.Environment {
         }
 
 
-        public static List<Node> GetNeighborNodes(EnvGrid grid, Node node) {
-            List<Node> neighbors = new List<Node>();
+        public static List<Node_3D> GetNeighborNodes(Grid_3D grid, Node_3D node) {
+            List<Node_3D> neighbors = new List<Node_3D>();
 
             foreach (Vector3Int neighborIndex in node.neighborIndices) {
                 neighbors.Add(grid.GridNodes[neighborIndex.x, neighborIndex.y, neighborIndex.z]);
@@ -84,7 +84,7 @@ namespace APG.Environment {
             return neighbors;
         }
 
-        private static int GetDistance(Node nodeA, Node nodeB) {
+        private static int GetDistance(Node_3D nodeA, Node_3D nodeB) {
             int distX = Mathf.Abs(nodeA.gridIndex.x - nodeB.gridIndex.x);
             int distZ = Mathf.Abs(nodeA.gridIndex.z - nodeB.gridIndex.z);
 
@@ -94,7 +94,7 @@ namespace APG.Environment {
             return 14 * distX + 10 * (distZ - distX);
         }
 
-        public static int GetDistanceManhattan(Node nodeA, Node nodeB) {
+        public static int GetDistanceManhattan(Node_3D nodeA, Node_3D nodeB) {
             int distX = Mathf.Abs(nodeA.gridIndex.x - nodeB.gridIndex.x);
             int distZ = Mathf.Abs(nodeA.gridIndex.z - nodeB.gridIndex.z);
 
@@ -102,10 +102,10 @@ namespace APG.Environment {
         }
 
         // Grows a path to include all valid neighbor nodes 
-        public static void ExpandPath(EnvGrid grid, Node startNode, Node endNode, bool updatePath = true) {
-            List<Node> newPath = new List<Node>();
+        public static void ExpandPath(Grid_3D grid, Node_3D startNode, Node_3D endNode, bool updatePath = true) {
+            List<Node_3D> newPath = new List<Node_3D>();
 
-            foreach (Node node in grid.path) {
+            foreach (Node_3D node in grid.path) {
                 newPath.Add(node);
                 UpdateNeighborNodes(node);
             }
@@ -116,9 +116,9 @@ namespace APG.Environment {
             if (updatePath)
                 grid.path = newPath;
 
-            void UpdateNeighborNodes(Node node) {
+            void UpdateNeighborNodes(Node_3D node) {
                 foreach (Vector3Int neighborIndex in node.neighborIndices) {
-                    Node neighborNode = grid.GridNodes[neighborIndex.x, neighborIndex.y, neighborIndex.z];
+                    Node_3D neighborNode = grid.GridNodes[neighborIndex.x, neighborIndex.y, neighborIndex.z];
                     if (neighborNode.NodeType == NodeType.Empty || neighborNode.NodeType == NodeType.Tile)
                         neighborNode.NodeType = NodeType.Path;
                 }

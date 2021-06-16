@@ -12,15 +12,15 @@ using Random = UnityEngine.Random;
 namespace APG {
     public class EnvGenAgent : Agent {
 
-        public bool isTraining = true;
+        private bool isTraining = false;
         public bool canStep = false;
 
-        public Action<EnvGrid> OnActionCompleted { get; set; }
-        public Action<EnvGrid> OnEpisodeBegan;
-        public Action<EnvGrid> OnSuccessfulBuild;
+        public Action<Grid_3D> OnActionCompleted { get; set; }
+        public Action<Grid_3D> OnEpisodeBegan;
+        public Action<Grid_3D> OnSuccessfulBuild;
 
-        private EnvGrid grid;
-        public EnvGrid Grid { get => grid; }
+        private Grid_3D grid;
+        public Grid_3D Grid { get => grid; }
 
         [SerializeField] private Vector3Int gridSize = new Vector3Int(20, 1, 20);
         public Vector3Int GridSize { get => gridSize; }
@@ -101,6 +101,14 @@ namespace APG {
             actionSpec.BranchSizes[0] = gridSize.x * gridSize.y * gridSize.z;
             actionSpec.BranchSizes[ACTIONS_BRANCH] = 2;
             GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec = actionSpec;
+
+            GameStateManager gsm = FindObjectOfType<GameStateManager>();
+            /*Debug.Log(GameStateManager.Instance.GetStateName());
+            isTraining = GameStateManager.Instance.GetStateName() == "GameStateTrainingEnvAgent";
+            Debug.Log(isTraining);*/
+            Debug.Log(gsm.GetStateName());
+            isTraining = gsm.GetStateName() == "Game State Training Environment Agent";
+            Debug.Log(isTraining);
         }
 
 
@@ -155,7 +163,7 @@ namespace APG {
             if (isTraining) {
                 GenerateNewGrid();
             }
-           
+
             if (OnEpisodeBegan != null)
                 OnEpisodeBegan(grid);
         }
@@ -164,7 +172,7 @@ namespace APG {
             UpdateFromLessonPlan();
 
             Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
-            grid = new EnvGrid(gridSize, gridOffset + transform.position, tileSize);
+            grid = new Grid_3D(gridSize, gridOffset + transform.position, tileSize);
             grid.CreateGrid(true);
             grid.FillGridWithRandomTiles(randomTileChance);
 
@@ -218,15 +226,15 @@ namespace APG {
             sensor.AddObservation(PathLengthSlope);
             sensor.AddObservation(pathLengthInfluence);
 
-        //    sensor.AddObservation(CohesionReward);
-        //    sensor.AddObservation(avgCohesionValue);
-        //    sensor.AddObservation(targetCohesion);
-        //    sensor.AddObservation(cohesionInfluence);
+            //    sensor.AddObservation(CohesionReward);
+            //    sensor.AddObservation(avgCohesionValue);
+            //    sensor.AddObservation(targetCohesion);
+            //    sensor.AddObservation(cohesionInfluence);
 
-        //    sensor.AddObservation(GridEmptySpaceReward);
-         //   sensor.AddObservation(gridEmptySpace);
-         //   sensor.AddObservation(targetGridEmptySpace);
-         //   sensor.AddObservation(gridEmptySpaceInfluence);
+            //    sensor.AddObservation(GridEmptySpaceReward);
+            //   sensor.AddObservation(gridEmptySpace);
+            //   sensor.AddObservation(targetGridEmptySpace);
+            //   sensor.AddObservation(gridEmptySpaceInfluence);
         }
 
         public override void Heuristic(in ActionBuffers actionsOut) {
@@ -276,11 +284,11 @@ namespace APG {
                     AddTickReward(PathLengthReward);
             }
 
-           // UpdateCohesionValues();
-          //  AddTickReward(CohesionReward);    // Maximize cohesion This should have a 0-1 influence range
+            // UpdateCohesionValues();
+            //  AddTickReward(CohesionReward);    // Maximize cohesion This should have a 0-1 influence range
 
-          //  UpdateGridEmptySpaceCompositionVal();
-           // AddTickReward(GridEmptySpaceReward);
+            //  UpdateGridEmptySpaceCompositionVal();
+            // AddTickReward(GridEmptySpaceReward);
 
             currentTickReward = tickReward;
 

@@ -21,7 +21,7 @@ namespace APG.Environment {
                 DrawPath(envGenAgent.Grid.path);
         }
 
-        public void DrawPath(List<Node> pathNodes, float pathLengthReward = 1) {
+        public void DrawPath(List<Node_3D> pathNodes, float pathLengthReward = 1) {
             pathLine.startWidth = 0.1f;
             pathLine.positionCount = pathNodes.Count;
 

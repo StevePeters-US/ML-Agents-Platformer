@@ -15,7 +15,7 @@ namespace APG {
             envAgent.OnEpisodeBegan += InstantiateCohesionDebugTexts;
         }
 
-        private void InstantiateCohesionDebugTexts(EnvGrid grid) {
+        private void InstantiateCohesionDebugTexts(Grid_3D grid) {
             cohesionDebugTexts = new CohesionDebugText[grid.GridSize.x, grid.GridSize.y, grid.GridSize.z];
             gridSize = grid.GridSize;
 

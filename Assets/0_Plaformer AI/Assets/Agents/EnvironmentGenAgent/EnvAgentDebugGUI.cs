@@ -30,6 +30,7 @@ namespace APG {
 
         private void Update() {
 
+            if (agent.Grid != null) {
             DebugGUI.Graph("currentTickReward", agent.currentTickReward);
             DebugGUI.Graph("previousRunSuccessful", System.Convert.ToInt32(agent.PreviousRunSuccessful));
             DebugGUI.Graph("envTime", agent.EnvTime);
@@ -46,6 +47,7 @@ namespace APG {
 
             DebugGUI.Graph("gridEmptySpace", agent.gridEmptySpace);
             DebugGUI.Graph("gridEmptySpaceReward", agent.GridEmptySpaceReward);
+            }
         }
 
         void OnDestroy() {

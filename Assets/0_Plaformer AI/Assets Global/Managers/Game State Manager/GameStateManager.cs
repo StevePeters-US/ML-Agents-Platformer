@@ -16,8 +16,10 @@ namespace APG
         private IEnumerator coroutine;
    //     private bool transitioningToNewState = false;
 
-        void Awake()
+       public override void Awake()
         {
+            base.Awake();
+
             timeStateStarted = Time.time;
         }
 
@@ -56,6 +58,10 @@ namespace APG
 
             /*      coroutine = InitiailizeCurrentStateTick(currentState.intializeDuration);
                   StartCoroutine(coroutine);*/
+        }
+
+        public string GetStateName() {
+            return currentState.name;
         }
 
         // Allows for fading in effects. This happens before actions are performed in the state
