@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2233170389573893857}
   - component: {fileID: 2233170389573893862}
   - component: {fileID: 2233170389573893863}
+  - component: {fileID: 1409394411}
   m_Layer: 0
   m_Name: Environment Agent
   m_TagString: Untagged
@@ -45,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 612
+    VectorObservationSize: 604
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
@@ -78,14 +79,14 @@ MonoBehaviour:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
   MaxStep: 500
-  isTraining: 1
   canStep: 0
+  grid: {fileID: 0}
   gridSize: {x: 10, y: 1, z: 10}
   tileSize: {x: 2, y: 2, z: 2}
-  randomTileChance: 0.109
   drawGizmos: 0
   maskActions: 1
   currentTickReward: 0
+  currentPathLength: 0
   targetCohesion: 0.75
   avgCohesionValue: 0
   gridEmptySpace: 0
@@ -93,3 +94,20 @@ MonoBehaviour:
   pathLengthInfluence: 0
   cohesionInfluence: 0
   gridEmptySpaceInfluence: 0
+--- !u!114 &1409394411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2233170389573893860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7c13f9f8209645459e53026c466ed69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SensorName: Grid3DSensor
+  grid: {fileID: 0}
+  m_GridSize: {x: 10, y: 1, z: 10}
+  m_CompressionType: 1
+  m_ObservationStacks: 1

@@ -9,6 +9,7 @@ namespace APG.Environment {
     public class Grid3D_Platformer : Grid3D_Abstract {
         [SerializeField] private Vector3Int Grid3DSize = new Vector3Int(10, 1, 10);
 
+
         public int MinRows;
         public int MaxRows;
 

@@ -117,6 +117,10 @@ namespace APG.Environment {
         protected Grid3DData m_CurrentGrid3DData;
         public Grid3DData CurrentGrid3DData { get => m_CurrentGrid3DData; }
 
+
+        [SerializeField] private RenderTexture rt;
+        [SerializeField] private Texture2D tex;// = new Texture2D(10, 10);
+
         /// Return the maximum size of the board. This is used to determine the size of observations and actions,
         /// so the returned values must not change.
         /// 
@@ -172,6 +176,8 @@ namespace APG.Environment {
         public void UpdateGridNodeType(Vector3Int nodeIndex, NodeGridType newNodeType) {
             m_CurrentGrid3DData.GridNodes[nodeIndex.x, nodeIndex.y, nodeIndex.z].NodeType = newNodeType;
             // GetGridNode(nodeIndex.x, nodeIndex.y, nodeIndex.z).NodeType = newNodeType;
+
+            UpdateGridTexture();
         }
 
         public Node_3D GetGridNode(int x, int y, int z) {
@@ -196,6 +202,21 @@ namespace APG.Environment {
 
         public Node_3D GetGoalNode() {
             return m_CurrentGrid3DData.GridNodes[GetGoalPosition().x, GetGoalPosition().y, GetGoalPosition().z];
+        }
+
+        private void UpdateGridTexture() {
+            for (int x = 0; x < m_CurrentGrid3DData.GridSize.x; x++) {
+                for (int y = 0; y < m_CurrentGrid3DData.GridSize.y; y++) {
+                    for (int z = 0; z < m_CurrentGrid3DData.GridSize.z; z++) {
+                        // rt.te
+                        tex.SetPixel(x, z, m_CurrentGrid3DData.GridNodes[x,y,z].NodeType == NodeGridType.Empty ? Color.white : Color.green);
+                        tex.Apply();
+
+                       // m_CurrentGrid3DData.GridNodes[x, y, z].NodeType = NodeGridType.Empty;
+                       // m_CurrentGrid3DData.availableIndices.Add(new Vector3Int(x, y, z));
+                    }
+                }
+            }
         }
     }
 }

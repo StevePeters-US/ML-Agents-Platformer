@@ -220,6 +220,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 1128653128}
+  - {fileID: 1547036571}
   m_Father: {fileID: 903604295}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -796,6 +797,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1409394411, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+      propertyPath: grid
+      value: 
+      objectReference: {fileID: 853785654}
     - target: {fileID: 2233170389573893857, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
       propertyPath: m_RootOrder
       value: 1
@@ -846,32 +851,87 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
       propertyPath: m_BrainParameters.VectorObservationSize
-      value: 604
+      value: 4
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 2233170389573893863, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 1409394411, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
---- !u!1 &1409394410 stripped
+--- !u!1 &1547036570
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 2233170389573893860, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-  m_PrefabInstance: {fileID: 1398237957}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1409394411
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1547036571}
+  - component: {fileID: 1547036573}
+  - component: {fileID: 1547036572}
+  m_Layer: 5
+  m_Name: RawImage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1547036571
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1547036570}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 177957779}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 60.21, y: -169.3}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1547036572
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1409394410}
+  m_GameObject: {fileID: 1547036570}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a7c13f9f8209645459e53026c466ed69, type: 3}
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SensorName: Grid3DSensor
-  grid: {fileID: 853785654}
-  m_GridSize: {x: 10, y: 1, z: 10}
-  m_CompressionType: 1
-  m_ObservationStacks: 1
+  m_Material: {fileID: 2100000, guid: 8ac95693b03440745adddfe566c81a6a, type: 2}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 8400000, guid: 5541e956fd35c0b4999dba2dd8828005, type: 2}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &1547036573
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1547036570}
+  m_CullTransparentMesh: 1
 --- !u!1 &1573379953
 GameObject:
   m_ObjectHideFlags: 0
@@ -976,6 +1036,28 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1765810280 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2233170389573893860, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+  m_PrefabInstance: {fileID: 1398237957}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1765810281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1765810280}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 132e1194facb64429b007ea1edf562d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RenderTexture: {fileID: 8400000, guid: 5541e956fd35c0b4999dba2dd8828005, type: 2}
+  m_SensorName: RenderTextureSensor
+  m_Grayscale: 0
+  m_ObservationStacks: 1
+  m_Compression: 1
 --- !u!4 &1795600009 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2939499182581410596, guid: e62a3a3aa0cbe504f800eb79aae6c3cb, type: 3}
