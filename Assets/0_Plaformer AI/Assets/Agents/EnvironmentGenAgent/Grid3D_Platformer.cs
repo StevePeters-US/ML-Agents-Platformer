@@ -79,6 +79,20 @@ namespace APG.Environment {
         public void GenerateNewGrid() {
             Debug.Log("Generating new 3D grid");
 
+            // Clear old grid data
+            ClearGridNodes();
+
+            // Define start and goal
+            Vector3Int startIndex = GetRandomIndex();
+            m_CurrentGrid3DData.availableIndices.Remove(startIndex);
+            m_CurrentGrid3DData.StartIndex = startIndex;
+
+            Vector3Int goalIndex = GetRandomIndex();
+            m_CurrentGrid3DData.availableIndices.Remove(goalIndex);
+            m_CurrentGrid3DData.GoalIndex = goalIndex;
+
+            // Fill in other tiles
+
             /*  Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
               grid = new Grid_3D(gridSize, gridOffset + transform.position, tileSize);
               grid.CreateGrid(true);

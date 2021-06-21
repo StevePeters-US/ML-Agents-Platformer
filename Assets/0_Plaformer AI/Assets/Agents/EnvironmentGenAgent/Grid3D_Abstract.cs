@@ -15,13 +15,15 @@ namespace APG.Environment {
         public Node_3D[,,] GridNodes { get => gridNodes; set => gridNodes = value; }
         private Node_3D[,,] gridNodes;
 
+        public List<Vector3Int> availableIndices = new List<Vector3Int>();
+
         public Vector3Int StartIndex { get => startIndex; set => startIndex = value; }
         Vector3Int startIndex;
 
         Vector3Int goalIndex;
         public Vector3Int GoalIndex { get => goalIndex; set => goalIndex = value; }
 
-        public Vector3 tileSize = Vector3.one;
+        public Vector3 tileSize = Vector3.one * 2;
         public Vector3 TileSize { get => tileSize; set => tileSize = value; }
 
         public List<Node_3D> path = new List<Node_3D>();
@@ -147,6 +149,24 @@ namespace APG.Environment {
 
         public Vector3Int GetGridSize() {
             return m_CurrentGrid3DData.GridSize;
+        }
+
+        protected void ClearGridNodes() {
+            m_CurrentGrid3DData.availableIndices.Clear();
+
+            for (int x = 0; x < m_CurrentGrid3DData.GridSize.x; x++) {
+                for (int y = 0; y < m_CurrentGrid3DData.GridSize.y; y++) {
+                    for (int z = 0; z < m_CurrentGrid3DData.GridSize.z; z++) {
+                        m_CurrentGrid3DData.GridNodes[x, y, z].NodeType = NodeGridType.Empty;
+                        m_CurrentGrid3DData.availableIndices.Add(new Vector3Int(x, y, z));
+                    }
+                }
+            }
+        }
+
+        protected Vector3Int GetRandomIndex() {
+            int randomIdx = Random.Range(0, m_CurrentGrid3DData.availableIndices.Count);
+            return m_CurrentGrid3DData.availableIndices[randomIdx];
         }
 
         public void UpdateGridNodeType(Vector3Int nodeIndex, NodeGridType newNodeType) {

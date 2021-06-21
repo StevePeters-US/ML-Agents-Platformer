@@ -38,7 +38,7 @@ namespace APG.Environment {
 
         private List<GameObject> instantiatedEnvironmentObjects = new List<GameObject>();
 
-        private List<Vector3Int> availableIndices = new List<Vector3Int>();
+       /* private List<Vector3Int> availableIndices = new List<Vector3Int>();*/
 
         private List<Vector3Int> pathIndices = new List<Vector3Int>();
         private EnvironmentManager envManager;
@@ -115,10 +115,7 @@ namespace APG.Environment {
             grid.UpdateGridNodeType(nodeIndex, newNodeType);
         }
 
-        private Vector3Int GetRandomIndex() {
-            int randomIdx = Random.Range(0, availableIndices.Count);
-            return availableIndices[randomIdx];
-        }
+        
 
         private void InstantiateNodePrefabsDep() {
 
@@ -188,7 +185,7 @@ namespace APG.Environment {
             instantiatedTiles.Clear();
         }
 
-        private void ClearEnvironment_DEP() {
+       /* private void ClearEnvironment_DEP() {
             UpdateFromLessonPlan();
 
             goalRef = null;
@@ -208,7 +205,7 @@ namespace APG.Environment {
                     }
                 }
             }
-        }
+        }*/
 
         private void UpdateFromLessonPlan() {
             // Get random range values from lesson plan
