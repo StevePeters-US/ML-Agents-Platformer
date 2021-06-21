@@ -85,7 +85,7 @@ namespace APG.Environment {
                         Vector3 tileOffset = tileSize * 0.5f;
                         Vector3 worldPos = gridPos + tileSize.MultiplyInt(gridIndex) + tileOffset;
 
-                        gridNodes[x, y, z] = new Node_3D(worldPos, gridIndex, NodeType.Empty);
+                        gridNodes[x, y, z] = new Node_3D(worldPos, gridIndex, NodeGridType.Empty);
                         gridNodes[x, y, z].SetNeighborIndices(gridSize, useManhattanNeighbors);
 
 
@@ -93,9 +93,9 @@ namespace APG.Environment {
                 }
             }
 
-            gridNodes[goalIndex.x, goalIndex.y, goalIndex.z].NodeType = NodeType.Goal;
+            gridNodes[goalIndex.x, goalIndex.y, goalIndex.z].NodeType = NodeGridType.Goal;
             gridNodes[goalIndex.x, goalIndex.y, goalIndex.z].locked = true;
-            gridNodes[startIndex.x, startIndex.y, startIndex.z].NodeType = NodeType.Start;
+            gridNodes[startIndex.x, startIndex.y, startIndex.z].NodeType = NodeGridType.Start;
             gridNodes[startIndex.x, startIndex.y, startIndex.z].locked = true;
         }
 
@@ -104,8 +104,8 @@ namespace APG.Environment {
             for (int x = 0; x < gridSize.x; x++) {
                 for (int y = 0; y < gridSize.y; y++) {
                     for (int z = 0; z < gridSize.z; z++) {
-                        if (gridNodes[x, y, z].NodeType == NodeType.Empty)
-                            gridNodes[x, y, z].NodeType = NodeType.Tile;
+                        if (gridNodes[x, y, z].NodeType == NodeGridType.Empty)
+                            gridNodes[x, y, z].NodeType = NodeGridType.Tile;
                     }
                 }
             }
@@ -115,8 +115,8 @@ namespace APG.Environment {
             for (int x = 0; x < gridSize.x; x++) {
                 for (int y = 0; y < gridSize.y; y++) {
                     for (int z = 0; z < gridSize.z; z++) {
-                        if (gridNodes[x, y, z].NodeType == NodeType.Empty && UnityEngine.Random.Range(0f, 1f) < randomChance)
-                            gridNodes[x, y, z].NodeType = NodeType.Tile;
+                        if (gridNodes[x, y, z].NodeType == NodeGridType.Empty && UnityEngine.Random.Range(0f, 1f) < randomChance)
+                            gridNodes[x, y, z].NodeType = NodeGridType.Tile;
                     }
                 }
             }
@@ -131,10 +131,10 @@ namespace APG.Environment {
         }
 
         public float[] GetOneHotCellData(Vector3Int cellIndex) {
-            float[] cellTypeBuffer = new float[Enum.GetNames(typeof(NodeType)).Length];
+            float[] cellTypeBuffer = new float[Enum.GetNames(typeof(NodeGridType)).Length];
 
             for (var i = 0; i < cellTypeBuffer.Length; i++)
-                cellTypeBuffer[i] = gridNodes[cellIndex.x, cellIndex.y, cellIndex.z].NodeType == (NodeType)i ? 1.0f : 0.0f;
+                cellTypeBuffer[i] = gridNodes[cellIndex.x, cellIndex.y, cellIndex.z].NodeType == (NodeGridType)i ? 1.0f : 0.0f;
 
             return cellTypeBuffer;
         }
@@ -143,10 +143,10 @@ namespace APG.Environment {
         public float[] GetOneHotGridCellData(Vector3Int cellIndex) {
             float[] cellTypeBuffer = new float[Enum.GetNames(typeof(NodeGridType)).Length];
 
-            NodeType currentNodeType = gridNodes[cellIndex.x, cellIndex.y, cellIndex.z].NodeType;
-            cellTypeBuffer[0] = currentNodeType == NodeType.Empty ? 1.0f : 0.0f;
-            cellTypeBuffer[1] = currentNodeType == NodeType.Goal || currentNodeType == NodeType.Start ? 1.0f : 0.0f;
-            cellTypeBuffer[2] = currentNodeType == NodeType.Tile || currentNodeType == NodeType.Path ? 1.0f : 0.0f;
+            NodeGridType currentNodeType = gridNodes[cellIndex.x, cellIndex.y, cellIndex.z].NodeType;
+            cellTypeBuffer[0] = currentNodeType == NodeGridType.Empty ? 1.0f : 0.0f;
+           // cellTypeBuffer[1] = currentNodeType == NodeGridType.Goal || currentNodeType == NodeGridType.Start ? 1.0f : 0.0f;
+           // cellTypeBuffer[2] = currentNodeType == NodeGridType.Tile || currentNodeType == NodeGridType.Path ? 1.0f : 0.0f;
 
             return cellTypeBuffer;
         }

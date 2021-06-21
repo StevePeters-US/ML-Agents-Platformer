@@ -16,7 +16,7 @@ namespace APG {
         public bool canStep = false;
 
         //public Action<Grid3D_Platformer> OnActionCompleted { get; set; }
-        public Action OnActionCompleted;
+        public Action<Vector3Int, NodeGridType> OnActionCompleted;
         public Action OnEpisodeBegan;
         public Action OnSuccessfulBuild;
 
@@ -126,11 +126,11 @@ namespace APG {
         #endregion
 
         #region GUI
-       /* private void OnDrawGizmos() {
+        /* private void OnDrawGizmos() {
 
-            if (drawGizmos && grid != null)
-                grid.DrawGrid();
-        }*/
+             if (drawGizmos && grid != null)
+                 grid.DrawGrid();
+         }*/
         #endregion
 
         #region recurring
@@ -140,19 +140,17 @@ namespace APG {
             int gridNum = actionBuffers.DiscreteActions[0];
             Vector3Int currentIndex = new Vector3Int(gridNum % gridSize.x, 0, gridNum / gridSize.x);
 
-            NodeType newNodeType;
+            NodeGridType newNodeType;
             if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == EMPTY)
-                newNodeType = NodeType.Empty;
+                newNodeType = NodeGridType.Empty;
             else if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == TILE)
-                newNodeType = NodeType.Tile;
+                newNodeType = NodeGridType.Tile;
             else
                 return;
-
-            grid.GetGridNode(currentIndex.x, currentIndex.y, currentIndex.z).NodeType = newNodeType;
-
+                       
             EvaluateEnvironment();
 
-            OnActionCompleted?.Invoke();
+            OnActionCompleted?.Invoke(currentIndex, newNodeType);
         }
 
         #endregion
@@ -170,13 +168,13 @@ namespace APG {
         public void GenerateNewGrid() {
             UpdateFromLessonPlan();
 
-           /* Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
-            grid = new Grid_3D(gridSize, gridOffset + transform.position, tileSize);
-            grid.CreateGrid(true);
-            grid.FillGridWithRandomTiles(randomTileChance);
+            /* Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
+             grid = new Grid_3D(gridSize, gridOffset + transform.position, tileSize);
+             grid.CreateGrid(true);
+             grid.FillGridWithRandomTiles(randomTileChance);
 
-            int minPathLength = Astar.GetDistanceManhattan(grid.GetStartNode(), grid.GetGoalNode());
-            targetPathLength = Mathf.Lerp(minPathLength, maxPathLength, pathLengthInterpolator);*/
+             int minPathLength = Astar.GetDistanceManhattan(grid.GetStartNode(), grid.GetGoalNode());
+             targetPathLength = Mathf.Lerp(minPathLength, maxPathLength, pathLengthInterpolator);*/
         }
 
 
@@ -197,25 +195,25 @@ namespace APG {
 
         public override void CollectObservations(VectorSensor sensor) {
 
-         /*   for (int x = 0; x < gridSize.x; x++) {
-                for (int y = 0; y < gridSize.y; y++) {
-                    for (int z = 0; z < gridSize.z; z++) {
-                        sensor.AddObservation(grid.GetGridNode(x, y, z).locked ? 1 : 0);
-                        sensor.AddObservation(grid.GetGridNode(x, y, z).IsPathNode() ? 1 : 0);
+            /*   for (int x = 0; x < gridSize.x; x++) {
+                   for (int y = 0; y < gridSize.y; y++) {
+                       for (int z = 0; z < gridSize.z; z++) {
+                           sensor.AddObservation(grid.GetGridNode(x, y, z).locked ? 1 : 0);
+                           sensor.AddObservation(grid.GetGridNode(x, y, z).IsPathNode() ? 1 : 0);
 
-                        // And a one hot encoded representation of the cell type
-                        //float[] cellTypeBuffer = grid.GetOneHotCellData(new Vector3Int(x, y, x));
-                        float[] cellTypeBuffer = grid.GetOneHotGridCellData(new Vector3Int(x, y, x));
+                           // And a one hot encoded representation of the cell type
+                           //float[] cellTypeBuffer = grid.GetOneHotCellData(new Vector3Int(x, y, x));
+                           float[] cellTypeBuffer = grid.GetOneHotGridCellData(new Vector3Int(x, y, x));
 
-                        foreach (float cellType in cellTypeBuffer)
-                            sensor.AddObservation(cellType);
+                           foreach (float cellType in cellTypeBuffer)
+                               sensor.AddObservation(cellType);
 
 
-                        sensor.AddObservation(grid.GetGridNode(x, y, z).cohesiveValue);
-                        // Debug observations
-                    }
-                }
-            }*/
+                           sensor.AddObservation(grid.GetGridNode(x, y, z).cohesiveValue);
+                           // Debug observations
+                       }
+                   }
+               }*/
 
             // 1 observation
             sensor.AddObservation(EnvTime);
@@ -273,8 +271,8 @@ namespace APG {
 
             // Is there a valid path from start to goal?
             if (usePath && grid != null) {
-               currentPathLength = grid.GetCurrentPathLength();
-               // Astar.GeneratePath(grid, true, false);
+                currentPathLength = grid.GetCurrentPathLength();
+                // Astar.GeneratePath(grid, true, false);
 
                 if (currentPathLength == 0)
                     AddTickReward(PathFailedPunishment);
@@ -309,40 +307,40 @@ namespace APG {
             }
         }
         public void UpdateGridEmptySpaceCompositionVal() {
-           /* int numEmpty = 0;
+            /* int numEmpty = 0;
 
-            for (int x = 0; x < gridSize.x; x++) {
-                for (int y = 0; y < gridSize.y; y++) {
-                    for (int z = 0; z < gridSize.z; z++) {
-                        if (grid.GridNodes[x, y, z].NodeType == NodeType.Empty)
-                            numEmpty += 1;
-                    }
-                }
-            }
+             for (int x = 0; x < gridSize.x; x++) {
+                 for (int y = 0; y < gridSize.y; y++) {
+                     for (int z = 0; z < gridSize.z; z++) {
+                         if (grid.GridNodes[x, y, z].NodeType == NodeType.Empty)
+                             numEmpty += 1;
+                     }
+                 }
+             }
 
-            gridEmptySpace = (float)numEmpty / (float)GridCount;*/
+             gridEmptySpace = (float)numEmpty / (float)GridCount;*/
         }
 
         public void UpdateCohesionValues() {
-         /*   float totalCohesionValue = 0;
+            /*   float totalCohesionValue = 0;
 
-            for (int x = 0; x < gridSize.x; x++) {
-                for (int y = 0; y < gridSize.y; y++) {
-                    for (int z = 0; z < gridSize.z; z++) {
-                        float cohesiveValue = 0;
-                        for (int i = 0; i < grid.GridNodes[x, y, z].allNeighborIndices.Count; i++) {
-                            Vector3Int nodeIndex = grid.GridNodes[x, y, z].allNeighborIndices[i];
-                            if (grid.GridNodes[x, y, z].NodeType == grid.GridNodes[nodeIndex.x, nodeIndex.y, nodeIndex.z].NodeType)
-                                cohesiveValue += 1f / grid.GridNodes[x, y, z].allNeighborIndices.Count;
-                        }
+               for (int x = 0; x < gridSize.x; x++) {
+                   for (int y = 0; y < gridSize.y; y++) {
+                       for (int z = 0; z < gridSize.z; z++) {
+                           float cohesiveValue = 0;
+                           for (int i = 0; i < grid.GridNodes[x, y, z].allNeighborIndices.Count; i++) {
+                               Vector3Int nodeIndex = grid.GridNodes[x, y, z].allNeighborIndices[i];
+                               if (grid.GridNodes[x, y, z].NodeType == grid.GridNodes[nodeIndex.x, nodeIndex.y, nodeIndex.z].NodeType)
+                                   cohesiveValue += 1f / grid.GridNodes[x, y, z].allNeighborIndices.Count;
+                           }
 
-                        grid.GridNodes[x, y, z].cohesiveValue = cohesiveValue;
+                           grid.GridNodes[x, y, z].cohesiveValue = cohesiveValue;
 
-                        totalCohesionValue += cohesiveValue;
-                    }
-                }
-            }
-            avgCohesionValue = totalCohesionValue / (GridCount);*/
+                           totalCohesionValue += cohesiveValue;
+                       }
+                   }
+               }
+               avgCohesionValue = totalCohesionValue / (GridCount);*/
         }
     }
 }

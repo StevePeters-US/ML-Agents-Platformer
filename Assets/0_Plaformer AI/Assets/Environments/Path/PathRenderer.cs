@@ -23,7 +23,7 @@ namespace APG.Environment {
             //    DrawPath(envGenAgent.Grid.path);
 
             if (drawPath && grid != null)
-                DrawPath(grid.CurrentGrid3DProperties.path);
+                DrawPath(grid.CurrentGrid3DData.path);
         }
 
         public void DrawPath(List<Node_3D> pathNodes, float pathLengthReward = 1) {

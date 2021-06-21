@@ -119,8 +119,8 @@ namespace APG.Environment {
             void UpdateNeighborNodes(Node_3D node) {
                 foreach (Vector3Int neighborIndex in node.neighborIndices) {
                     Node_3D neighborNode = grid.GridNodes[neighborIndex.x, neighborIndex.y, neighborIndex.z];
-                    if (neighborNode.NodeType == NodeType.Empty || neighborNode.NodeType == NodeType.Tile)
-                        neighborNode.NodeType = NodeType.Path;
+                    /*if (neighborNode.NodeType == NodeGridType.Empty || neighborNode.NodeType == NodeGridType.Tile)
+                        neighborNode.NodeType = NodeGridType.Path;*/
                 }
             }
         }

@@ -7,6 +7,8 @@ using Debug = UnityEngine.Debug;
 namespace APG.Environment {
 
     public class Grid3D_Platformer : Grid3D_Abstract {
+        [SerializeField] private Vector3Int Grid3DSize = new Vector3Int(10, 1, 10);
+
         public int MinRows;
         public int MaxRows;
 
@@ -44,11 +46,29 @@ namespace APG.Environment {
 
             // Start using the max rows and columns, but we'll update the current size at the start of each episode.
             m_CurrentGrid3DData = new Grid3DData {
-                Rows = MaxRows,
-                Columns = MaxColumns,
+                GridSize = Grid3DSize,
+                GridNodes = new Node_3D[Grid3DSize.x, Grid3DSize.y, Grid3DSize.z],//  GetNewNodes(Grid3DSize),
+
+                //Rows = MaxRows,
+                //Columns = MaxColumns,
                 NumCellTypes = NumCellTypes,
                 NumSpecialTypes = NumSpecialTypes
             };
+
+            for (int x = 0; x < Grid3DSize.x; x++) {
+                for (int y = 0; y < Grid3DSize.y; y++) {
+                    for (int z = 0; z < Grid3DSize.z; z++) {
+                        Vector3Int gridIndex = new Vector3Int(x, y, z);
+                        Vector3 tileOffset = m_CurrentGrid3DData.tileSize * 0.5f;
+                        Vector3 worldPos = transform.position + m_CurrentGrid3DData.tileSize.MultiplyInt(gridIndex) + tileOffset;
+
+                        m_CurrentGrid3DData.GridNodes[x, y, z] = new Node_3D(worldPos, gridIndex, NodeGridType.Empty);
+                        m_CurrentGrid3DData.GridNodes[x, y, z].SetNeighborIndices(m_CurrentGrid3DData.GridSize, m_CurrentGrid3DData.useManhattanNeighbors);
+
+                       // m_CurrentGrid3DData.GridNodes[x, y, z] = new Node_3D(Vector3.zero, new Vector3Int(x, y, z), NodeGridType.Tile);
+                    }
+                }
+            }
         }
 
         void Start() {
@@ -67,8 +87,8 @@ namespace APG.Environment {
 
         public override Grid3DData GetMaxBoardSize() {
             return new Grid3DData {
-                Rows = MaxRows,
-                Columns = MaxColumns,
+                //Rows = MaxRows,
+                //Columns = MaxColumns,
                 NumCellTypes = NumCellTypes,
                 NumSpecialTypes = NumSpecialTypes
             };
@@ -83,24 +103,24 @@ namespace APG.Environment {
         /// cached so that the size is consistent until it is updated.
         /// This is just for an example; you can change your board size however you want.
         /// </summary>
-        public void UpdateCurrentBoardSize() {
+     /*   public void UpdateCurrentBoardSize() {
             var newRows = m_Random.Next(MinRows, MaxRows + 1);
             var newCols = m_Random.Next(MinColumns, MaxColumns + 1);
             m_CurrentGrid3DData.Rows = newRows;
             m_CurrentGrid3DData.Columns = newCols;
-        }
+        }*/
 
 
 
         public override int GetCellType(int row, int col) {
-            if (row >= m_CurrentGrid3DData.Rows || col >= m_CurrentGrid3DData.Columns) {
+            if (row >= m_CurrentGrid3DData.GridSize.z || col >= m_CurrentGrid3DData.GridSize.x) {
                 throw new IndexOutOfRangeException();
             }
             return m_Cells[col, row].CellType;
         }
 
         public override int GetSpecialType(int row, int col) {
-            if (row >= m_CurrentGrid3DData.Rows || col >= m_CurrentGrid3DData.Columns) {
+            if (row >= m_CurrentGrid3DData.GridSize.z || col >= m_CurrentGrid3DData.GridSize.x) {
                 throw new IndexOutOfRangeException();
             }
             return m_Cells[col, row].SpecialType;
@@ -178,13 +198,13 @@ namespace APG.Environment {
             for (int x = 0; x < GetGridSize().x; x++) {
                 for (int y = 0; y < GetGridSize().y; y++) {
                     for (int z = 0; z < GetGridSize().z; z++) {
-                        if (GetGridNode(x, y, z).NodeType == NodeType.Empty)
+                        if (GetGridNode(x, y, z).NodeType == NodeGridType.Empty)
                             numEmpty += 1;
                     }
                 }
             }
 
-            m_CurrentGrid3DData.relativeEmptySpace = (float)numEmpty / (float)CurrentGrid3DProperties.GridCount;
+            m_CurrentGrid3DData.relativeEmptySpace = (float)numEmpty / (float)CurrentGrid3DData.GridCount;
         }
 
         public override void UpdateCohesionValues() {

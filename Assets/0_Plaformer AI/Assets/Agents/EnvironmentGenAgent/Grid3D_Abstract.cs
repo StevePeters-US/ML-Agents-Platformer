@@ -12,7 +12,7 @@ namespace APG.Environment {
 
         private Vector3 gridPos;
 
-        public Node_3D[,,] GridNodes { get => gridNodes; }
+        public Node_3D[,,] GridNodes { get => gridNodes; set => gridNodes = value; }
         private Node_3D[,,] gridNodes;
 
         public Vector3Int StartIndex { get => startIndex; set => startIndex = value; }
@@ -21,18 +21,19 @@ namespace APG.Environment {
         Vector3Int goalIndex;
         public Vector3Int GoalIndex { get => goalIndex; set => goalIndex = value; }
 
-        Vector3 tileSize;//= Vector3.one;
+        public Vector3 tileSize = Vector3.one;
         public Vector3 TileSize { get => tileSize; set => tileSize = value; }
 
         public List<Node_3D> path = new List<Node_3D>();
         // Path length not including start and goal tiles
         public int GetPathLength { get => Mathf.Max(0, path.Count - 2); }
 
+        public bool useManhattanNeighbors = true;
         /// Number of rows on the board
-        public int Rows;
+      //  public int Rows;
 
         /// Number of columns on the board
-        public int Columns;
+       // public int Columns;
 
         /// Maximum number of different types of cells (colors, pieces, etc).
         public int NumCellTypes;
@@ -44,75 +45,75 @@ namespace APG.Environment {
         [Range(0, 1)] public float relativeEmptySpace;
         [Range(0, 1)] public float avgCohesion;
 
-        public override string ToString() {
-            return
-                $"Rows: {Rows}, Columns: {Columns}, NumCellTypes: {NumCellTypes}, NumSpecialTypes: {NumSpecialTypes}";
-        }
+        /* public override string ToString() {
+             return
+                 $"Rows: {Rows}, Columns: {Columns}, NumCellTypes: {NumCellTypes}, NumSpecialTypes: {NumSpecialTypes}";
+         }*/
     }
 
- /*   public struct Grid3DPropertiesStruct {
+    /*   public struct Grid3DPropertiesStruct {
 
-        public Vector3Int GridSize { get => gridSize; set => gridSize = value; }
-        private Vector3Int gridSize;
+           public Vector3Int GridSize { get => gridSize; set => gridSize = value; }
+           private Vector3Int gridSize;
 
-        public int GridCount { get => gridSize.x * gridSize.y * gridSize.z; }
+           public int GridCount { get => gridSize.x * gridSize.y * gridSize.z; }
 
-        private Vector3 gridPos;
+           private Vector3 gridPos;
 
-        public Node_3D[,,] GridNodes { get => gridNodes; }
-        private Node_3D[,,] gridNodes;
+           public Node_3D[,,] GridNodes { get => gridNodes; }
+           private Node_3D[,,] gridNodes;
 
-        public Vector3Int StartIndex { get => startIndex; set => startIndex = value; }
-        Vector3Int startIndex;
+           public Vector3Int StartIndex { get => startIndex; set => startIndex = value; }
+           Vector3Int startIndex;
 
-        Vector3Int goalIndex;
-        public Vector3Int GoalIndex { get => goalIndex; set => goalIndex = value; }
+           Vector3Int goalIndex;
+           public Vector3Int GoalIndex { get => goalIndex; set => goalIndex = value; }
 
-        Vector3 tileSize;//= Vector3.one;
-        public Vector3 TileSize { get => tileSize; set => tileSize = value; }
+           Vector3 tileSize;//= Vector3.one;
+           public Vector3 TileSize { get => tileSize; set => tileSize = value; }
 
-        public List<Node_3D> path;// = new List<Node_3D>();
-        // Path length not including start and goal tiles
-        public int GetPathLength { get => Mathf.Max(0, path.Count - 2); }
+           public List<Node_3D> path;// = new List<Node_3D>();
+           // Path length not including start and goal tiles
+           public int GetPathLength { get => Mathf.Max(0, path.Count - 2); }
 
-        /// Number of rows on the board
-        public int Rows;
+           /// Number of rows on the board
+           public int Rows;
 
-        /// Number of columns on the board
-        public int Columns;
+           /// Number of columns on the board
+           public int Columns;
 
-        /// Maximum number of different types of cells (colors, pieces, etc).
-        public int NumCellTypes;
+           /// Maximum number of different types of cells (colors, pieces, etc).
+           public int NumCellTypes;
 
-        /// Maximum number of special types. This can be zero, in which case
-        /// all cells of the same type are assumed to be equivalent.
-        public int NumSpecialTypes;
+           /// Maximum number of special types. This can be zero, in which case
+           /// all cells of the same type are assumed to be equivalent.
+           public int NumSpecialTypes;
 
-        [Range(0,1)] public float relativeEmptySpace;
-        [Range(0, 1)] public float avgCohesion;
+           [Range(0,1)] public float relativeEmptySpace;
+           [Range(0, 1)] public float avgCohesion;
 
-        /// Check that all fields of the left-hand BoardSize are less than or equal to the field of the right-hand BoardSize
-        public static bool operator <=(Grid3DPropertiesStruct lhs, Grid3DPropertiesStruct rhs) {
-            return lhs.Rows <= rhs.Rows && lhs.Columns <= rhs.Columns && lhs.NumCellTypes <= rhs.NumCellTypes &&
-                   lhs.NumSpecialTypes <= rhs.NumSpecialTypes;
-        }
+           /// Check that all fields of the left-hand BoardSize are less than or equal to the field of the right-hand BoardSize
+           public static bool operator <=(Grid3DPropertiesStruct lhs, Grid3DPropertiesStruct rhs) {
+               return lhs.Rows <= rhs.Rows && lhs.Columns <= rhs.Columns && lhs.NumCellTypes <= rhs.NumCellTypes &&
+                      lhs.NumSpecialTypes <= rhs.NumSpecialTypes;
+           }
 
-        /// Check that all fields of the left-hand BoardSize are greater than or equal to the field of the right-hand BoardSize
-        public static bool operator >=(Grid3DPropertiesStruct lhs, Grid3DPropertiesStruct rhs) {
-            return lhs.Rows >= rhs.Rows && lhs.Columns >= rhs.Columns && lhs.NumCellTypes >= rhs.NumCellTypes &&
-                   lhs.NumSpecialTypes >= rhs.NumSpecialTypes;
-        }
+           /// Check that all fields of the left-hand BoardSize are greater than or equal to the field of the right-hand BoardSize
+           public static bool operator >=(Grid3DPropertiesStruct lhs, Grid3DPropertiesStruct rhs) {
+               return lhs.Rows >= rhs.Rows && lhs.Columns >= rhs.Columns && lhs.NumCellTypes >= rhs.NumCellTypes &&
+                      lhs.NumSpecialTypes >= rhs.NumSpecialTypes;
+           }
 
-        public override string ToString() {
-            return
-                $"Rows: {Rows}, Columns: {Columns}, NumCellTypes: {NumCellTypes}, NumSpecialTypes: {NumSpecialTypes}";
-        }
-    }*/
- 
+           public override string ToString() {
+               return
+                   $"Rows: {Rows}, Columns: {Columns}, NumCellTypes: {NumCellTypes}, NumSpecialTypes: {NumSpecialTypes}";
+           }
+       }*/
+
     public abstract class Grid3D_Abstract : MonoBehaviour {
 
         protected Grid3DData m_CurrentGrid3DData;
-        public Grid3DData CurrentGrid3DProperties { get => m_CurrentGrid3DData; }
+        public Grid3DData CurrentGrid3DData { get => m_CurrentGrid3DData; }
 
         /// Return the maximum size of the board. This is used to determine the size of observations and actions,
         /// so the returned values must not change.
@@ -148,8 +149,17 @@ namespace APG.Environment {
             return m_CurrentGrid3DData.GridSize;
         }
 
+        public void UpdateGridNodeType(Vector3Int nodeIndex, NodeGridType newNodeType) {
+            m_CurrentGrid3DData.GridNodes[nodeIndex.x, nodeIndex.y, nodeIndex.z].NodeType = newNodeType;
+            // GetGridNode(nodeIndex.x, nodeIndex.y, nodeIndex.z).NodeType = newNodeType;
+        }
+
         public Node_3D GetGridNode(int x, int y, int z) {
-            return m_CurrentGrid3DData.GridNodes[x, y, z];
+            return m_CurrentGrid3DData.GridNodes[x, y, z]; ;
+        }
+
+        protected Node_3D[,,] GetNewNodes(Vector3Int gridSize) {
+            return new Node_3D[gridSize.x, gridSize.y, gridSize.z];
         }
 
         public Vector3Int GetStartPosition() {
@@ -167,20 +177,5 @@ namespace APG.Environment {
         public Node_3D GetGoalNode() {
             return m_CurrentGrid3DData.GridNodes[GetGoalPosition().x, GetGoalPosition().y, GetGoalPosition().z];
         }
-
-
-        /// Make sure that the current BoardSize isn't larger than the original value of GetMaxBoardSize().
-        /// If it is, log a warning.
-       // [System.Diagnostics.Conditional("DEBUG")]
-       /* internal void CheckBoardSizes(Grid3DData originalMaxBoardSize) {
-            var currentBoardSize = GetCurrentBoardSize();
-            if (!(currentBoardSize <= originalMaxBoardSize)) {
-                Debug.LogWarning(
-                    "Current BoardSize is larger than maximum board size was on initialization. This may cause unexpected results.\n" +
-                    $"Original GetMaxBoardSize() result: {originalMaxBoardSize}\n" +
-                    $"GetCurrentBoardSize() result: {currentBoardSize}"
-                );
-            }
-        }*/
     }
 }

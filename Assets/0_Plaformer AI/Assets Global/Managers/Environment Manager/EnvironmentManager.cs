@@ -39,8 +39,9 @@ namespace APG.Environment {
             envAgent.OnSuccessfulBuild -= OnSuccessfulBuild;
         }
 
-        private void OnActionTaken() {
+        private void OnActionTaken(Vector3Int nodeIndex, NodeGridType newNodeType) {
             if (envGenerator != null) {
+                envGenerator.UpdateGridNodeType(nodeIndex, newNodeType);
                 envGenerator.ClearEnvironment();
                 envGenerator.InstantiateNodePrefabs();
             }

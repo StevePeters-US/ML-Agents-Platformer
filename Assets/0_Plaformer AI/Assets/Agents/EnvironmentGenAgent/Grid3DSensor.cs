@@ -24,7 +24,7 @@ namespace APG.Environment {
             //var maxBoardSize = board.GetMaxBoardSize();
             this.m_SensorName = m_SensorName;
             //m_MaxBoardSize = maxBoardSize;
-            this.gridSize = board.CurrentGrid3DProperties.GridSize;// .GridSize;// gridSize;
+            this.gridSize = board.CurrentGrid3DData.GridSize;// .GridSize;// gridSize;
             m_GridValues = gvp;
             m_OneHotSize = oneHotSize;
             m_Board = board;
@@ -72,7 +72,7 @@ namespace APG.Environment {
         /// <inheritdoc/>
         public int Write(ObservationWriter writer) {
             //m_Board.CheckBoardSizes(m_MaxBoardSize);
-            var currentBoardSize = m_Board.CurrentGrid3DProperties.GridSize;// GetCurrentBoardSize();
+            var currentBoardSize = m_Board.CurrentGrid3DData.GridSize;// GetCurrentBoardSize();
 
             int offset = 0;
             var isVisual = true;// m_ObservationType != Match3ObservationType.Vector;
@@ -93,14 +93,14 @@ namespace APG.Environment {
                     offset += m_OneHotSize;
                 }
 
-                for (var c = currentBoardSize.z; c < m_MaxBoardSize.Columns; c++) {
+                for (var c = currentBoardSize.z; c < m_Board.CurrentGrid3DData.GridSize.x /*m_MaxBoardSize.Columns*/; c++) {
                     writer.WriteZero(offset, r, c, m_OneHotSize, isVisual);
                     offset += m_OneHotSize;
                 }
             }
 
-            for (var r = currentBoardSize.x; r < m_MaxBoardSize.Columns; r++) {
-                for (var c = 0; c < m_MaxBoardSize.Columns; c++) {
+            for (var r = currentBoardSize.x; r < m_Board.CurrentGrid3DData.GridSize.x /*m_MaxBoardSize.Columns*/; r++) {
+                for (var c = 0; c < m_Board.CurrentGrid3DData.GridSize.x /*m_MaxBoardSize.Columns*/; c++) {
                     writer.WriteZero(offset, r, c, m_OneHotSize, isVisual);
                     offset += m_OneHotSize;
                 }
@@ -113,12 +113,12 @@ namespace APG.Environment {
 
         public byte[] GetCompressedObservation() {
             //m_Board.CheckBoardSizes(m_MaxBoardSize);
-            var height = m_MaxBoardSize.Rows;
-            var width = m_MaxBoardSize.Columns;
+            var height = m_Board.CurrentGrid3DData.GridSize.z /*m_MaxBoardSize.Rows*/;
+            var width = m_Board.CurrentGrid3DData.GridSize.x /*m_MaxBoardSize.Columns*/;
             var tempTexture = new Texture2D(width, height, TextureFormat.RGB24, false);
             var converter = new OneHotToTextureUtil(height, width);
             var bytesOut = new List<byte>();
-            var currentBoardSize = m_Board.CurrentGrid3DProperties.GridSize;// GetCurrentBoardSize();
+            var currentBoardSize = m_Board.CurrentGrid3DData.GridSize;// GetCurrentBoardSize();
 
             // Encode the cell types or special types as batches of PNGs
             // This is potentially wasteful, e.g. if there are 4 cell types and 1 special type, we could
@@ -163,11 +163,11 @@ namespace APG.Environment {
         }
 
         public void Update() {
-            throw new System.NotImplementedException();
+            //throw new System.NotImplementedException();
         }
 
         public void Reset() {
-            throw new System.NotImplementedException();
+            //throw new System.NotImplementedException();
         }
     }
 

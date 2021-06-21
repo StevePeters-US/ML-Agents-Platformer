@@ -111,6 +111,10 @@ namespace APG.Environment {
                   }*/
         }
 
+        public void UpdateGridNodeType(Vector3Int nodeIndex, NodeGridType newNodeType) {
+            grid.UpdateGridNodeType(nodeIndex, newNodeType);
+        }
+
         private Vector3Int GetRandomIndex() {
             int randomIdx = Random.Range(0, availableIndices.Count);
             return availableIndices[randomIdx];
@@ -121,22 +125,22 @@ namespace APG.Environment {
             for (int x = 0; x < envSize.x; x++) {
                 for (int y = 0; y < envSize.y; y++) {
                     for (int z = 0; z < envSize.z; z++) {
-                        if (grid.GetGridNode(x, y, z).NodeType == NodeType.Start) {
+                        if (grid.GetGridNode(x, y, z).NodeType == NodeGridType.Start) {
                             spawnRef = Instantiate<EnvSpawn>(spawnTile, grid.GetGridNode(x, y, z).worldPos, transform.rotation);
                             instantiatedEnvironmentObjects.Add(spawnRef.gameObject);
                         }
 
-                        else if (grid.GetGridNode(x, y, z).NodeType == NodeType.Goal) {
+                        else if (grid.GetGridNode(x, y, z).NodeType == NodeGridType.Goal) {
                             goalRef = Instantiate<EnvGoal>(goalTile, grid.GetGridNode(x, y, z).worldPos, transform.rotation);
                             instantiatedEnvironmentObjects.Add(goalRef.gameObject);
                         }
 
-                        else if (grid.GetGridNode(x, y, z).NodeType == NodeType.Path) {
-                            GameObject newTile = Instantiate<GameObject>(pathTile, grid.GetGridNode(x, y, z).worldPos, transform.rotation);
-                            instantiatedEnvironmentObjects.Add(newTile);
-                        }
+                        /* else if (grid.GetGridNode(x, y, z).NodeType == NodeGridType.Path) {
+                             GameObject newTile = Instantiate<GameObject>(pathTile, grid.GetGridNode(x, y, z).worldPos, transform.rotation);
+                             instantiatedEnvironmentObjects.Add(newTile);
+                         }*/
 
-                        else if (grid.GetGridNode(x, y, z).NodeType == NodeType.Tile) {
+                        else if (grid.GetGridNode(x, y, z).NodeType == NodeGridType.Tile) {
                             GameObject newTile = Instantiate<GameObject>(floorTile, grid.GetGridNode(x, y, z).worldPos, transform.rotation);
                             instantiatedEnvironmentObjects.Add(newTile);
                         }
@@ -149,19 +153,19 @@ namespace APG.Environment {
             for (int x = 0; x < grid.GetGridSize().x; x++) {
                 for (int y = 0; y < grid.GetGridSize().y; y++) {
                     for (int z = 0; z < grid.GetGridSize().z; z++) {
-                        if (grid.GetGridNode(x, y, z).NodeType == NodeType.Start) {
+                        if (grid.GetGridNode(x, y, z).NodeType == NodeGridType.Start) {
                             spawnRef.gameObject.SetActive(true);
                             spawnRef.transform.position = grid.GetGridNode(x, y, z).worldPos;
                             spawnRef.transform.rotation = transform.rotation;
                         }
 
-                        else if (grid.GetGridNode(x, y, z).NodeType == NodeType.Goal) {
+                        else if (grid.GetGridNode(x, y, z).NodeType == NodeGridType.Goal) {
                             goalRef.gameObject.SetActive(true);
                             goalRef.transform.position = grid.GetGridNode(x, y, z).worldPos;
                             goalRef.transform.rotation = transform.rotation;
                         }
 
-                        else if (grid.GetGridNode(x, y, z).NodeType == NodeType.Tile) {
+                        else if (grid.GetGridNode(x, y, z).NodeType == NodeGridType.Tile) {
                             GameObject newTile = tilePool.Get();
                             newTile.gameObject.SetActive(true);
                             newTile.transform.position = grid.GetGridNode(x, y, z).worldPos;
