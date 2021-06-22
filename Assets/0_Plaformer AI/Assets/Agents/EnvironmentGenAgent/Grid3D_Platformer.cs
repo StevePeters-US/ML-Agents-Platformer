@@ -66,7 +66,7 @@ namespace APG.Environment {
                         m_CurrentGrid3DData.GridNodes[x, y, z] = new Node_3D(worldPos, gridIndex, NodeGridType.Empty);
                         m_CurrentGrid3DData.GridNodes[x, y, z].SetNeighborIndices(m_CurrentGrid3DData.GridSize, m_CurrentGrid3DData.useManhattanNeighbors);
 
-                       // m_CurrentGrid3DData.GridNodes[x, y, z] = new Node_3D(Vector3.zero, new Vector3Int(x, y, z), NodeGridType.Tile);
+                        // m_CurrentGrid3DData.GridNodes[x, y, z] = new Node_3D(Vector3.zero, new Vector3Int(x, y, z), NodeGridType.Tile);
                     }
                 }
             }
@@ -87,10 +87,14 @@ namespace APG.Environment {
             Vector3Int startIndex = GetRandomIndex();
             m_CurrentGrid3DData.availableIndices.Remove(startIndex);
             m_CurrentGrid3DData.StartIndex = startIndex;
+            m_CurrentGrid3DData.GridNodes[startIndex.x, startIndex.y, startIndex.z].NodeType = NodeGridType.Start;
+            m_CurrentGrid3DData.GridNodes[startIndex.x, startIndex.y, startIndex.z].locked = true;
 
             Vector3Int goalIndex = GetRandomIndex();
             m_CurrentGrid3DData.availableIndices.Remove(goalIndex);
             m_CurrentGrid3DData.GoalIndex = goalIndex;
+            m_CurrentGrid3DData.GridNodes[goalIndex.x, goalIndex.y, goalIndex.z].NodeType = NodeGridType.Goal;
+            m_CurrentGrid3DData.GridNodes[goalIndex.x, goalIndex.y, goalIndex.z].locked = true;
 
             // Fill in other tiles
 
@@ -141,12 +145,6 @@ namespace APG.Environment {
             return m_Cells[col, row].SpecialType;
         }
 
-
-
-
-
-
-
         public (int, int)[,] Cells {
             get { return m_Cells; }
         }
@@ -196,15 +194,17 @@ namespace APG.Environment {
         }
 
         public override int GetMinPathLength() {
-            throw new NotImplementedException();
+            return Astar.GetDistanceManhattan(GetStartNode(), GetGoalNode());
         }
 
         public override int GetMaxPathLength() {
-            throw new NotImplementedException();
+            Debug.LogWarning("Get Max Path Length not properly implemented in grid3d_platformer", this);
+            return 40;
         }
 
+        // Path length not including start and goal tiles
         public override int GetCurrentPathLength() {
-            throw new NotImplementedException();
+            return Mathf.Max(0, pathIndices.Count - 2);
         }
 
         public override void UpdateRelativeEmptySpaceValue() {

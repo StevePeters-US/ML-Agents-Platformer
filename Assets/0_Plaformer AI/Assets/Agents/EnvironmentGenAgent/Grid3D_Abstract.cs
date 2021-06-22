@@ -121,6 +121,9 @@ namespace APG.Environment {
         [SerializeField] private RenderTexture rt;
         [SerializeField] private Texture2D tex;// = new Texture2D(10, 10);
 
+        // public List<Node_3D> path = new List<Node_3D>();
+        public List<Vector3Int> pathIndices = new List<Vector3Int>();
+
         /// Return the maximum size of the board. This is used to determine the size of observations and actions,
         /// so the returned values must not change.
         /// 
@@ -151,6 +154,13 @@ namespace APG.Environment {
         /// The actual order of the values doesn't matter.
         public abstract int GetSpecialType(int row, int col);
 
+        protected void Update() {
+            // Update path using A*
+            pathIndices = Astar.GeneratePath(this, true, false);
+
+            UpdateGridTexture();
+        }
+
         public Vector3Int GetGridSize() {
             return m_CurrentGrid3DData.GridSize;
         }
@@ -162,7 +172,42 @@ namespace APG.Environment {
                 for (int y = 0; y < m_CurrentGrid3DData.GridSize.y; y++) {
                     for (int z = 0; z < m_CurrentGrid3DData.GridSize.z; z++) {
                         m_CurrentGrid3DData.GridNodes[x, y, z].NodeType = NodeGridType.Empty;
+                        m_CurrentGrid3DData.GridNodes[x, y, z].locked = false;
                         m_CurrentGrid3DData.availableIndices.Add(new Vector3Int(x, y, z));
+                    }
+                }
+            }
+
+            ResetPathIndices();
+        }
+        public void ResetPathIndices() {
+            for (int x = 0; x < m_CurrentGrid3DData.GridSize.x; x++) {
+                for (int y = 0; y < m_CurrentGrid3DData.GridSize.y; y++) {
+                    for (int z = 0; z < m_CurrentGrid3DData.GridSize.z; z++) {
+                        m_CurrentGrid3DData.GridNodes[x, y, z].isPath = false;
+                    }
+                }
+            }
+        }
+
+        // Overwrites all empty nodes with tile nodes
+        public void FillGridWithTiles() {
+            for (int x = 0; x < m_CurrentGrid3DData.GridSize.x; x++) {
+                for (int y = 0; y < m_CurrentGrid3DData.GridSize.y; y++) {
+                    for (int z = 0; z < m_CurrentGrid3DData.GridSize.z; z++) {
+                        if (m_CurrentGrid3DData.GridNodes[x, y, z].NodeType == NodeGridType.Empty)
+                            m_CurrentGrid3DData.GridNodes[x, y, z].NodeType = NodeGridType.Tile;
+                    }
+                }
+            }
+        }
+
+        public void FillGridWithRandomTiles(float randomChance = 0.5f) {
+            for (int x = 0; x < m_CurrentGrid3DData.GridSize.x; x++) {
+                for (int y = 0; y < m_CurrentGrid3DData.GridSize.y; y++) {
+                    for (int z = 0; z < m_CurrentGrid3DData.GridSize.z; z++) {
+                        if (m_CurrentGrid3DData.GridNodes[x, y, z].NodeType == NodeGridType.Empty && UnityEngine.Random.Range(0f, 1f) < randomChance)
+                            m_CurrentGrid3DData.GridNodes[x, y, z].NodeType = NodeGridType.Tile;
                     }
                 }
             }
@@ -177,7 +222,6 @@ namespace APG.Environment {
             m_CurrentGrid3DData.GridNodes[nodeIndex.x, nodeIndex.y, nodeIndex.z].NodeType = newNodeType;
             // GetGridNode(nodeIndex.x, nodeIndex.y, nodeIndex.z).NodeType = newNodeType;
 
-            UpdateGridTexture();
         }
 
         public Node_3D GetGridNode(int x, int y, int z) {
@@ -204,19 +248,43 @@ namespace APG.Environment {
             return m_CurrentGrid3DData.GridNodes[GetGoalPosition().x, GetGoalPosition().y, GetGoalPosition().z];
         }
 
-        private void UpdateGridTexture() {
+        protected void UpdateGridTexture() {
             for (int x = 0; x < m_CurrentGrid3DData.GridSize.x; x++) {
                 for (int y = 0; y < m_CurrentGrid3DData.GridSize.y; y++) {
                     for (int z = 0; z < m_CurrentGrid3DData.GridSize.z; z++) {
-                        // rt.te
-                        tex.SetPixel(x, z, m_CurrentGrid3DData.GridNodes[x,y,z].NodeType == NodeGridType.Empty ? Color.white : Color.green);
-                        tex.Apply();
 
-                       // m_CurrentGrid3DData.GridNodes[x, y, z].NodeType = NodeGridType.Empty;
-                       // m_CurrentGrid3DData.availableIndices.Add(new Vector3Int(x, y, z));
+                        Color nodeColor = Color.cyan;
+                        NodeGridType nodeGridType = m_CurrentGrid3DData.GridNodes[x, y, z].NodeType;
+                        switch (nodeGridType) {
+                            case NodeGridType.Empty:
+                                nodeColor = Color.black;
+                                break;
+                            case NodeGridType.Start:
+                                nodeColor = Color.yellow;
+                                break;
+                            case NodeGridType.Goal:
+                                nodeColor = Color.blue;
+                                break;
+                            case NodeGridType.Waypoint:
+                                nodeColor = Color.white;
+                                break;
+                            case NodeGridType.Tile:
+                                nodeColor = Color.green;
+                                break;
+                            default:
+                                break;
+                        }
+
+                        if (m_CurrentGrid3DData.GridNodes[x, y, z].isPath)
+                            nodeColor = Color.red;
+                        tex.SetPixel(x, z, nodeColor);
+
+                        // m_CurrentGrid3DData.GridNodes[x, y, z].NodeType = NodeGridType.Empty;
+                        // m_CurrentGrid3DData.availableIndices.Add(new Vector3Int(x, y, z));
                     }
                 }
             }
+            tex.Apply();
         }
     }
 }

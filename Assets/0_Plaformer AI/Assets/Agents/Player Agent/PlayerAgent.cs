@@ -13,7 +13,7 @@ namespace APG
     [RequireComponent(typeof(DecisionRequester))]
     [RequireComponent(typeof(Collider))]
     [RequireComponent(typeof(Rigidbody))]
-    public class PlayerAgent : Agent, IEnvironmentObject
+    public class PlayerAgent : Agent//, IEnvironmentObject
     {
         protected PlayerInputHandler _playerInputHandler;
         private PlayerAgentMovementController _movementController;
@@ -24,9 +24,9 @@ namespace APG
         protected Vector2 agentLookDir;
         protected bool agentHasJumpInput;
 
-        private EnvironmentManager _envManager;
-        public EnvironmentManager envManager { get => _envManager; }
-        private Transform _envManagerTransform;
+     //   private EnvironmentManager _envManager;
+     //   public EnvironmentManager envManager { get => _envManager; }
+     //   private Transform _envManagerTransform;
 
         private Vector3 localPosition;
 
@@ -36,23 +36,23 @@ namespace APG
 
         protected void Awake()
         {
-            if (!UpdateEnvironmentManager())
-                Debug.Log("No environment manager found", this);
+        /*    if (!UpdateEnvironmentManager())
+                Debug.Log("No environment manager found", this);*/
 
             _rigidbody = GetComponent<Rigidbody>();
             _playerInputHandler = GetComponent<PlayerInputHandler>();
             _movementController = GetComponent<PlayerAgentMovementController>();
             _movementController.playerAgent = this;
 
-            _envManagerTransform = envManager.transform;
+        //    _envManagerTransform = envManager.transform;
 
             //SetAgentBehaviorTypeHeuristic(true);
         }
-        public bool UpdateEnvironmentManager()
+   /*     public bool UpdateEnvironmentManager()
         {
             _envManager = GetComponentInParent<EnvironmentManager>();
             return _envManager;
-        }
+        }*/
 
         // I'm leaving this is in for now to give the player the option of manually controlling the agent or allowing the ai to take over
         private void SetAgentBehaviorTypeHeuristic(bool usesHeursiticBehaviors)
@@ -70,7 +70,7 @@ namespace APG
 
         public override void OnEpisodeBegin()
         {
-            _envManager.ResetEnvironment();
+           // _envManager.ResetEnvironment();
         }
 
         // These are the observations that are fed to the model on decision request (defaults to every 5th fixed frame in the decision requester component attached to the agent).
@@ -87,14 +87,14 @@ namespace APG
 
         private void FixedUpdate()
         {
-            localPosition = _envManagerTransform.InverseTransformPoint(transform.position);
+          /*  localPosition = _envManagerTransform.InverseTransformPoint(transform.position);
             
             // Check if agent is withing valid bounds
             if (localPosition.y < killHeight)
             {
                 SetReward(-1.0f);
                 EndEpisode();
-            }
+            }*/
 
             _movementController.UpdateMovement(agentMoveInputDirection, agentLookDir, agentHasJumpInput);
 

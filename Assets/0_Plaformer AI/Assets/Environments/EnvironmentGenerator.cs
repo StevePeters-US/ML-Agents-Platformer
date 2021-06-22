@@ -24,7 +24,6 @@ namespace APG.Environment {
         private List<GameObject> instantiatedTiles = new List<GameObject>();
 
         [SerializeField] private bool usePath = false;
-        [SerializeField] private bool useManhattanNeighbors = true;
 
         [SerializeField, Tooltip("Rounded to nearest int")] private Vector3Int envSize;
 

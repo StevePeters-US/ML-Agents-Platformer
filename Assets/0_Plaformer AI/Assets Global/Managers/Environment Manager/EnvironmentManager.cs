@@ -13,8 +13,6 @@ namespace APG.Environment {
         private EnvSpawn envSpawn;
         private PlayerAgent playerAgent;
 
-        private Grid_3D grid;
-
         private float defaultTimeScale;
 
         private void OnEnable() {
@@ -51,14 +49,9 @@ namespace APG.Environment {
             UpdateFromLessonPlan();
 
             envGenerator.GenerateEnvironment();
-
-
-
-            // int minPathLength = Astar.GetDistanceManhattan(grid.GetStartNode(), grid.GetGoalNode());
-            // targetPathLength = Mathf.Lerp(minPathLength, maxPathLength, pathLengthInterpolator);
-
         }
 
+        // #Todo
         private void UpdateFromLessonPlan() {
             // Update grid
 

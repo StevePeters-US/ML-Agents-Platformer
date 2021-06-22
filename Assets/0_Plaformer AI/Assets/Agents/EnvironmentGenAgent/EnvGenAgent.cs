@@ -50,7 +50,6 @@ namespace APG {
         public float currentTickReward;
 
         private bool usePath = true;
-        private int maxPathLength = 40; // #Todo This needs to be calculated
         [Range(0, 1)] private float pathLengthInterpolator;
         public void OnPathLengthSliderChanged(float newSliderValue) { pathLengthInterpolator = newSliderValue; }
 
@@ -147,7 +146,7 @@ namespace APG {
                 newNodeType = NodeGridType.Tile;
             else
                 return;
-                       
+
             EvaluateEnvironment();
 
             OnActionCompleted?.Invoke(currentIndex, newNodeType);
@@ -243,23 +242,20 @@ namespace APG {
         }
 
         public override void WriteDiscreteActionMask(IDiscreteActionMask actionMask) {
-
             if (maskActions) {
-
-                // Mask start and goal positions
-
-                /*   for (int x = 0; x < grid.GridNodes.GetLength(0); x++) {
-                       for (int y = 0; y < grid.GridNodes.GetLength(1); y++) {
-                           for (int z = 0; z < grid.GridNodes.GetLength(2); z++) {
-                               for (int i = 0; i < actionSpec.BranchSizes[x + y + z]; i++) {
-                                   int branchIndex = x + y + (z * grid.GridNodes.GetLength(0));
-                                   actionMask.SetActionEnabled(branchIndex, 1, !grid.GridNodes[x, y, z].locked);
-                               }
-                           }
-                       }
-                   }*/
+                // Mask all locked indices, which should include start and goal indices          
+                for (int x = 0; x < grid.CurrentGrid3DData.GridNodes.GetLength(0); x++) {
+                    for (int y = 0; y < grid.CurrentGrid3DData.GridNodes.GetLength(1); y++) {
+                        for (int z = 0; z < grid.CurrentGrid3DData.GridNodes.GetLength(2); z++) {
+                            int branchIndex = 0;
+                            int actionIndex = x + y + (z * grid.CurrentGrid3DData.GridNodes.GetLength(0)); // Grid index to branch index
+                            actionMask.SetActionEnabled(branchIndex, actionIndex, !grid.CurrentGrid3DData.GridNodes[x, y, z].locked);
+                        }
+                    }
+                }
             }
         }
+
         private void EvaluateEnvironment() {
             float tickReward = 0;
 

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 992684486595261436}
   - component: {fileID: 6142867044376505962}
   - component: {fileID: 7653720219117532565}
+  - component: {fileID: 853785654}
   m_Layer: 0
   m_Name: Environment Generator
   m_TagString: Untagged
@@ -25,7 +26,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2028738234406495948}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -45,6 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   envCompleted: 0
+  envAgent: {fileID: 0}
 --- !u!114 &7653720219117532565
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -65,6 +67,31 @@ MonoBehaviour:
   tileMat: {fileID: 0}
   pathMat: {fileID: 0}
   usePath: 0
-  useManhattanNeighbors: 1
   envSize: {x: 0, y: 0, z: 0}
   tileSize: {x: 1, y: 1, z: 1}
+--- !u!114 &853785654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2028738234406495948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fc167004937e29489fd30bd79475236, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rt: {fileID: 0}
+  tex: {fileID: 2800000, guid: c6f698a725df0bc49a5e8613f41bf9fc, type: 3}
+  pathIndices: []
+  Grid3DSize: {x: 10, y: 1, z: 10}
+  MinRows: 0
+  MaxRows: 0
+  MinColumns: 0
+  MaxColumns: 0
+  NumCellTypes: 0
+  NumSpecialTypes: 0
+  BasicCellPoints: 1
+  SpecialCell1Points: 2
+  SpecialCell2Points: 3
+  RandomSeed: 0
