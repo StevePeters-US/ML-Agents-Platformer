@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2233170389573893857}
   - component: {fileID: 2233170389573893862}
   - component: {fileID: 2233170389573893863}
-  - component: {fileID: 1409394411}
+  - component: {fileID: 1765810281}
   m_Layer: 0
   m_Name: Environment Agent
   m_TagString: Untagged
@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 604
+    VectorObservationSize: 4
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
@@ -94,7 +94,7 @@ MonoBehaviour:
   pathLengthInfluence: 0
   cohesionInfluence: 0
   gridEmptySpaceInfluence: 0
---- !u!114 &1409394411
+--- !u!114 &1765810281
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -103,11 +103,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2233170389573893860}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a7c13f9f8209645459e53026c466ed69, type: 3}
+  m_Script: {fileID: 11500000, guid: 7f0c183e298a40f4e8ebf08ac2fe961e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SensorName: Grid3DSensor
-  grid: {fileID: 0}
-  m_GridSize: {x: 10, y: 1, z: 10}
-  m_CompressionType: 1
+  tex: {fileID: 2800000, guid: c6f698a725df0bc49a5e8613f41bf9fc, type: 3}
+  m_SensorName: RenderTextureSensor
+  m_Grayscale: 0
   m_ObservationStacks: 1
+  m_Compression: 1

@@ -46,7 +46,7 @@ namespace APG.Environment {
             m_Matched = new bool[MaxColumns, MaxRows];
 
             // Start using the max rows and columns, but we'll update the current size at the start of each episode.
-            m_CurrentGrid3DData = new Grid3DData {
+            m_Grid3DData = new Grid3DData {
                 GridSize = Grid3DSize,
                 GridNodes = new Node_3D[Grid3DSize.x, Grid3DSize.y, Grid3DSize.z],//  GetNewNodes(Grid3DSize),
 
@@ -56,15 +56,17 @@ namespace APG.Environment {
                 NumSpecialTypes = NumSpecialTypes
             };
 
+            tex.Resize(Grid3DSize.x, Grid3DSize.z);
+
             for (int x = 0; x < Grid3DSize.x; x++) {
                 for (int y = 0; y < Grid3DSize.y; y++) {
                     for (int z = 0; z < Grid3DSize.z; z++) {
                         Vector3Int gridIndex = new Vector3Int(x, y, z);
-                        Vector3 tileOffset = m_CurrentGrid3DData.tileSize * 0.5f;
-                        Vector3 worldPos = transform.position + m_CurrentGrid3DData.tileSize.MultiplyInt(gridIndex) + tileOffset;
+                        Vector3 tileOffset = m_Grid3DData.tileSize * 0.5f;
+                        Vector3 worldPos = transform.position + m_Grid3DData.tileSize.MultiplyInt(gridIndex) + tileOffset;
 
-                        m_CurrentGrid3DData.GridNodes[x, y, z] = new Node_3D(worldPos, gridIndex, NodeGridType.Empty);
-                        m_CurrentGrid3DData.GridNodes[x, y, z].SetNeighborIndices(m_CurrentGrid3DData.GridSize, m_CurrentGrid3DData.useManhattanNeighbors);
+                        m_Grid3DData.GridNodes[x, y, z] = new Node_3D(worldPos, gridIndex, NodeType.Empty);
+                        m_Grid3DData.GridNodes[x, y, z].SetNeighborIndices(m_Grid3DData.GridSize, m_Grid3DData.useManhattanNeighbors);
 
                         // m_CurrentGrid3DData.GridNodes[x, y, z] = new Node_3D(Vector3.zero, new Vector3Int(x, y, z), NodeGridType.Tile);
                     }
@@ -85,16 +87,16 @@ namespace APG.Environment {
 
             // Define start and goal
             Vector3Int startIndex = GetRandomIndex();
-            m_CurrentGrid3DData.availableIndices.Remove(startIndex);
-            m_CurrentGrid3DData.StartIndex = startIndex;
-            m_CurrentGrid3DData.GridNodes[startIndex.x, startIndex.y, startIndex.z].NodeType = NodeGridType.Start;
-            m_CurrentGrid3DData.GridNodes[startIndex.x, startIndex.y, startIndex.z].locked = true;
+            m_Grid3DData.availableIndices.Remove(startIndex);
+            m_Grid3DData.StartIndex = startIndex;
+            m_Grid3DData.GridNodes[startIndex.x, startIndex.y, startIndex.z].NodeType = NodeType.Start;
+            m_Grid3DData.GridNodes[startIndex.x, startIndex.y, startIndex.z].locked = true;
 
             Vector3Int goalIndex = GetRandomIndex();
-            m_CurrentGrid3DData.availableIndices.Remove(goalIndex);
-            m_CurrentGrid3DData.GoalIndex = goalIndex;
-            m_CurrentGrid3DData.GridNodes[goalIndex.x, goalIndex.y, goalIndex.z].NodeType = NodeGridType.Goal;
-            m_CurrentGrid3DData.GridNodes[goalIndex.x, goalIndex.y, goalIndex.z].locked = true;
+            m_Grid3DData.availableIndices.Remove(goalIndex);
+            m_Grid3DData.GoalIndex = goalIndex;
+            m_Grid3DData.GridNodes[goalIndex.x, goalIndex.y, goalIndex.z].NodeType = NodeType.Goal;
+            m_Grid3DData.GridNodes[goalIndex.x, goalIndex.y, goalIndex.z].locked = true;
 
             // Fill in other tiles
 
@@ -114,7 +116,7 @@ namespace APG.Environment {
         }
 
         public override Grid3DData GetCurrentBoardSize() {
-            return m_CurrentGrid3DData;
+            return m_Grid3DData;
         }
 
         /// <summary>
@@ -132,14 +134,14 @@ namespace APG.Environment {
 
 
         public override int GetCellType(int row, int col) {
-            if (row >= m_CurrentGrid3DData.GridSize.z || col >= m_CurrentGrid3DData.GridSize.x) {
+            if (row >= m_Grid3DData.GridSize.z || col >= m_Grid3DData.GridSize.x) {
                 throw new IndexOutOfRangeException();
             }
             return m_Cells[col, row].CellType;
         }
 
         public override int GetSpecialType(int row, int col) {
-            if (row >= m_CurrentGrid3DData.GridSize.z || col >= m_CurrentGrid3DData.GridSize.x) {
+            if (row >= m_Grid3DData.GridSize.z || col >= m_Grid3DData.GridSize.x) {
                 throw new IndexOutOfRangeException();
             }
             return m_Cells[col, row].SpecialType;
@@ -213,13 +215,13 @@ namespace APG.Environment {
             for (int x = 0; x < GetGridSize().x; x++) {
                 for (int y = 0; y < GetGridSize().y; y++) {
                     for (int z = 0; z < GetGridSize().z; z++) {
-                        if (GetGridNode(x, y, z).NodeType == NodeGridType.Empty)
+                        if (GetGridNode(x, y, z).NodeType == NodeType.Empty)
                             numEmpty += 1;
                     }
                 }
             }
 
-            m_CurrentGrid3DData.relativeEmptySpace = (float)numEmpty / (float)CurrentGrid3DData.GridCount;
+            m_Grid3DData.relativeEmptySpace = (float)numEmpty / (float)Grid3DData.GridCount;
         }
 
         public override void UpdateCohesionValues() {
@@ -241,7 +243,7 @@ namespace APG.Environment {
                     }
                 }
             }
-            m_CurrentGrid3DData.avgCohesion = totalCohesionValue / (m_CurrentGrid3DData.GridCount);
+            m_Grid3DData.avgCohesion = totalCohesionValue / (m_Grid3DData.GridCount);
         }
     }
 }

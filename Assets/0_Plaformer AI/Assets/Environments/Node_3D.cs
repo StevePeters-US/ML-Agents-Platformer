@@ -13,7 +13,7 @@ namespace APG.Environment {
             // Obstacle
     }*/
 
-    public enum NodeGridType {
+    public enum NodeType {
         Empty,
         Start,
         Goal,
@@ -26,7 +26,7 @@ namespace APG.Environment {
         public Vector3Int gridIndex;
 
         // private bool isTraversable;
-        public bool IsTraversable { get => nodeType != NodeGridType.Empty; }
+        public bool IsTraversable { get => nodeType != NodeType.Empty; }
 
 
         public bool locked = false; // Can this node be modified by the agent?
@@ -47,13 +47,13 @@ namespace APG.Environment {
         public List<Vector3Int> neighborIndices = new List<Vector3Int>();
         public List<Vector3Int> allNeighborIndices = new List<Vector3Int>();
 
-        private NodeGridType nodeType;
-        public NodeGridType NodeType { get => nodeType; set => nodeType = locked ? nodeType : value; }
+        private NodeType nodeType;
+        public NodeType NodeType { get => nodeType; set => nodeType = locked ? nodeType : value; }
 
         public bool isPath = false;
         public float cohesiveValue; // 0-1 how similar are neighboring tiles
 
-        public Node_3D(Vector3 worldPos, Vector3Int gridIndex, NodeGridType nodeType = NodeGridType.Empty) {
+        public Node_3D(Vector3 worldPos, Vector3Int gridIndex, NodeType nodeType = NodeType.Empty) {
             this.worldPos = worldPos;
             this.gridIndex = gridIndex;
             this.nodeType = nodeType;

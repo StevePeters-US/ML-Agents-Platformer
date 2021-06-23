@@ -37,10 +37,9 @@ namespace APG.Environment {
             envAgent.OnSuccessfulBuild -= OnSuccessfulBuild;
         }
 
-        private void OnActionTaken(Vector3Int nodeIndex, NodeGridType newNodeType) {
+        private void OnActionTaken(Vector3Int nodeIndex, NodeType newNodeType) {
             if (envGenerator != null) {
                 envGenerator.UpdateGridNodeType(nodeIndex, newNodeType);
-                envGenerator.ClearEnvironment();
                 envGenerator.InstantiateNodePrefabs();
             }
         }
@@ -62,7 +61,6 @@ namespace APG.Environment {
             Time.timeScale = defaultTimeScale;
 
             if (envGenerator != null) {
-                envGenerator.ClearEnvironment();
                 envGenerator.InstantiateNodePrefabs();
             }
         }
@@ -103,7 +101,7 @@ namespace APG.Environment {
           }*/
 
         public void ResetEnvironment() {
-            envGenerator.GenerateGridEnvironment();
+            envGenerator.GenerateEnvironment();
 
             envSpawn = envGenerator.SpawnRef;
 

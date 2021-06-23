@@ -5,14 +5,12 @@ using UnityEngine;
 namespace APG.Environment {
     public static class Astar {
         public static List<Vector3Int> GeneratePath(Grid3D_Abstract grid, bool useManhattanDistance, bool updatePathNodeTypes) {
-            grid.pathIndices.Clear();
+            grid.ClearPathIndices();
 
             Node_3D startNode = grid.GetStartNode();
             Node_3D goalNode = grid.GetGoalNode();
 
-            List<Vector3Int> pathIndices = new List<Vector3Int>();
-
-            int numEnvNodes = grid.CurrentGrid3DData.GridSize.x * grid.CurrentGrid3DData.GridSize.y * grid.CurrentGrid3DData.GridSize.z;
+            int numEnvNodes = grid.Grid3DData.GridSize.x * grid.Grid3DData.GridSize.y * grid.Grid3DData.GridSize.z;
             Heap<Node_3D> openSet = new Heap<Node_3D>(numEnvNodes);
             HashSet<Node_3D> closedSet = new HashSet<Node_3D>();
             openSet.Add(startNode);
@@ -21,9 +19,8 @@ namespace APG.Environment {
                 Node_3D currentNode = openSet.RemoveFirst();
                 closedSet.Add(currentNode);
 
-                if (currentNode == goalNode) {
-                    RetracePath(grid, startNode, goalNode, updatePathNodeTypes);
-                    return pathIndices;
+                if (currentNode == goalNode) {                    
+                    return RetracePath(grid, startNode, goalNode, updatePathNodeTypes);
                 }
 
                 foreach (Node_3D neighbor in GetNeighborNodes(grid, currentNode)) {
@@ -42,10 +39,10 @@ namespace APG.Environment {
                 }
             }
 
-            return pathIndices;
+            return new List<Vector3Int>();
         }
 
-        private static void RetracePath(Grid3D_Abstract grid, Node_3D startNode, Node_3D endNode, bool updatePathNodeTypes) {
+        private static List<Vector3Int> RetracePath(Grid3D_Abstract grid, Node_3D startNode, Node_3D endNode, bool updatePathNodeTypes) {
             List<Node_3D> newPath = new List<Node_3D>();
             Node_3D currentNode = endNode;
 
@@ -58,21 +55,17 @@ namespace APG.Environment {
 
             newPath.Reverse();
 
-            grid.ResetPathIndices();
+            grid.ClearPathIndices();
 
             List<Vector3Int> outPathIndices = new List<Vector3Int>();
 
-            // if (updatePathNodeTypes) {
             foreach (Node_3D node in newPath) {
                 if (node.gridIndex != endNode.gridIndex || node.gridIndex != startNode.gridIndex) {
-                    // grid.GridNodes[node.gridIndex.x, node.gridIndex.y, node.gridIndex.z].NodeType = NodeType.Path;
-                    grid.CurrentGrid3DData.GridNodes[node.gridIndex.x, node.gridIndex.y, node.gridIndex.z].isPath = true;
+                    grid.Grid3DData.GridNodes[node.gridIndex.x, node.gridIndex.y, node.gridIndex.z].isPath = true;
                     outPathIndices.Add(node.gridIndex);
                 }
             }
-            // }
-
-            grid.pathIndices = outPathIndices;
+            return outPathIndices;
         }
 
 
@@ -80,7 +73,7 @@ namespace APG.Environment {
             List<Node_3D> neighbors = new List<Node_3D>();
 
             foreach (Vector3Int neighborIndex in node.neighborIndices) {
-                neighbors.Add(grid.CurrentGrid3DData.GridNodes[neighborIndex.x, neighborIndex.y, neighborIndex.z]);
+                neighbors.Add(grid.Grid3DData.GridNodes[neighborIndex.x, neighborIndex.y, neighborIndex.z]);
             }
 
             return neighbors;
@@ -103,28 +96,28 @@ namespace APG.Environment {
             return distX + distZ;
         }
 
-        // Grows a path to include all valid neighbor nodes 
+        // #Todo Grows a path to include all valid neighbor nodes 
         public static void ExpandPath(Grid3D_Abstract grid, Node_3D startNode, Node_3D endNode, bool updatePath = true) {
-          /*  List<Node_3D> newPath = new List<Node_3D>();
+            /*  List<Node_3D> newPath = new List<Node_3D>();
 
-            foreach (Node_3D node in grid.path) {
-                newPath.Add(node);
-                UpdateNeighborNodes(node);
-            }
+              foreach (Node_3D node in grid.path) {
+                  newPath.Add(node);
+                  UpdateNeighborNodes(node);
+              }
 
-            UpdateNeighborNodes(startNode);
-            UpdateNeighborNodes(endNode);
+              UpdateNeighborNodes(startNode);
+              UpdateNeighborNodes(endNode);
 
-            if (updatePath)
-                grid.path = newPath;
+              if (updatePath)
+                  grid.path = newPath;
 
-            void UpdateNeighborNodes(Node_3D node) {
-                foreach (Vector3Int neighborIndex in node.neighborIndices) {
-                    Node_3D neighborNode = grid.CurrentGrid3DData.GridNodes[neighborIndex.x, neighborIndex.y, neighborIndex.z];
-                    *//*if (neighborNode.NodeType == NodeGridType.Empty || neighborNode.NodeType == NodeGridType.Tile)
-                        neighborNode.NodeType = NodeGridType.Path;*//*
-                }
-            }*/
+              void UpdateNeighborNodes(Node_3D node) {
+                  foreach (Vector3Int neighborIndex in node.neighborIndices) {
+                      Node_3D neighborNode = grid.CurrentGrid3DData.GridNodes[neighborIndex.x, neighborIndex.y, neighborIndex.z];
+                      *//*if (neighborNode.NodeType == NodeGridType.Empty || neighborNode.NodeType == NodeGridType.Tile)
+                          neighborNode.NodeType = NodeGridType.Path;*//*
+                  }
+              }*/
         }
     }
 }

@@ -26,9 +26,9 @@ namespace APG.Environment {
         public Vector3 tileSize = Vector3.one * 2;
         public Vector3 TileSize { get => tileSize; set => tileSize = value; }
 
-        public List<Node_3D> path = new List<Node_3D>();
+        //  public List<Node_3D> path = new List<Node_3D>();
         // Path length not including start and goal tiles
-        public int GetPathLength { get => Mathf.Max(0, path.Count - 2); }
+        //  public int GetPathLength { get => Mathf.Max(0, path.Count - 2); }
 
         public bool useManhattanNeighbors = true;
         /// Number of rows on the board
@@ -114,12 +114,10 @@ namespace APG.Environment {
 
     public abstract class Grid3D_Abstract : MonoBehaviour {
 
-        protected Grid3DData m_CurrentGrid3DData;
-        public Grid3DData CurrentGrid3DData { get => m_CurrentGrid3DData; }
+        protected Grid3DData m_Grid3DData;
+        public Grid3DData Grid3DData { get => m_Grid3DData; }
 
-
-        [SerializeField] private RenderTexture rt;
-        [SerializeField] private Texture2D tex;// = new Texture2D(10, 10);
+        [SerializeField] protected Texture2D tex;// = new Texture2D(10, 10);
 
         // public List<Node_3D> path = new List<Node_3D>();
         public List<Vector3Int> pathIndices = new List<Vector3Int>();
@@ -162,70 +160,70 @@ namespace APG.Environment {
         }
 
         public Vector3Int GetGridSize() {
-            return m_CurrentGrid3DData.GridSize;
+            return m_Grid3DData.GridSize;
         }
 
         protected void ClearGridNodes() {
-            m_CurrentGrid3DData.availableIndices.Clear();
+            m_Grid3DData.availableIndices.Clear();
 
-            for (int x = 0; x < m_CurrentGrid3DData.GridSize.x; x++) {
-                for (int y = 0; y < m_CurrentGrid3DData.GridSize.y; y++) {
-                    for (int z = 0; z < m_CurrentGrid3DData.GridSize.z; z++) {
-                        m_CurrentGrid3DData.GridNodes[x, y, z].NodeType = NodeGridType.Empty;
-                        m_CurrentGrid3DData.GridNodes[x, y, z].locked = false;
-                        m_CurrentGrid3DData.availableIndices.Add(new Vector3Int(x, y, z));
+            for (int x = 0; x < m_Grid3DData.GridSize.x; x++) {
+                for (int y = 0; y < m_Grid3DData.GridSize.y; y++) {
+                    for (int z = 0; z < m_Grid3DData.GridSize.z; z++) {
+                        m_Grid3DData.GridNodes[x, y, z].locked = false;
+                        m_Grid3DData.GridNodes[x, y, z].NodeType = NodeType.Empty;
+                        m_Grid3DData.availableIndices.Add(new Vector3Int(x, y, z));
                     }
                 }
             }
 
-            ResetPathIndices();
+            ClearPathIndices();
         }
-        public void ResetPathIndices() {
-            for (int x = 0; x < m_CurrentGrid3DData.GridSize.x; x++) {
-                for (int y = 0; y < m_CurrentGrid3DData.GridSize.y; y++) {
-                    for (int z = 0; z < m_CurrentGrid3DData.GridSize.z; z++) {
-                        m_CurrentGrid3DData.GridNodes[x, y, z].isPath = false;
+        public void ClearPathIndices() {
+            for (int x = 0; x < m_Grid3DData.GridSize.x; x++) {
+                for (int y = 0; y < m_Grid3DData.GridSize.y; y++) {
+                    for (int z = 0; z < m_Grid3DData.GridSize.z; z++) {
+                        m_Grid3DData.GridNodes[x, y, z].isPath = false;
                     }
                 }
             }
+
+            pathIndices.Clear();
         }
 
         // Overwrites all empty nodes with tile nodes
         public void FillGridWithTiles() {
-            for (int x = 0; x < m_CurrentGrid3DData.GridSize.x; x++) {
-                for (int y = 0; y < m_CurrentGrid3DData.GridSize.y; y++) {
-                    for (int z = 0; z < m_CurrentGrid3DData.GridSize.z; z++) {
-                        if (m_CurrentGrid3DData.GridNodes[x, y, z].NodeType == NodeGridType.Empty)
-                            m_CurrentGrid3DData.GridNodes[x, y, z].NodeType = NodeGridType.Tile;
+            for (int x = 0; x < m_Grid3DData.GridSize.x; x++) {
+                for (int y = 0; y < m_Grid3DData.GridSize.y; y++) {
+                    for (int z = 0; z < m_Grid3DData.GridSize.z; z++) {
+                        if (m_Grid3DData.GridNodes[x, y, z].NodeType == NodeType.Empty)
+                            m_Grid3DData.GridNodes[x, y, z].NodeType = NodeType.Tile;
                     }
                 }
             }
         }
 
         public void FillGridWithRandomTiles(float randomChance = 0.5f) {
-            for (int x = 0; x < m_CurrentGrid3DData.GridSize.x; x++) {
-                for (int y = 0; y < m_CurrentGrid3DData.GridSize.y; y++) {
-                    for (int z = 0; z < m_CurrentGrid3DData.GridSize.z; z++) {
-                        if (m_CurrentGrid3DData.GridNodes[x, y, z].NodeType == NodeGridType.Empty && UnityEngine.Random.Range(0f, 1f) < randomChance)
-                            m_CurrentGrid3DData.GridNodes[x, y, z].NodeType = NodeGridType.Tile;
+            for (int x = 0; x < m_Grid3DData.GridSize.x; x++) {
+                for (int y = 0; y < m_Grid3DData.GridSize.y; y++) {
+                    for (int z = 0; z < m_Grid3DData.GridSize.z; z++) {
+                        if (m_Grid3DData.GridNodes[x, y, z].NodeType == NodeType.Empty && UnityEngine.Random.Range(0f, 1f) < randomChance)
+                            m_Grid3DData.GridNodes[x, y, z].NodeType = NodeType.Tile;
                     }
                 }
             }
         }
 
         protected Vector3Int GetRandomIndex() {
-            int randomIdx = Random.Range(0, m_CurrentGrid3DData.availableIndices.Count);
-            return m_CurrentGrid3DData.availableIndices[randomIdx];
+            int randomIdx = Random.Range(0, m_Grid3DData.availableIndices.Count);
+            return m_Grid3DData.availableIndices[randomIdx];
         }
 
-        public void UpdateGridNodeType(Vector3Int nodeIndex, NodeGridType newNodeType) {
-            m_CurrentGrid3DData.GridNodes[nodeIndex.x, nodeIndex.y, nodeIndex.z].NodeType = newNodeType;
-            // GetGridNode(nodeIndex.x, nodeIndex.y, nodeIndex.z).NodeType = newNodeType;
-
+        public void UpdateGridNodeType(Vector3Int nodeIndex, NodeType newNodeType) {
+            m_Grid3DData.GridNodes[nodeIndex.x, nodeIndex.y, nodeIndex.z].NodeType = newNodeType;
         }
 
         public Node_3D GetGridNode(int x, int y, int z) {
-            return m_CurrentGrid3DData.GridNodes[x, y, z]; ;
+            return m_Grid3DData.GridNodes[x, y, z]; ;
         }
 
         protected Node_3D[,,] GetNewNodes(Vector3Int gridSize) {
@@ -233,54 +231,51 @@ namespace APG.Environment {
         }
 
         public Vector3Int GetStartPosition() {
-            return m_CurrentGrid3DData.StartIndex;
+            return m_Grid3DData.StartIndex;
         }
 
         public Node_3D GetStartNode() {
-            return m_CurrentGrid3DData.GridNodes[GetStartPosition().x, GetStartPosition().y, GetStartPosition().z];
+            return m_Grid3DData.GridNodes[GetStartPosition().x, GetStartPosition().y, GetStartPosition().z];
         }
 
         public Vector3Int GetGoalPosition() {
-            return m_CurrentGrid3DData.GoalIndex;
+            return m_Grid3DData.GoalIndex;
         }
 
         public Node_3D GetGoalNode() {
-            return m_CurrentGrid3DData.GridNodes[GetGoalPosition().x, GetGoalPosition().y, GetGoalPosition().z];
+            return m_Grid3DData.GridNodes[GetGoalPosition().x, GetGoalPosition().y, GetGoalPosition().z];
         }
 
         protected void UpdateGridTexture() {
-            for (int x = 0; x < m_CurrentGrid3DData.GridSize.x; x++) {
-                for (int y = 0; y < m_CurrentGrid3DData.GridSize.y; y++) {
-                    for (int z = 0; z < m_CurrentGrid3DData.GridSize.z; z++) {
+            for (int x = 0; x < m_Grid3DData.GridSize.x; x++) {
+                for (int y = 0; y < m_Grid3DData.GridSize.y; y++) {
+                    for (int z = 0; z < m_Grid3DData.GridSize.z; z++) {
 
                         Color nodeColor = Color.cyan;
-                        NodeGridType nodeGridType = m_CurrentGrid3DData.GridNodes[x, y, z].NodeType;
+                        NodeType nodeGridType = m_Grid3DData.GridNodes[x, y, z].NodeType;
                         switch (nodeGridType) {
-                            case NodeGridType.Empty:
+                            case NodeType.Empty:
                                 nodeColor = Color.black;
                                 break;
-                            case NodeGridType.Start:
+                            case NodeType.Start:
                                 nodeColor = Color.yellow;
                                 break;
-                            case NodeGridType.Goal:
+                            case NodeType.Goal:
                                 nodeColor = Color.blue;
                                 break;
-                            case NodeGridType.Waypoint:
+                            case NodeType.Waypoint:
                                 nodeColor = Color.white;
                                 break;
-                            case NodeGridType.Tile:
+                            case NodeType.Tile:
                                 nodeColor = Color.green;
                                 break;
                             default:
                                 break;
                         }
 
-                        if (m_CurrentGrid3DData.GridNodes[x, y, z].isPath)
+                        if (m_Grid3DData.GridNodes[x, y, z].isPath)
                             nodeColor = Color.red;
                         tex.SetPixel(x, z, nodeColor);
-
-                        // m_CurrentGrid3DData.GridNodes[x, y, z].NodeType = NodeGridType.Empty;
-                        // m_CurrentGrid3DData.availableIndices.Add(new Vector3Int(x, y, z));
                     }
                 }
             }

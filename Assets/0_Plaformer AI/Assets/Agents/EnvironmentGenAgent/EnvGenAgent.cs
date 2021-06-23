@@ -16,7 +16,7 @@ namespace APG {
         public bool canStep = false;
 
         //public Action<Grid3D_Platformer> OnActionCompleted { get; set; }
-        public Action<Vector3Int, NodeGridType> OnActionCompleted;
+        public Action<Vector3Int, NodeType> OnActionCompleted;
         public Action OnEpisodeBegan;
         public Action OnSuccessfulBuild;
 
@@ -139,11 +139,11 @@ namespace APG {
             int gridNum = actionBuffers.DiscreteActions[0];
             Vector3Int currentIndex = new Vector3Int(gridNum % gridSize.x, 0, gridNum / gridSize.x);
 
-            NodeGridType newNodeType;
+            NodeType newNodeType;
             if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == EMPTY)
-                newNodeType = NodeGridType.Empty;
+                newNodeType = NodeType.Empty;
             else if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == TILE)
-                newNodeType = NodeGridType.Tile;
+                newNodeType = NodeType.Tile;
             else
                 return;
 
@@ -244,12 +244,12 @@ namespace APG {
         public override void WriteDiscreteActionMask(IDiscreteActionMask actionMask) {
             if (maskActions) {
                 // Mask all locked indices, which should include start and goal indices          
-                for (int x = 0; x < grid.CurrentGrid3DData.GridNodes.GetLength(0); x++) {
-                    for (int y = 0; y < grid.CurrentGrid3DData.GridNodes.GetLength(1); y++) {
-                        for (int z = 0; z < grid.CurrentGrid3DData.GridNodes.GetLength(2); z++) {
+                for (int x = 0; x < grid.Grid3DData.GridNodes.GetLength(0); x++) {
+                    for (int y = 0; y < grid.Grid3DData.GridNodes.GetLength(1); y++) {
+                        for (int z = 0; z < grid.Grid3DData.GridNodes.GetLength(2); z++) {
                             int branchIndex = 0;
-                            int actionIndex = x + y + (z * grid.CurrentGrid3DData.GridNodes.GetLength(0)); // Grid index to branch index
-                            actionMask.SetActionEnabled(branchIndex, actionIndex, !grid.CurrentGrid3DData.GridNodes[x, y, z].locked);
+                            int actionIndex = x + y + (z * grid.Grid3DData.GridNodes.GetLength(0)); // Grid index to branch index
+                            actionMask.SetActionEnabled(branchIndex, actionIndex, !grid.Grid3DData.GridNodes[x, y, z].locked);
                         }
                     }
                 }
