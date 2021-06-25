@@ -30,6 +30,7 @@ namespace APG {
             m_ObservationSpec = ObservationSpec.Visual(height, width, grayscale ? 1 : 3);
             m_CompressionType = compressionType;
             m_Texture = tex;// new Texture2D(width, height, TextureFormat.RGB24, false);
+            //m_Texture = new Texture2D(tex.width,tex.height, TextureFormat.RGB24, false);
         }
 
         public string GetName() {

@@ -14,7 +14,7 @@ behaviors:
       normalize: false
       hidden_units: 512
       num_layers: 5
-      vis_encode_type: simple
+      vis_encode_type: match3
       #memory:
         #sequence_length: 64
         #memory_size: 64
@@ -29,7 +29,7 @@ behaviors:
      #   encoding_size: 256
      #   learning_rate: 3.0e-4
     keep_checkpoints: 5
-    max_steps: 50000000
+    max_steps: 5000000
     time_horizon: 128
     summary_freq: 10000
   #  self_play:
@@ -57,7 +57,7 @@ environment_parameters:
           measure: reward
           behavior: EnvironmentAgentBehavior
           signal_smoothing: true
-          min_lesson_length: 10000
+          min_lesson_length: 100
           threshold: 0.75
         value: 0
       - name: Lesson1 # This is the start of the second lesson
@@ -65,7 +65,7 @@ environment_parameters:
           measure: reward
           behavior: EnvironmentAgentBehavior
           signal_smoothing: true
-          min_lesson_length: 10000
+          min_lesson_length: 100
           threshold:  0.75
         value: 1
       - name: Lesson2
@@ -73,7 +73,7 @@ environment_parameters:
           measure: reward
           behavior: EnvironmentAgentBehavior
           signal_smoothing: true
-          min_lesson_length: 10000
+          min_lesson_length: 100
           threshold:  0.75
         value: 2
       - name: Lesson3
@@ -81,7 +81,7 @@ environment_parameters:
           measure: reward
           behavior: EnvironmentAgentBehavior
           signal_smoothing: true
-          min_lesson_length: 10000
+          min_lesson_length: 100
           threshold:  0.75
         value: 3
       - name: Lesson4
@@ -89,7 +89,7 @@ environment_parameters:
           measure: reward
           behavior: EnvironmentAgentBehavior
           signal_smoothing: true
-          min_lesson_length: 10000
+          min_lesson_length: 100
           threshold:  0.75
         value: 4
       - name: Lesson5

@@ -204,9 +204,9 @@ namespace APG.Environment {
             return 40;
         }
 
-        // Path length not including start and goal tiles
+        // Path length is number of steps from start to goal, so it does not include the start tile
         public override int GetCurrentPathLength() {
-            return Mathf.Max(0, pathIndices.Count - 2);
+            return Mathf.Max(0, pathIndices.Count - 1);
         }
 
         public override void UpdateRelativeEmptySpaceValue() {

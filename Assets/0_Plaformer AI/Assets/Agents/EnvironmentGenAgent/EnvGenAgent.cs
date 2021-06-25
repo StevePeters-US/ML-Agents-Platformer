@@ -165,19 +165,15 @@ namespace APG {
         }
 
         public void GenerateNewGrid() {
-            UpdateFromLessonPlan();
+            UpdateFromLessonPlan();           
+            // grid.FillGridWithRandomTiles(randomTileChance);
 
-            /* Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
-             grid = new Grid_3D(gridSize, gridOffset + transform.position, tileSize);
-             grid.CreateGrid(true);
-             grid.FillGridWithRandomTiles(randomTileChance);
-
-             int minPathLength = Astar.GetDistanceManhattan(grid.GetStartNode(), grid.GetGoalNode());
-             targetPathLength = Mathf.Lerp(minPathLength, maxPathLength, pathLengthInterpolator);*/
+           /*  int minPathLength = Astar.GetDistanceManhattan(grid.GetStartNode(), grid.GetGoalNode());
+             targetPathLength = Mathf.Lerp(minPathLength, 40, pathLengthInterpolator);*/
         }
 
 
-        private void UpdateFromLessonPlan() {
+        public void UpdateFromLessonPlan() {
             // Get random range values from lesson plan
             LessonPlan_Environment.Instance.UpdateLessonIndex();
 
@@ -190,6 +186,9 @@ namespace APG {
             gridEmptySpaceInfluence = LessonPlan_Environment.Instance.GetGridEmptySpaceInfluence();
 
             randomTileChance = LessonPlan_Environment.Instance.GetStartingRandomTileChance();
+
+            int minPathLength = Astar.GetDistanceManhattan(grid.GetStartNode(), grid.GetGoalNode());
+            targetPathLength = Mathf.Lerp(minPathLength, 40, pathLengthInterpolator);
         }
 
         public override void CollectObservations(VectorSensor sensor) {

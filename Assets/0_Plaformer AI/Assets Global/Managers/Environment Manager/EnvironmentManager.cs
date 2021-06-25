@@ -45,9 +45,9 @@ namespace APG.Environment {
         }
 
         private void OnEpisodeBegin() {
-            UpdateFromLessonPlan();
 
             envGenerator.GenerateEnvironment();
+            UpdateFromLessonPlan();
         }
 
         // #Todo
@@ -55,6 +55,9 @@ namespace APG.Environment {
             // Update grid
 
             // Update agent
+            if (envAgent != null) {
+                envAgent.UpdateFromLessonPlan();
+            }
         }
 
         private void OnSuccessfulBuild() {

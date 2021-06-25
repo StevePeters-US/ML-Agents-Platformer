@@ -28,7 +28,7 @@ namespace APG {
         public Texture2D Tex { get => tex; set => tex = value; }
 
         [SerializeField]
-        string m_SensorName = "RenderTextureSensor";
+        string m_SensorName = "TextureSensor";
 
         /// <summary>
         /// Name of the generated <see cref="RenderTextureSensor"/>.

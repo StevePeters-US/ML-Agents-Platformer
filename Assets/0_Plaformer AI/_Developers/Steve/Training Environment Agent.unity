@@ -187,6 +187,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7231731398797789952, guid: e62a3a3aa0cbe504f800eb79aae6c3cb, type: 3}
+      propertyPath: grid
+      value: 
+      objectReference: {fileID: 853785654}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e62a3a3aa0cbe504f800eb79aae6c3cb, type: 3}
 --- !u!1 &177957778
@@ -697,17 +701,13 @@ MonoBehaviour:
   stdDeviation: 0.75
   currentSlope: 0
   halfLineLength: 1
---- !u!1001 &1398237957
+--- !u!1001 &1333036263
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1409394411, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: grid
-      value: 
-      objectReference: {fileID: 853785654}
     - target: {fileID: 2233170389573893857, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
       propertyPath: m_RootOrder
       value: 1
@@ -757,19 +757,18 @@ PrefabInstance:
       value: Environment Agent
       objectReference: {fileID: 0}
     - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: m_BrainParameters.VectorObservationSize
-      value: 4
+      propertyPath: m_Model
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 2233170389573893863, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
       propertyPath: grid
       value: 
       objectReference: {fileID: 853785654}
     - target: {fileID: 2233170389573893863, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: m_Enabled
-      value: 1
+      propertyPath: MaxStep
+      value: 2000
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 1409394411, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
 --- !u!1 &1547036570
 GameObject:
@@ -947,28 +946,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1765810280 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2233170389573893860, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-  m_PrefabInstance: {fileID: 1398237957}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1765810281
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1765810280}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7f0c183e298a40f4e8ebf08ac2fe961e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tex: {fileID: 2800000, guid: c6f698a725df0bc49a5e8613f41bf9fc, type: 3}
-  m_SensorName: RenderTextureSensor
-  m_Grayscale: 0
-  m_ObservationStacks: 1
-  m_Compression: 1
 --- !u!4 &1795600009 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2939499182581410596, guid: e62a3a3aa0cbe504f800eb79aae6c3cb, type: 3}
@@ -981,6 +958,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 903604295}
     m_Modifications:
+    - target: {fileID: 853785654, guid: bae29f68bcb793d40ac12551001dec39, type: 3}
+      propertyPath: Grid3DSize.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 853785654, guid: bae29f68bcb793d40ac12551001dec39, type: 3}
+      propertyPath: Grid3DSize.z
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 992684486595261436, guid: bae29f68bcb793d40ac12551001dec39, type: 3}
       propertyPath: m_RootOrder
       value: 3
