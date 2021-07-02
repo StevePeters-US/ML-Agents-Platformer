@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: Lesson 1
   m_EditorClassIdentifier: 
   lessonName: 
-  minTargetPathLength: 0
-  maxTargetPathLength: 0.5
+  minTargetPathLength: 0.15
+  maxTargetPathLength: 0.15
   pathLengthInfluence: 1
   minCohesion: 0.5
   maxCohesion: 0.5
-  cohesionInfluence: 0
+  cohesionInfluence: 1
   minGridEmptySpace: 0.5
   maxGridEmptySpace: 0.5
-  gridEmptySpaceInfluence: 0
+  gridEmptySpaceInfluence: 1
   startingRandomTileChance: 0.669

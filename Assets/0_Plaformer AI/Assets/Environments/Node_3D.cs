@@ -4,15 +4,6 @@ using UnityEngine;
 
 namespace APG.Environment {
 
-/*    public enum NodeType {
-        Empty,
-        Start,
-        Goal,
-        Path,
-        Tile//,
-            // Obstacle
-    }*/
-
     public enum NodeType {
         Empty,
         Start,
@@ -25,7 +16,6 @@ namespace APG.Environment {
 
         public Vector3Int gridIndex;
 
-        // private bool isTraversable;
         public bool IsTraversable { get => nodeType != NodeType.Empty; }
 
 

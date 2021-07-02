@@ -10,8 +10,6 @@ namespace APG.Environment {
 
         public int GridCount { get => gridSize.x * gridSize.y * gridSize.z; }
 
-        private Vector3 gridPos;
-
         public Node_3D[,,] GridNodes { get => gridNodes; set => gridNodes = value; }
         private Node_3D[,,] gridNodes;
 
@@ -26,118 +24,23 @@ namespace APG.Environment {
         public Vector3 tileSize = Vector3.one * 2;
         public Vector3 TileSize { get => tileSize; set => tileSize = value; }
 
-        //  public List<Node_3D> path = new List<Node_3D>();
-        // Path length not including start and goal tiles
-        //  public int GetPathLength { get => Mathf.Max(0, path.Count - 2); }
-
         public bool useManhattanNeighbors = true;
-        /// Number of rows on the board
-      //  public int Rows;
-
-        /// Number of columns on the board
-       // public int Columns;
-
-        /// Maximum number of different types of cells (colors, pieces, etc).
-        public int NumCellTypes;
-
-        /// Maximum number of special types. This can be zero, in which case
-        /// all cells of the same type are assumed to be equivalent.
-        public int NumSpecialTypes;
 
         [Range(0, 1)] public float relativeEmptySpace;
-        [Range(0, 1)] public float avgCohesion;
-
-        /* public override string ToString() {
-             return
-                 $"Rows: {Rows}, Columns: {Columns}, NumCellTypes: {NumCellTypes}, NumSpecialTypes: {NumSpecialTypes}";
-         }*/
+        [Range(0, 1)] public float avgCohesion;       
     }
 
-    /*   public struct Grid3DPropertiesStruct {
-
-           public Vector3Int GridSize { get => gridSize; set => gridSize = value; }
-           private Vector3Int gridSize;
-
-           public int GridCount { get => gridSize.x * gridSize.y * gridSize.z; }
-
-           private Vector3 gridPos;
-
-           public Node_3D[,,] GridNodes { get => gridNodes; }
-           private Node_3D[,,] gridNodes;
-
-           public Vector3Int StartIndex { get => startIndex; set => startIndex = value; }
-           Vector3Int startIndex;
-
-           Vector3Int goalIndex;
-           public Vector3Int GoalIndex { get => goalIndex; set => goalIndex = value; }
-
-           Vector3 tileSize;//= Vector3.one;
-           public Vector3 TileSize { get => tileSize; set => tileSize = value; }
-
-           public List<Node_3D> path;// = new List<Node_3D>();
-           // Path length not including start and goal tiles
-           public int GetPathLength { get => Mathf.Max(0, path.Count - 2); }
-
-           /// Number of rows on the board
-           public int Rows;
-
-           /// Number of columns on the board
-           public int Columns;
-
-           /// Maximum number of different types of cells (colors, pieces, etc).
-           public int NumCellTypes;
-
-           /// Maximum number of special types. This can be zero, in which case
-           /// all cells of the same type are assumed to be equivalent.
-           public int NumSpecialTypes;
-
-           [Range(0,1)] public float relativeEmptySpace;
-           [Range(0, 1)] public float avgCohesion;
-
-           /// Check that all fields of the left-hand BoardSize are less than or equal to the field of the right-hand BoardSize
-           public static bool operator <=(Grid3DPropertiesStruct lhs, Grid3DPropertiesStruct rhs) {
-               return lhs.Rows <= rhs.Rows && lhs.Columns <= rhs.Columns && lhs.NumCellTypes <= rhs.NumCellTypes &&
-                      lhs.NumSpecialTypes <= rhs.NumSpecialTypes;
-           }
-
-           /// Check that all fields of the left-hand BoardSize are greater than or equal to the field of the right-hand BoardSize
-           public static bool operator >=(Grid3DPropertiesStruct lhs, Grid3DPropertiesStruct rhs) {
-               return lhs.Rows >= rhs.Rows && lhs.Columns >= rhs.Columns && lhs.NumCellTypes >= rhs.NumCellTypes &&
-                      lhs.NumSpecialTypes >= rhs.NumSpecialTypes;
-           }
-
-           public override string ToString() {
-               return
-                   $"Rows: {Rows}, Columns: {Columns}, NumCellTypes: {NumCellTypes}, NumSpecialTypes: {NumSpecialTypes}";
-           }
-       }*/
 
     public abstract class Grid3D_Abstract : MonoBehaviour {
 
         protected Grid3DData m_Grid3DData;
         public Grid3DData Grid3DData { get => m_Grid3DData; }
 
-        [SerializeField] protected Texture2D tex;// = new Texture2D(10, 10);
+        [SerializeField] protected Texture2D tex;
+        public float randomTileChance = 0.5f;
 
-        // public List<Node_3D> path = new List<Node_3D>();
-        public List<Vector3Int> pathIndices = new List<Vector3Int>();
+        public List<Vector3Int> pathIndices = new List<Vector3Int>();     
 
-        /// Return the maximum size of the board. This is used to determine the size of observations and actions,
-        /// so the returned values must not change.
-        /// 
-        public abstract Grid3DData GetMaxBoardSize();
-
-        /// Return the current size of the board. The values must less than or equal to the values returned from
-        /// GetMaxBoardSize().
-        /// By default, this will return GetMaxBoardSize(); if your board doesn't change size, you don't need to override it.
-        public virtual Grid3DData GetCurrentBoardSize() {
-            return GetMaxBoardSize();
-        }
-
-        /// Returns the "color" of the piece at the given row and column.
-        /// This should be between 0 and NumCellTypes-1 (inclusive).
-        /// The actual order of the values doesn't matter.
-        public abstract int GetCellType(int row, int col);
         public abstract int GetMinPathLength();
         public abstract int GetMaxPathLength();
 
@@ -147,15 +50,13 @@ namespace APG.Environment {
         public abstract void UpdateRelativeEmptySpaceValue();
         public abstract void UpdateCohesionValues();
 
-        /// Returns the special type of the piece at the given row and column.
-        /// This should be between 0 and NumSpecialTypes (inclusive).
-        /// The actual order of the values doesn't matter.
-        public abstract int GetSpecialType(int row, int col);
 
         protected void Update() {
             // Update path using A*
             pathIndices = Astar.GeneratePath(this, true, false);
 
+            UpdateCohesionValues();
+            UpdateRelativeEmptySpaceValue();
             UpdateGridTexture();
         }
 
@@ -202,11 +103,11 @@ namespace APG.Environment {
             }
         }
 
-        public void FillGridWithRandomTiles(float randomChance = 0.5f) {
+        public void FillGridWithRandomTiles() {
             for (int x = 0; x < m_Grid3DData.GridSize.x; x++) {
                 for (int y = 0; y < m_Grid3DData.GridSize.y; y++) {
                     for (int z = 0; z < m_Grid3DData.GridSize.z; z++) {
-                        if (m_Grid3DData.GridNodes[x, y, z].NodeType == NodeType.Empty && UnityEngine.Random.Range(0f, 1f) < randomChance)
+                        if (m_Grid3DData.GridNodes[x, y, z].NodeType == NodeType.Empty && UnityEngine.Random.Range(0f, 1f) < randomTileChance)
                             m_Grid3DData.GridNodes[x, y, z].NodeType = NodeType.Tile;
                     }
                 }
@@ -251,30 +152,37 @@ namespace APG.Environment {
                 for (int y = 0; y < m_Grid3DData.GridSize.y; y++) {
                     for (int z = 0; z < m_Grid3DData.GridSize.z; z++) {
 
-                        Color nodeColor = Color.cyan;
+                        //Color nodeColor = Color.cyan;
+                        Color nodeColor = tex.GetPixel(x, z);
                         NodeType nodeGridType = m_Grid3DData.GridNodes[x, y, z].NodeType;
+
+                        // Update node color path values
                         switch (nodeGridType) {
                             case NodeType.Empty:
-                                nodeColor = Color.black;
+                                nodeColor.r = 0;
                                 break;
                             case NodeType.Start:
-                                nodeColor = Color.yellow;
+                                nodeColor.r = 1;
                                 break;
                             case NodeType.Goal:
-                                nodeColor = Color.blue;
+                                nodeColor.r = 1;
                                 break;
                             case NodeType.Waypoint:
-                                nodeColor = Color.white;
+                                nodeColor.r = 1;
                                 break;
                             case NodeType.Tile:
-                                nodeColor = Color.green;
+                                nodeColor.r = 0.5f;
                                 break;
                             default:
                                 break;
                         }
 
                         if (m_Grid3DData.GridNodes[x, y, z].isPath)
-                            nodeColor = Color.red;
+                            nodeColor.r = 0.75f;
+
+                        // Update node color cohesion values
+                        nodeColor.g = m_Grid3DData.GridNodes[x, y, z].cohesiveValue;
+
                         tex.SetPixel(x, z, nodeColor);
                     }
                 }

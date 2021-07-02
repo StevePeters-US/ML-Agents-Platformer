@@ -33,6 +33,5 @@ namespace APG {
         }
 
         [Range(0, 1)] public float startingRandomTileChance = 0.5f;
-
     }
 }

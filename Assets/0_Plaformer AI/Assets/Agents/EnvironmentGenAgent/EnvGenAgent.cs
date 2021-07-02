@@ -23,21 +23,13 @@ namespace APG {
         [SerializeField] private Grid3D_Platformer grid;
         public Grid3D_Platformer Grid { get => grid; }
 
-        [SerializeField] private Vector3Int gridSize = new Vector3Int(20, 1, 20);
-        public Vector3Int GridSize { get => gridSize; }
-        public int GridCount { get => gridSize.x * gridSize.y * gridSize.z; }
-        [SerializeField] private Vector3 tileSize = Vector3.one;
-
-
-        [Range(0, 1)] private float randomTileChance = 0.5f;
-
-        [SerializeField] private bool drawGizmos = false;
-
+        //[SerializeField] private Vector3Int gridSize = new Vector3Int(20, 1, 20);
+        //public Vector3Int GridSize { get => grid.GetGridSize(); }
+        //public int GridCount { get => gridSize.x * gridSize.y * gridSize.z; }
 
         const int ACTIONS_BRANCH = 1;
         [SerializeField] private bool maskActions = true;
-        private bool[] validActions;
-        //const int doNothing = 0;
+
         const int EMPTY = 0;
         const int TILE = 1;
         //const int GOAL = 2;
@@ -56,7 +48,7 @@ namespace APG {
         //private float pathLengthWeight = 1;
         private float targetPathLength = 1f;
         public float TargetPathLength { get => targetPathLength; }
-        public int currentPathLength;// { get => grid.GetPathLength; }
+        public int currentPathLength;
         // Path length reward gets tighter to target value the closer we get to the end of this episode
         public float PathLengthReward { get => Mathf.Lerp(0, MLAgentsExtensions.GetGaussianReward(currentPathLength, targetPathLength, Mathf.Lerp(0, 1f, EnvTime)), pathLengthInfluence); }
         public float PathLengthSlope { get => currentPathLength == targetPathLength ? 0 : (currentPathLength > targetPathLength ? -1 : 1); }
@@ -88,35 +80,30 @@ namespace APG {
         #region initialize
         public override void Initialize() {
             stats = Academy.Instance.StatsRecorder;
-
         }
+
         private void Awake() {
             Academy.Instance.AgentPreStep += RequestDecision;
-
-            validActions = new bool[2];
 
             // Set the number of action choices to grid size
             ActionSpec actionSpec = GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec;
             actionSpec.BranchSizes = new int[2];
-            actionSpec.BranchSizes[0] = gridSize.x * gridSize.y * gridSize.z;
+            actionSpec.BranchSizes[0] = grid.GetGridSize().x * grid.GetGridSize().y * grid.GetGridSize().z;
             actionSpec.BranchSizes[ACTIONS_BRANCH] = 2;
             GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec = actionSpec;
 
             GameStateManager gsm = FindObjectOfType<GameStateManager>();
-            /*Debug.Log(GameStateManager.Instance.GetStateName());
-            isTraining = GameStateManager.Instance.GetStateName() == "GameStateTrainingEnvAgent";
-            Debug.Log(isTraining);*/
-            Debug.Log(gsm.GetStateName());
+            Debug.Log("Env agent current state : " + gsm.GetStateName());
             isTraining = gsm.GetStateName() == "Game State Training Environment Agent";
             Debug.Log(isTraining);
         }
-
 
         void OnDestroy() {
             if (Academy.IsInitialized) {
                 Academy.Instance.AgentPreStep -= RequestDecision;
             }
         }
+
         void RequestDecision(int academyStepCount) {
             if (isTraining || canStep)
                 RequestDecision();
@@ -124,20 +111,12 @@ namespace APG {
 
         #endregion
 
-        #region GUI
-        /* private void OnDrawGizmos() {
-
-             if (drawGizmos && grid != null)
-                 grid.DrawGrid();
-         }*/
-        #endregion
-
         #region recurring
         // Convert output from model into usable variables that can be used to pilot the agent.
         public override void OnActionReceived(ActionBuffers actionBuffers) {
             // Using single action buffer
             int gridNum = actionBuffers.DiscreteActions[0];
-            Vector3Int currentIndex = new Vector3Int(gridNum % gridSize.x, 0, gridNum / gridSize.x);
+            Vector3Int currentIndex = new Vector3Int(gridNum % grid.GetGridSize().x, 0, gridNum / grid.GetGridSize().x);
 
             NodeType newNodeType;
             if (actionBuffers.DiscreteActions[ACTIONS_BRANCH] == EMPTY)
@@ -155,25 +134,16 @@ namespace APG {
         #endregion
 
         public override void OnEpisodeBegin() {
-            stats.Add("Previous Run Successful", System.Convert.ToInt32(previousRunSuccessful));
+            stats.Add("Environment Agent/Previous Run Successful", System.Convert.ToInt32(previousRunSuccessful));
 
             if (isTraining) {
-                GenerateNewGrid();
+                UpdateAgentFromLessonPlan();
             }
 
             OnEpisodeBegan?.Invoke();
         }
 
-        public void GenerateNewGrid() {
-            UpdateFromLessonPlan();           
-            // grid.FillGridWithRandomTiles(randomTileChance);
-
-           /*  int minPathLength = Astar.GetDistanceManhattan(grid.GetStartNode(), grid.GetGoalNode());
-             targetPathLength = Mathf.Lerp(minPathLength, 40, pathLengthInterpolator);*/
-        }
-
-
-        public void UpdateFromLessonPlan() {
+        public void UpdateAgentFromLessonPlan() {
             // Get random range values from lesson plan
             LessonPlan_Environment.Instance.UpdateLessonIndex();
 
@@ -185,7 +155,7 @@ namespace APG {
             cohesionInfluence = LessonPlan_Environment.Instance.GetCohesionInfluence();
             gridEmptySpaceInfluence = LessonPlan_Environment.Instance.GetGridEmptySpaceInfluence();
 
-            randomTileChance = LessonPlan_Environment.Instance.GetStartingRandomTileChance();
+          //  randomTileChance = LessonPlan_Environment.Instance.GetStartingRandomTileChance();
 
             int minPathLength = Astar.GetDistanceManhattan(grid.GetStartNode(), grid.GetGoalNode());
             targetPathLength = Mathf.Lerp(minPathLength, 40, pathLengthInterpolator);
@@ -193,50 +163,30 @@ namespace APG {
 
         public override void CollectObservations(VectorSensor sensor) {
 
-            /*   for (int x = 0; x < gridSize.x; x++) {
-                   for (int y = 0; y < gridSize.y; y++) {
-                       for (int z = 0; z < gridSize.z; z++) {
-                           sensor.AddObservation(grid.GetGridNode(x, y, z).locked ? 1 : 0);
-                           sensor.AddObservation(grid.GetGridNode(x, y, z).IsPathNode() ? 1 : 0);
-
-                           // And a one hot encoded representation of the cell type
-                           //float[] cellTypeBuffer = grid.GetOneHotCellData(new Vector3Int(x, y, x));
-                           float[] cellTypeBuffer = grid.GetOneHotGridCellData(new Vector3Int(x, y, x));
-
-                           foreach (float cellType in cellTypeBuffer)
-                               sensor.AddObservation(cellType);
-
-
-                           sensor.AddObservation(grid.GetGridNode(x, y, z).cohesiveValue);
-                           // Debug observations
-                       }
-                   }
-               }*/
-
             // 1 observation
             sensor.AddObservation(EnvTime);
 
             // 2 observations
             sensor.AddObservation(PathLengthReward);
             sensor.AddObservation(PathLengthSlope);
-            sensor.AddObservation(pathLengthInfluence);
+            //sensor.AddObservation(pathLengthInfluence);
 
-            //    sensor.AddObservation(CohesionReward);
-            //    sensor.AddObservation(avgCohesionValue);
-            //    sensor.AddObservation(targetCohesion);
+            sensor.AddObservation(CohesionReward);
+            sensor.AddObservation(avgCohesionValue);
+            sensor.AddObservation(targetCohesion);
             //    sensor.AddObservation(cohesionInfluence);
 
-            //    sensor.AddObservation(GridEmptySpaceReward);
-            //   sensor.AddObservation(gridEmptySpace);
-            //   sensor.AddObservation(targetGridEmptySpace);
-            //   sensor.AddObservation(gridEmptySpaceInfluence);
+            sensor.AddObservation(GridEmptySpaceReward);
+            sensor.AddObservation(gridEmptySpace);
+            sensor.AddObservation(targetGridEmptySpace);
+            //  sensor.AddObservation(gridEmptySpaceInfluence);
         }
 
         public override void Heuristic(in ActionBuffers actionsOut) {
             var discreteActionsOut = actionsOut.DiscreteActions;
             discreteActionsOut.Clear();
 
-            discreteActionsOut[0] = Random.Range(0, gridSize.x * gridSize.z);
+            discreteActionsOut[0] = Random.Range(0, grid.GetGridSize().x * grid.GetGridSize().z);
             discreteActionsOut[1] = Random.Range(0, 2);
         }
 
@@ -267,7 +217,6 @@ namespace APG {
             // Is there a valid path from start to goal?
             if (usePath && grid != null) {
                 currentPathLength = grid.GetCurrentPathLength();
-                // Astar.GeneratePath(grid, true, false);
 
                 if (currentPathLength == 0)
                     AddTickReward(PathFailedPunishment);
@@ -277,11 +226,8 @@ namespace APG {
                     AddTickReward(PathLengthReward);
             }
 
-            // UpdateCohesionValues();
-            //  AddTickReward(CohesionReward);    // Maximize cohesion This should have a 0-1 influence range
-
-            //  UpdateGridEmptySpaceCompositionVal();
-            // AddTickReward(GridEmptySpaceReward);
+            AddTickReward(CohesionReward);    
+            AddTickReward(GridEmptySpaceReward);
 
             currentTickReward = tickReward;
 
@@ -300,42 +246,11 @@ namespace APG {
                     }
                 }
             }
-        }
-        public void UpdateGridEmptySpaceCompositionVal() {
-            /* int numEmpty = 0;
 
-             for (int x = 0; x < gridSize.x; x++) {
-                 for (int y = 0; y < gridSize.y; y++) {
-                     for (int z = 0; z < gridSize.z; z++) {
-                         if (grid.GridNodes[x, y, z].NodeType == NodeType.Empty)
-                             numEmpty += 1;
-                     }
-                 }
-             }
-
-             gridEmptySpace = (float)numEmpty / (float)GridCount;*/
-        }
-
-        public void UpdateCohesionValues() {
-            /*   float totalCohesionValue = 0;
-
-               for (int x = 0; x < gridSize.x; x++) {
-                   for (int y = 0; y < gridSize.y; y++) {
-                       for (int z = 0; z < gridSize.z; z++) {
-                           float cohesiveValue = 0;
-                           for (int i = 0; i < grid.GridNodes[x, y, z].allNeighborIndices.Count; i++) {
-                               Vector3Int nodeIndex = grid.GridNodes[x, y, z].allNeighborIndices[i];
-                               if (grid.GridNodes[x, y, z].NodeType == grid.GridNodes[nodeIndex.x, nodeIndex.y, nodeIndex.z].NodeType)
-                                   cohesiveValue += 1f / grid.GridNodes[x, y, z].allNeighborIndices.Count;
-                           }
-
-                           grid.GridNodes[x, y, z].cohesiveValue = cohesiveValue;
-
-                           totalCohesionValue += cohesiveValue;
-                       }
-                   }
-               }
-               avgCohesionValue = totalCohesionValue / (GridCount);*/
-        }
+            // Update env stats on tensorboard
+            stats.Add("Environment Agent/Path Length Reward", System.Convert.ToInt32(PathLengthReward));
+            stats.Add("Environment Agent/Cohesion Reward", System.Convert.ToInt32(CohesionReward));
+            stats.Add("Environment Agent/Empty Space Reward", System.Convert.ToInt32(GridEmptySpaceReward));
+        }    
     }
 }

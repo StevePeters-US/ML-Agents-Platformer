@@ -9,51 +9,11 @@ namespace APG.Environment {
     public class Grid3D_Platformer : Grid3D_Abstract {
         [SerializeField] private Vector3Int Grid3DSize = new Vector3Int(10, 1, 10);
 
-
-        public int MinRows;
-        public int MaxRows;
-
-        public int MinColumns;
-        public int MaxColumns;
-
-        public int NumCellTypes;
-        public int NumSpecialTypes;
-
-        public const int k_EmptyCell = -1;
-        [Tooltip("Points earned for clearing a basic cell (cube)")]
-        public int BasicCellPoints = 1;
-
-        [Tooltip("Points earned for clearing a special cell (sphere)")]
-        public int SpecialCell1Points = 2;
-
-        [Tooltip("Points earned for clearing an extra special cell (plus)")]
-        public int SpecialCell2Points = 3;
-
-        /// <summary>
-        /// Seed to initialize the <see cref="System.Random"/> object.
-        /// </summary>
-        public int RandomSeed;
-
-        (int CellType, int SpecialType)[,] m_Cells;
-        bool[,] m_Matched;
-
-
-
-        System.Random m_Random;
-
         void Awake() {
-            m_Cells = new (int, int)[MaxColumns, MaxRows];
-            m_Matched = new bool[MaxColumns, MaxRows];
-
             // Start using the max rows and columns, but we'll update the current size at the start of each episode.
             m_Grid3DData = new Grid3DData {
                 GridSize = Grid3DSize,
-                GridNodes = new Node_3D[Grid3DSize.x, Grid3DSize.y, Grid3DSize.z],//  GetNewNodes(Grid3DSize),
-
-                //Rows = MaxRows,
-                //Columns = MaxColumns,
-                NumCellTypes = NumCellTypes,
-                NumSpecialTypes = NumSpecialTypes
+                GridNodes = new Node_3D[Grid3DSize.x, Grid3DSize.y, Grid3DSize.z]
             };
 
             tex.Resize(Grid3DSize.x, Grid3DSize.z);
@@ -67,16 +27,9 @@ namespace APG.Environment {
 
                         m_Grid3DData.GridNodes[x, y, z] = new Node_3D(worldPos, gridIndex, NodeType.Empty);
                         m_Grid3DData.GridNodes[x, y, z].SetNeighborIndices(m_Grid3DData.GridSize, m_Grid3DData.useManhattanNeighbors);
-
-                        // m_CurrentGrid3DData.GridNodes[x, y, z] = new Node_3D(Vector3.zero, new Vector3Int(x, y, z), NodeGridType.Tile);
                     }
                 }
             }
-        }
-
-        void Start() {
-            m_Random = new System.Random(RandomSeed == -1 ? gameObject.GetInstanceID() : RandomSeed);
-            InitRandom();
         }
 
         public void GenerateNewGrid() {
@@ -99,101 +52,8 @@ namespace APG.Environment {
             m_Grid3DData.GridNodes[goalIndex.x, goalIndex.y, goalIndex.z].locked = true;
 
             // Fill in other tiles
-
-            /*  Vector3 gridOffset = new Vector3(-(gridSize.x / 2) * tileSize.x, 0, -(gridSize.z / 2) * tileSize.z);
-              grid = new Grid_3D(gridSize, gridOffset + transform.position, tileSize);
-              grid.CreateGrid(true);
-              grid.FillGridWithRandomTiles(randomTileChance);*/
-        }
-
-        public override Grid3DData GetMaxBoardSize() {
-            return new Grid3DData {
-                //Rows = MaxRows,
-                //Columns = MaxColumns,
-                NumCellTypes = NumCellTypes,
-                NumSpecialTypes = NumSpecialTypes
-            };
-        }
-
-        public override Grid3DData GetCurrentBoardSize() {
-            return m_Grid3DData;
-        }
-
-        /// <summary>
-        /// Change the board size to a random size between the min and max rows and columns. This is
-        /// cached so that the size is consistent until it is updated.
-        /// This is just for an example; you can change your board size however you want.
-        /// </summary>
-     /*   public void UpdateCurrentBoardSize() {
-            var newRows = m_Random.Next(MinRows, MaxRows + 1);
-            var newCols = m_Random.Next(MinColumns, MaxColumns + 1);
-            m_CurrentGrid3DData.Rows = newRows;
-            m_CurrentGrid3DData.Columns = newCols;
-        }*/
-
-
-
-        public override int GetCellType(int row, int col) {
-            if (row >= m_Grid3DData.GridSize.z || col >= m_Grid3DData.GridSize.x) {
-                throw new IndexOutOfRangeException();
-            }
-            return m_Cells[col, row].CellType;
-        }
-
-        public override int GetSpecialType(int row, int col) {
-            if (row >= m_Grid3DData.GridSize.z || col >= m_Grid3DData.GridSize.x) {
-                throw new IndexOutOfRangeException();
-            }
-            return m_Cells[col, row].SpecialType;
-        }
-
-        public (int, int)[,] Cells {
-            get { return m_Cells; }
-        }
-
-        public bool[,] Matched {
-            get { return m_Matched; }
-        }
-
-        // Initialize the board to random values.
-        public void InitRandom() {
-            for (var i = 0; i < MaxRows; i++) {
-                for (var j = 0; j < MaxColumns; j++) {
-                    m_Cells[j, i] = (GetRandomCellType(), GetRandomSpecialType());
-                }
-            }
-        }
-
-
-
-        void ClearMarked() {
-            for (var i = 0; i < MaxRows; i++) {
-                for (var j = 0; j < MaxColumns; j++) {
-                    m_Matched[j, i] = false;
-                }
-            }
-        }
-
-        int GetRandomCellType() {
-            return m_Random.Next(0, NumCellTypes);
-        }
-
-        int GetRandomSpecialType() {
-            // 1 in N chance to get a type-2 special
-            // 2 in N chance to get a type-1 special
-            // otherwise 0 (boring)
-            var N = 10;
-            var val = m_Random.Next(0, N);
-            if (val == 0) {
-                return 2;
-            }
-
-            if (val <= 2) {
-                return 1;
-            }
-
-            return 0;
-        }
+            FillGridWithRandomTiles();
+        }     
 
         public override int GetMinPathLength() {
             return Astar.GetDistanceManhattan(GetStartNode(), GetGoalNode());

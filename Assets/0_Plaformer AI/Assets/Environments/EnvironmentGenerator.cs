@@ -67,7 +67,7 @@ namespace APG.Environment {
         public void UpdateGridNodeType(Vector3Int nodeIndex, NodeType newNodeType) {
             grid.UpdateGridNodeType(nodeIndex, newNodeType);
         }
-        
+
         public void InstantiateNodePrefabs() {
             ClearNodePrefabs();
 
@@ -106,13 +106,6 @@ namespace APG.Environment {
                 tilePool.Release(gameObject);
             }
             instantiatedTiles.Clear();
-        }
-
-        private void UpdateFromLessonPlan() {
-            // Get random range values from lesson plan
-            LessonPlan_PlayerAgent.Instance.UpdateLessonIndex();
-            envSize = LessonPlan_PlayerAgent.Instance.GetRandomBoardSize();
-            //usePath = LessonPlan_PlayerAgent.Instance.runtimeUsePath;
         }
     }
 }

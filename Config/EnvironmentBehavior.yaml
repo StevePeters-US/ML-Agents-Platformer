@@ -12,8 +12,8 @@ behaviors:
       learning_rate_schedule: linear
     network_settings:
       normalize: false
-      hidden_units: 512
-      num_layers: 5
+      hidden_units: 128
+      num_layers: 3
       vis_encode_type: match3
       #memory:
         #sequence_length: 64

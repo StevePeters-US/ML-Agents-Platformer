@@ -3,17 +3,10 @@ using UnityEngine;
 
 namespace APG {
     public class CohesionDebugger : MonoBehaviour {
-        private EnvGenAgent envAgent;
 
         [SerializeField] private Grid3D_Platformer grid;
         [SerializeField] private CohesionDebugText cohesionDebugTextPrefab;
         private CohesionDebugText[,,] cohesionDebugTexts;
-
-
-        private void Awake() {
-            //envAgent = FindObjectOfType<EnvGenAgent>();
-           // envAgent.OnEpisodeBegan += InstantiateCohesionDebugTexts;
-        }
 
         private void InstantiateCohesionDebugTexts(Grid3D_Platformer grid) {
             cohesionDebugTexts = new CohesionDebugText[grid.GetGridSize().x, grid.GetGridSize().y, grid.GetGridSize().z];
@@ -40,6 +33,5 @@ namespace APG {
                 }
             }
         }
-
     }
 }

@@ -56,7 +56,7 @@ namespace APG.Environment {
 
             // Update agent
             if (envAgent != null) {
-                envAgent.UpdateFromLessonPlan();
+                envAgent.UpdateAgentFromLessonPlan();
             }
         }
 
@@ -114,7 +114,7 @@ namespace APG.Environment {
 
         public void GenerateEnvironment() {
             if (envAgent != null) {
-                envAgent.GenerateNewGrid();
+                envAgent.UpdateAgentFromLessonPlan();
                 envAgent.canStep = true;
                 Time.timeScale = 50;
             }
