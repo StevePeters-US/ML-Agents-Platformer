@@ -57,6 +57,8 @@ namespace APG {
             if (tex == null)
                 tex = new Texture2D(textureSize.x, textureSize.y, TextureFormat.RGB24, false);
 
+            tex.Resize(textureSize.x, textureSize.y);
+
             if (debugImage)
                 debugImage.texture = tex;
         }

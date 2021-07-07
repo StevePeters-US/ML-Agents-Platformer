@@ -59,7 +59,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 6980
+          seed: 9609
           value: 0
       name: Lesson0
       completion_criteria:
@@ -72,7 +72,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 6981
+          seed: 9610
           value: 1
       name: Lesson1
       completion_criteria:
@@ -85,7 +85,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 6982
+          seed: 9611
           value: 2
       name: Lesson2
       completion_criteria:
@@ -98,7 +98,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 6983
+          seed: 9612
           value: 3
       name: Lesson3
       completion_criteria:
@@ -111,7 +111,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 6984
+          seed: 9613
           value: 4
       name: Lesson4
       completion_criteria:
@@ -124,7 +124,7 @@ environment_parameters:
     - value:
         sampler_type: constant
         sampler_parameters:
-          seed: 6985
+          seed: 9614
           value: 5
       name: Lesson5
       completion_criteria: null
@@ -133,7 +133,7 @@ checkpoint_settings:
   initialize_from: null
   load_model: false
   resume: false
-  force: false
+  force: true
   train_model: false
   inference: false
   results_dir: results

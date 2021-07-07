@@ -88,7 +88,8 @@ namespace APG {
             // Set the number of action choices to grid size
             ActionSpec actionSpec = GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec;
             actionSpec.BranchSizes = new int[2];
-            actionSpec.BranchSizes[0] = grid.GetGridSize().x * grid.GetGridSize().y * grid.GetGridSize().z;
+           // actionSpec.BranchSizes[0] = grid.GetGridSize().x * grid.GetGridSize().y * grid.GetGridSize().z;
+            actionSpec.BranchSizes[0] = 20 * 20;
             actionSpec.BranchSizes[ACTIONS_BRANCH] = 2;
             GetComponent<Unity.MLAgents.Policies.BehaviorParameters>().BrainParameters.ActionSpec = actionSpec;
 
