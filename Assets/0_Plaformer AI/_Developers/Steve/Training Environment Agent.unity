@@ -708,38 +708,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1765810281, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: tex
-      value: 
-      objectReference: {fileID: 2800000, guid: c6f698a725df0bc49a5e8613f41bf9fc, type: 3}
-    - target: {fileID: 1765810281, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: debugImage
-      value: 
-      objectReference: {fileID: 1547036572}
-    - target: {fileID: 1765810281, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: m_Grayscale
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1765810281, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: m_SensorName
-      value: TextureSensor
-      objectReference: {fileID: 0}
-    - target: {fileID: 1765810281, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: m_Compression
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1765810281, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: textureSize.x
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 1765810281, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: textureSize.y
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 1765810281, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: m_ObservationStacks
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2233170389573893857, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
       propertyPath: m_RootOrder
       value: 1
@@ -788,44 +756,36 @@ PrefabInstance:
       propertyPath: m_Name
       value: Environment Agent
       objectReference: {fileID: 0}
-    - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: m_Model
-      value: 
-      objectReference: {fileID: 5022602860645237092, guid: e882c57e696f10741a54eeacac60811e, type: 3}
-    - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: m_BrainParameters.VectorObservationSize
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: m_BrainParameters.NumStackedVectorObservations
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: m_BrainParameters.VectorActionSize.Array.data[0]
-      value: 400
-      objectReference: {fileID: 0}
-    - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: m_BrainParameters.VectorActionSize.Array.data[1]
-      value: 400
-      objectReference: {fileID: 0}
-    - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: m_BrainParameters.m_ActionSpec.BranchSizes.Array.data[0]
-      value: 400
-      objectReference: {fileID: 0}
-    - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: m_BrainParameters.m_ActionSpec.BranchSizes.Array.data[1]
-      value: 400
-      objectReference: {fileID: 0}
     - target: {fileID: 2233170389573893863, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
       propertyPath: grid
       value: 
       objectReference: {fileID: 853785654}
-    - target: {fileID: 2233170389573893863, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
-      propertyPath: MaxStep
-      value: 2000
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+--- !u!1 &1447749957 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2233170389573893860, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+  m_PrefabInstance: {fileID: 1333036263}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1447749958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1447749957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19e779a02eb9cc7448d1f170e44b98c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tex: {fileID: 2800000, guid: c6f698a725df0bc49a5e8613f41bf9fc, type: 3}
+  textureSize: {x: 20, y: 20}
+  m_RenderTexture: {fileID: 8400000, guid: 67770c58dda711a41ba1f6b6cef5c917, type: 2}
+  m_SensorName: RenderTextureSensor
+  m_Grayscale: 0
+  m_ObservationStacks: 1
+  m_Compression: 1
 --- !u!114 &1537269926 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7653720219117532565, guid: bae29f68bcb793d40ac12551001dec39, type: 3}
@@ -886,7 +846,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: 8ac95693b03440745adddfe566c81a6a, type: 2}
+  m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -894,7 +854,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 0}
+  m_Texture: {fileID: 8400000, guid: 67770c58dda711a41ba1f6b6cef5c917, type: 2}
   m_UVRect:
     serializedVersion: 2
     x: 0

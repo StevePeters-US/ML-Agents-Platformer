@@ -6,19 +6,20 @@ using UnityEngine.UI;
 
 namespace APG {
     [AddComponentMenu("ML Agents/Texture Sensor")]
-    public class TextureSensorComponent : SensorComponent {
-        TextureSensor m_Sensor;
+    public class TextureSensorComponent : RenderTextureSensorComponent {
+        // RenderTextureSensor m_Sensor;
 
-        [SerializeField] Texture2D tex;
-        [SerializeField] RawImage debugImage;
+        [SerializeField] public Texture2D tex;
+       // [SerializeField] RenderTexture renderTexture;
+       // [SerializeField] RawImage debugImage;
         public Texture2D Tex { get => tex; set => tex = value; }
 
-        [SerializeField] private Vector2Int textureSize = new Vector2Int(10, 10);
+        [SerializeField] private Vector2Int textureSize = new Vector2Int(20, 20);
 
-        [SerializeField]
-        string m_SensorName = "TextureSensor";
+/*        [SerializeField]
+        string m_SensorName = "TextureSensor";*/
 
-        // Note that changing this at runtime does not affect how the Agent sorts the sensors.
+    /*    // Note that changing this at runtime does not affect how the Agent sorts the sensors.
         public string SensorName {
             get { return m_SensorName; }
             set { m_SensorName = value; }
@@ -31,9 +32,9 @@ namespace APG {
         public bool Grayscale {
             get { return m_Grayscale; }
             set { m_Grayscale = value; }
-        }
+        }*/
 
-        [SerializeField]
+/*        [SerializeField]
         [Range(1, 50)]
         [Tooltip("Number of frames that will be stacked before being fed to the neural network.")]
         int m_ObservationStacks = 1;
@@ -45,35 +46,42 @@ namespace APG {
         public SensorCompressionType CompressionType {
             get { return m_Compression; }
             set { m_Compression = value; UpdateSensor(); }
-        }
+        }*/
 
         // Whether to stack previous observations. Using 1 means no previous observations.
         // Note that changing this after the sensor is created has no effect.
-        public int ObservationStacks {
+      /*  public int ObservationStacks {
             get { return m_ObservationStacks; }
             set { m_ObservationStacks = value; }
-        }
+        }*/
         private void Awake() {
             if (tex == null)
                 tex = new Texture2D(textureSize.x, textureSize.y, TextureFormat.RGB24, false);
 
             tex.Resize(textureSize.x, textureSize.y);
 
-            if (debugImage)
-                debugImage.texture = tex;
+            //if (debugImage)
+            //    debugImage.texture = tex;
         }
 
-        public override ISensor[] CreateSensors() {
+        private void Update() {
+            Graphics.Blit(Tex, RenderTexture);
+        }
+
+/*        public override ISensor[] CreateSensors() {
             Dispose();
 
-            m_Sensor = new TextureSensor(Tex, Grayscale, SensorName, CompressionType);
+            // m_Sensor = new TextureSensor(Tex, Grayscale, SensorName, CompressionType);
+            Graphics.Blit(Tex, renderTexture);
+
+            m_Sensor = new RenderTextureSensor(renderTexture, Grayscale, SensorName, CompressionType);
             if (ObservationStacks != 1) {
                 return new ISensor[] { new StackingSensor(m_Sensor, ObservationStacks) };
             }
             return new ISensor[] { m_Sensor };
-        }
+        }*/
 
-        /// Update fields that are safe to change on the Sensor at runtime.
+    /*    /// Update fields that are safe to change on the Sensor at runtime.
         internal void UpdateSensor() {
             if (m_Sensor != null) {
                 m_Sensor.CompressionType = m_Compression;
@@ -86,6 +94,6 @@ namespace APG {
                 m_Sensor.Dispose();
                 m_Sensor = null;
             }
-        }
+        }*/
     }
 }

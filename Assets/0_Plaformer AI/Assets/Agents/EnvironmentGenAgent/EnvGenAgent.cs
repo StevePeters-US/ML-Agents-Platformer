@@ -223,7 +223,7 @@ namespace APG {
                             actionMask.SetActionEnabled(MOVETOBUFFERINDEX, actionIndex, !grid.Grid3DData.GridNodes[x, y, z].locked);
 
                             // Can't move from empty. can't move to occupied tile
-                            actionMask.SetActionEnabled(MOVEFROMBUFFERINDEX, actionIndex, grid.Grid3DData.GridNodes[x, y, z].NodeType == NodeType.Empty);
+                            actionMask.SetActionEnabled(MOVEFROMBUFFERINDEX, actionIndex, !(grid.Grid3DData.GridNodes[x, y, z].NodeType == NodeType.Empty));
                             actionMask.SetActionEnabled(MOVETOBUFFERINDEX, actionIndex, grid.Grid3DData.GridNodes[x, y, z].NodeType == NodeType.Empty);
                         }
                     }

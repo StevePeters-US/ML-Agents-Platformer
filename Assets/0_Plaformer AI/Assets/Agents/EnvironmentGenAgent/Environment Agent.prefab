@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 2233170389573893857}
   - component: {fileID: 2233170389573893862}
   - component: {fileID: 2233170389573893863}
-  - component: {fileID: 1765810281}
   m_Layer: 0
   m_Name: Environment Agent
   m_TagString: Untagged
@@ -46,12 +45,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 4
+    VectorObservationSize: 6
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
-      BranchSizes: 0a00000001000000
-    VectorActionSize: 0a00000001000000
+      BranchSizes: 9001000090010000
+    VectorActionSize: 9001000090010000
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
     hasUpgradedBrainParametersWithActionSpec: 1
@@ -78,36 +77,13 @@ MonoBehaviour:
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
-  MaxStep: 500
+  MaxStep: 2000
   canStep: 0
   grid: {fileID: 0}
-  gridSize: {x: 10, y: 1, z: 10}
-  tileSize: {x: 2, y: 2, z: 2}
-  drawGizmos: 0
   maskActions: 1
   currentTickReward: 0
   currentPathLength: 0
   targetCohesion: 0.75
   avgCohesionValue: 0
-  gridEmptySpace: 0
-  targetGridEmptySpace: 0.5
   pathLengthInfluence: 0
   cohesionInfluence: 0
-  gridEmptySpaceInfluence: 0
---- !u!114 &1765810281
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2233170389573893860}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7f0c183e298a40f4e8ebf08ac2fe961e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tex: {fileID: 2800000, guid: c6f698a725df0bc49a5e8613f41bf9fc, type: 3}
-  m_SensorName: RenderTextureSensor
-  m_Grayscale: 0
-  m_ObservationStacks: 1
-  m_Compression: 1
