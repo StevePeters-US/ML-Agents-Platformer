@@ -27,7 +27,7 @@ namespace APG.Environment {
         public bool useManhattanNeighbors = true;
 
         [Range(0, 1)] public float relativeEmptySpace;
-        [Range(0, 1)] public float avgCohesion;       
+        [Range(0, 1)] public float avgCohesion;
     }
 
 
@@ -39,7 +39,7 @@ namespace APG.Environment {
         [SerializeField] protected Texture2D tex;
         public float randomTileChance = 0.5f;
 
-        public List<Vector3Int> pathIndices = new List<Vector3Int>();     
+        public List<Vector3Int> pathIndices = new List<Vector3Int>();
 
         public abstract int GetMinPathLength();
         public abstract int GetMaxPathLength();
@@ -104,6 +104,9 @@ namespace APG.Environment {
         }
 
         public void FillGridWithRandomTiles() {
+
+            randomTileChance = LessonPlan_Environment.Instance.GetStartingRandomTileChance();
+
             for (int x = 0; x < m_Grid3DData.GridSize.x; x++) {
                 for (int y = 0; y < m_Grid3DData.GridSize.y; y++) {
                     for (int z = 0; z < m_Grid3DData.GridSize.z; z++) {

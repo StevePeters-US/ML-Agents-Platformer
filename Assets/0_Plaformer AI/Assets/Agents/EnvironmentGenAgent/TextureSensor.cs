@@ -13,6 +13,7 @@ namespace APG {
         private ObservationSpec m_ObservationSpec;
         SensorCompressionType m_CompressionType;
         Texture2D m_Texture;
+        Texture2D runtimeTex;
 
 
         public SensorCompressionType CompressionType {
@@ -28,6 +29,7 @@ namespace APG {
             m_ObservationSpec = ObservationSpec.Visual(height, width, grayscale ? 1 : 3);
             m_CompressionType = compressionType;
             m_Texture = tex;
+            //runtimeTex = new Texture2D(width, height);
         }
 
         public string GetName() {
@@ -40,11 +42,13 @@ namespace APG {
 
         public byte[] GetCompressedObservation() {
             var compressed = m_Texture.EncodeToPNG();
+            //var compressed = runtimeTex.EncodeToPNG();
             return compressed;
         }
 
         public int Write(ObservationWriter writer) {
             var numWritten = writer.WriteTexture(m_Texture, m_Grayscale);
+           // var numWritten = writer.WriteTexture(runtimeTex, m_Grayscale);
             return numWritten;
         }
 
@@ -73,6 +77,7 @@ namespace APG {
                 }*/
 
                 m_Texture = null;
+                //runtimeTex = null;
             }
         }
     }

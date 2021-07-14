@@ -33,6 +33,8 @@ namespace APG.Environment {
         public EnvSpawn SpawnRef { get => spawnRef; }
         private EnvSpawn spawnRef = null;
 
+        public int NumTiles;
+
         private void Awake() {
             grid = GetComponent<Grid3D_Platformer>();
 
@@ -78,12 +80,14 @@ namespace APG.Environment {
                             spawnRef.gameObject.SetActive(true);
                             spawnRef.transform.position = grid.GetGridNode(x, y, z).worldPos;
                             spawnRef.transform.rotation = transform.rotation;
+                            NumTiles++;
                         }
 
                         else if (grid.GetGridNode(x, y, z).NodeType == NodeType.Goal) {
                             goalRef.gameObject.SetActive(true);
                             goalRef.transform.position = grid.GetGridNode(x, y, z).worldPos;
                             goalRef.transform.rotation = transform.rotation;
+                            NumTiles++;
                         }
 
                         else if (grid.GetGridNode(x, y, z).NodeType == NodeType.Tile) {
@@ -92,6 +96,7 @@ namespace APG.Environment {
                             newTile.transform.position = grid.GetGridNode(x, y, z).worldPos;
                             newTile.transform.rotation = transform.rotation;
                             instantiatedTiles.Add(newTile);
+                            NumTiles++;
                         }
                     }
                 }
@@ -106,6 +111,8 @@ namespace APG.Environment {
                 tilePool.Release(gameObject);
             }
             instantiatedTiles.Clear();
+
+            NumTiles = 0;
         }
     }
 }

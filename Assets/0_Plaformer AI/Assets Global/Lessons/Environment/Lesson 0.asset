@@ -22,4 +22,4 @@ MonoBehaviour:
   minGridEmptySpace: 0.5
   maxGridEmptySpace: 0.5
   gridEmptySpaceInfluence: 1
-  startingRandomTileChance: 0.75
+  startingRandomTileChance: 0.526

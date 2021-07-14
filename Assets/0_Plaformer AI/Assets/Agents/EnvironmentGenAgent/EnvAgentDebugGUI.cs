@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using APG.Environment;
 
 namespace APG {
-   // [RequireComponent(typeof(EnvGenAgent))]
+    // [RequireComponent(typeof(EnvGenAgent))]
     public class EnvAgentDebugGUI : MonoBehaviour {
 
         private EnvGenAgent agent;
+        [SerializeField] private EnvironmentGenerator envGenerator;
 
         private void Awake() {
             agent = FindObjectOfType<EnvGenAgent>();
@@ -24,29 +26,31 @@ namespace APG {
             DebugGUI.SetGraphProperties("avgCohesion", "Average Cohesion", 0, 1, 4, Color.white, true);
             DebugGUI.SetGraphProperties("cohesionReward", "Cohesion Reward", 0, 1, 4, Color.green, true);
 
-            DebugGUI.SetGraphProperties("gridEmptySpace", "Grid Empty Space", 0, 1, 5, Color.white, true);
-            DebugGUI.SetGraphProperties("gridEmptySpaceReward", "Grid Empty Space Reward", 0, 1, 5, Color.green, true);
+            DebugGUI.SetGraphProperties("numTiles", "Number of tiles", 0, 400, 5, Color.white, true);
+            //   DebugGUI.SetGraphProperties("gridEmptySpace", "Grid Empty Space", 0, 1, 5, Color.white, true);
+            //  DebugGUI.SetGraphProperties("gridEmptySpaceReward", "Grid Empty Space Reward", 0, 1, 5, Color.green, true);
         }
 
         private void Update() {
 
             if (agent.Grid != null) {
-            DebugGUI.Graph("currentTickReward", agent.currentTickReward);
-            DebugGUI.Graph("previousRunSuccessful", System.Convert.ToInt32(agent.PreviousRunSuccessful));
-            DebugGUI.Graph("envTime", agent.EnvTime);
+                DebugGUI.Graph("currentTickReward", agent.currentTickReward);
+                DebugGUI.Graph("previousRunSuccessful", System.Convert.ToInt32(agent.PreviousRunSuccessful));
+                DebugGUI.Graph("envTime", agent.EnvTime);
 
-            DebugGUI.Graph("currentPathLength", agent.currentPathLength);
-            DebugGUI.Graph("targetPathLength", agent.TargetPathLength);
+                DebugGUI.Graph("currentPathLength", agent.currentPathLength);
+                DebugGUI.Graph("targetPathLength", agent.TargetPathLength);
 
-            DebugGUI.Graph("pathLengthReward", agent.PathLengthReward);
-            DebugGUI.Graph("pathFailedPunishment", agent.PathFailedPunishment);
-            DebugGUI.Graph("pathLengthSlope", agent.PathLengthSlope);
+                DebugGUI.Graph("pathLengthReward", agent.PathLengthReward);
+                DebugGUI.Graph("pathFailedPunishment", agent.PathFailedPunishment);
+                DebugGUI.Graph("pathLengthSlope", agent.PathLengthSlope);
 
-            DebugGUI.Graph("avgCohesion", agent.avgCohesionValue);
-            DebugGUI.Graph("cohesionReward", agent.CohesionReward);
+                DebugGUI.Graph("avgCohesion", agent.avgCohesionValue);
+                DebugGUI.Graph("cohesionReward", agent.CohesionReward);
 
-            DebugGUI.Graph("gridEmptySpace", agent.gridEmptySpace);
-            DebugGUI.Graph("gridEmptySpaceReward", agent.GridEmptySpaceReward);
+                DebugGUI.Graph("numTiles", envGenerator.NumTiles);
+                // DebugGUI.Graph("gridEmptySpace", agent.gridEmptySpace);
+                // DebugGUI.Graph("gridEmptySpaceReward", agent.GridEmptySpaceReward);
             }
         }
 
@@ -56,7 +60,7 @@ namespace APG {
             DebugGUI.RemoveGraph("currentPathLength");
             DebugGUI.RemoveGraph("pathLengthReward");
             DebugGUI.RemoveGraph("avgCohesion");
-            DebugGUI.RemoveGraph("gridEmptySpace");
+            //  DebugGUI.RemoveGraph("gridEmptySpace");
         }
     }
 }

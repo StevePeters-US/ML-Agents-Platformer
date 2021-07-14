@@ -725,6 +725,10 @@ PrefabInstance:
       value: TextureSensor
       objectReference: {fileID: 0}
     - target: {fileID: 1765810281, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+      propertyPath: m_Compression
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1765810281, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
       propertyPath: textureSize.x
       value: 20
       objectReference: {fileID: 0}
@@ -787,14 +791,30 @@ PrefabInstance:
     - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
       propertyPath: m_Model
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 5022602860645237092, guid: e882c57e696f10741a54eeacac60811e, type: 3}
     - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
       propertyPath: m_BrainParameters.VectorObservationSize
-      value: 9
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
       propertyPath: m_BrainParameters.NumStackedVectorObservations
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+      propertyPath: m_BrainParameters.VectorActionSize.Array.data[0]
+      value: 400
+      objectReference: {fileID: 0}
+    - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+      propertyPath: m_BrainParameters.VectorActionSize.Array.data[1]
+      value: 400
+      objectReference: {fileID: 0}
+    - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+      propertyPath: m_BrainParameters.m_ActionSpec.BranchSizes.Array.data[0]
+      value: 400
+      objectReference: {fileID: 0}
+    - target: {fileID: 2233170389573893862, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+      propertyPath: m_BrainParameters.m_ActionSpec.BranchSizes.Array.data[1]
+      value: 400
       objectReference: {fileID: 0}
     - target: {fileID: 2233170389573893863, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
       propertyPath: grid
@@ -806,6 +826,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15ac8abee79331e419d8d1d897d85949, type: 3}
+--- !u!114 &1537269926 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7653720219117532565, guid: bae29f68bcb793d40ac12551001dec39, type: 3}
+  m_PrefabInstance: {fileID: 1874530340}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48f4d65373299764b81df6d45518c215, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1547036570
 GameObject:
   m_ObjectHideFlags: 0
@@ -1330,6 +1361,10 @@ PrefabInstance:
       propertyPath: drawInBuild
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7097197049273407663, guid: 7aa569edaf480424ca7f7ace2905c095, type: 3}
+      propertyPath: envGenerator
+      value: 
+      objectReference: {fileID: 1537269926}
     - target: {fileID: 8972190521738461000, guid: 7aa569edaf480424ca7f7ace2905c095, type: 3}
       propertyPath: m_Name
       value: Environment Agent Graphs
